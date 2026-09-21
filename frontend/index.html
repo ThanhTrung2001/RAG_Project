@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>A1 - Multimodal Search Demo</title>
+<style>
+  body { font-family: sans-serif; max-width: 900px; margin: 40px auto; }
+  .search-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  input[type=text] { flex: 1; min-width: 200px; padding: 8px; font-size: 16px; }
+  button { padding: 8px 16px; font-size: 16px; cursor: pointer; }
+  .components { display: flex; gap: 16px; margin-bottom: 20px; padding: 10px; background: #f5f5f5; border-radius: 6px; }
+  .components label { display: flex; align-items: center; gap: 4px; cursor: pointer; text-transform: uppercase; font-size: 13px; }
+  .results { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .result-card { border: 1px solid #ddd; border-radius: 8px; padding: 8px; text-align: center; }
+  .result-card img { width: 100%; border-radius: 4px; }
+  .score { font-size: 12px; color: #666; }
+  .meta { font-size: 13px; color: #888; margin-bottom: 12px; }
+  .meta b { color: #333; }
+</style>
+</head>
+<body>
+  <h2>Multimodal Search (text hoặc ảnh)</h2>
+
+  <!-- BƯỚC 10 — Frontend tối giản, gọi API, hiển thị top-k kết quả.
+       Checkbox bên dưới KHÔNG được viết chết trong HTML -- xem hàm
+       loadComponents() ở cuối file để hiểu vì sao. -->
+  <div class="components" id="componentCheckboxes">Đang tải danh sách component...</div>
+
+  <div class="search-bar">
+    <input type="text" id="query" placeholder="Nhập câu truy vấn, ví dụ: folding pocket knife">
+    <button onclick="searchByText()">Tìm bằng text</button>
+    <input type="file" id="imageFile" accept="image/*">
+    <button onclick="searchByImage()">Tìm bằng ảnh</button>
+  </div>
+
+  <div class="meta" id="meta"></div>
+  <div class="results" id="results"></div>
+
+  <hr style="margin: 32px 0;">
+
+  <!-- A3 — Khu vực RAG dạng CHATBOT đa lượt (không phải hộp hỏi-đáp đơn lẻ).
+       Có session_id để hệ thống NHỚ ngữ cảnh hội thoại -- xem giải thích
+       trong rag_core.py phần MEMORY. -->
+  <h2>Trợ lý tư vấn (Chatbot RAG)</h2>
+  <div id="chatLog" style="border: 1px solid #ddd; border-radius: 8px; padding: 12px; height: 340px; overflow-y: auto; margin-bottom: 12px; background: #fafafa;"></div>
+  <div class="search-bar">
+    <input type="text" id="ragQuery" placeholder="Hỏi bằng câu tự nhiên, ví dụ: giày leo núi chống nước mùa đông" onkeypress="if(event.key==='Enter') ask(false)">
+    <button onclick="ask(false)">Gửi</button>
+    <button onclick="ask(true)">Gửi (agentic)</button>
+    <button onclick="resetChat()" style="background:#eee;">Cuộc trò chuyện mới</button>
+  </div>
+  <div class="results" id="ragSources"></div>
+
+<script>
+// Danh sách tên component -- được điền bởi loadComponents(), KHÔNG hardcode
+// "bm25"/"dense" ở đây. Nếu backend (search_core.py) sau này thêm 1
+// component mới (ví dụ "rerank"), biến này và checkbox trên UI sẽ TỰ ĐỘNG
+// cập nhật theo mà không cần sửa file HTML này.
+let AVAILABLE_COMPONENTS = [];
+
+// TẠI SAO GỌI API /api/v1/components THAY VÌ HARDCODE CHECKBOX?
+// Đây là điểm nối giữa "registry pattern" ở backend và UI ở đây -- xem giải
+// thích chi tiết trong docstring đầu file app.py.
+async function loadComponents() {
+  const res = await fetch('/api/v1/components');
+  const data = await res.json();
+  AVAILABLE_COMPONENTS = data.components;
+
+  const container = document.getElementById('componentCheckboxes');
+  container.innerHTML = '';
+  for (const name of AVAILABLE_COMPONENTS) {
+    const label = document.createElement('label');
+    // checked mặc định -- tương ứng với hành vi search() khi components=None
+    // (bật hết) ở phía backend, giữ 2 bên NHẤT QUÁN với nhau.
+    label.innerHTML = `<input type="checkbox" value="${name}" checked> ${name}`;
+    container.appendChild(label);
+  }
+}
+
+// Đọc trạng thái các checkbox đang tick, ghép thành chuỗi "bm25,dense" để
+// gửi lên API -- đúng định dạng mà _parse_components() trong app.py mong đợi.
+function getEnabledComponents() {
+  const checked = document.querySelectorAll('#componentCheckboxes input[type=checkbox]:checked');
+  return Array.from(checked).map(cb => cb.value).join(',');
+}
+
+// Hiển thị kết quả trả về từ API lên màn hình -- dùng chung cho cả 2 kiểu
+// search (text và ảnh), vì cả 2 endpoint trả về CÙNG 1 format JSON.
+async function renderResults(data) {
+  // "components_used" trong response giúp người xem demo thấy NGAY hệ
+  // thống vừa chạy với cấu hình nào -- hữu ích khi demo ablation trực tiếp
+  // bằng cách tick/bỏ tick checkbox trước mặt người khác.
+  document.getElementById('meta').innerHTML =
+    `Query: "${data.query}" — component đang bật: <b>${data.components_used.join(', ')}</b> — latency: ${data.latency_ms} ms — ${data.results.length} kết quả`;
+
+  const container = document.getElementById('results');
+  container.innerHTML = '';
+  for (const r of data.results) {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    // r.image_path là đường dẫn TRÊN SERVER (vd "data/images/000001.jpg") --
+    // .split('/').pop() lấy tên file cuối cùng, ghép với route tĩnh
+    // /images/... đã mount ở app.py (app.mount("/images", ...)).
+    card.innerHTML = `
+      <img src="/images/${r.image_path.split('/').pop()}">
+      <div>${r.caption}</div>
+      <div class="score">score: ${r.score}</div>
+    `;
+    container.appendChild(card);
+  }
+}
+
+async function searchByText() {
+  const q = document.getElementById('query').value;
+  if (!q) return;
+  const components = getEnabledComponents();
+  // encodeURIComponent: escape ký tự đặc biệt trong câu query (dấu cách,
+  // dấu tiếng Việt có dấu...) để không phá vỡ cấu trúc URL.
+  const res = await fetch(`/api/v1/search?q=${encodeURIComponent(q)}&k=10&components=${components}`);
+  renderResults(await res.json());
+}
+
+async function searchByImage() {
+  const fileInput = document.getElementById('imageFile');
+  if (!fileInput.files.length) return;
+  const components = getEnabledComponents();
+  // FormData: bắt buộc khi gửi file nhị phân qua HTTP -- không thể nhét
+  // ảnh vào query string như câu text ở trên.
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  const res = await fetch(`/api/v1/search_by_image?k=10&components=${components}`, {
+    method: 'POST', body: formData
+  });
+  renderResults(await res.json());
+}
+
+// Gọi ngay khi trang tải xong -- checkbox phải sẵn sàng TRƯỚC KHI người
+// dùng bấm nút search lần đầu.
+loadComponents();
+
+// ---------------------------------------------------------------------
+// A3 — Gọi endpoint RAG, hiển thị câu trả lời + nguồn (sources) thật.
+// Hiển thị cả "sources" giúp người dùng TỰ KIỂM CHỨNG LLM có trích dẫn
+// đúng sản phẩm thật hay không -- xem giải thích grounding trong rag_core.py.
+// ---------------------------------------------------------------------
+// SESSION_ID cố định cho suốt phiên mở trang này -- sinh ngẫu nhiên 1 lần
+// khi trang tải lên. Đây chính là "chìa khoá" để backend nhớ được lịch sử
+// hội thoại (xem rag_core.py phần MEMORY) -- gửi cùng 1 session_id ở mọi
+// lượt hỏi thì backend mới ghép được các câu hỏi vào cùng 1 cuộc trò chuyện.
+let SESSION_ID = 'session-' + Math.random().toString(36).slice(2);
+
+function appendChatBubble(role, text) {
+  // role: 'user' hoặc 'bot' -- style khác nhau để phân biệt ai đang "nói"
+  const log = document.getElementById('chatLog');
+  const bubble = document.createElement('div');
+  bubble.style.margin = '8px 0';
+  bubble.style.textAlign = role === 'user' ? 'right' : 'left';
+  bubble.innerHTML = `<span style="display:inline-block; max-width:80%; padding:8px 12px;
+    border-radius:12px; background:${role === 'user' ? '#daf1ff' : '#fff'};
+    border:1px solid #ddd; white-space:pre-wrap; text-align:left;">${text}</span>`;
+  log.appendChild(bubble);
+  log.scrollTop = log.scrollHeight;   // tự cuộn xuống tin nhắn mới nhất
+  return bubble;
+}
+
+async function ask(agentic) {
+  const q = document.getElementById('ragQuery').value;
+  if (!q) return;
+  document.getElementById('ragQuery').value = '';
+
+  appendChatBubble('user', q);
+  const botBubble = appendChatBubble('bot', 'Đang xử lý...');
+
+  // Gửi kèm session_id -- đây là điểm khác biệt duy nhất so với trước khi
+  // có Memory: KHÔNG có dòng này, mỗi câu hỏi sẽ độc lập hoàn toàn.
+  const res = await fetch(`/api/v1/ask?q=${encodeURIComponent(q)}&k=5&agentic=${agentic}&session_id=${SESSION_ID}`);
+  const data = await res.json();
+
+  let text = data.answer;
+  if (data.final_query_used && data.final_query_used !== q) {
+    text += `\n\n(Đã tự viết lại câu hỏi để search: "${data.final_query_used}")`;
+  }
+  botBubble.querySelector('span').textContent = text;
+
+  const container = document.getElementById('ragSources');
+  container.innerHTML = '';
+  (data.sources || []).forEach((r, i) => {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    card.innerHTML = `
+      <img src="/images/${r.image_path.split('/').pop()}">
+      <div>[${i + 1}] ${r.caption}</div>
+      <div class="score">score: ${r.score}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+async function resetChat() {
+  // Xoá lịch sử phía backend (Memory) VÀ đổi sang session_id mới, để
+  // "Cuộc trò chuyện mới" thực sự sạch, không lẫn ngữ cảnh cũ.
+  await fetch(`/api/v1/reset_session?session_id=${SESSION_ID}`, { method: 'POST' });
+  SESSION_ID = 'session-' + Math.random().toString(36).slice(2);
+  document.getElementById('chatLog').innerHTML = '';
+  document.getElementById('ragSources').innerHTML = '';
+}
+</script>
+</body>
+</html>

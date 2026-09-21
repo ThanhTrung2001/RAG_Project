@@ -1,0 +1,11 @@
+torch
+transformers==4.57.1
+faiss-cpu
+rank_bm25
+fastapi
+uvicorn[standard]
+pillow
+numpy
+datasets
+python-multipart
+requests

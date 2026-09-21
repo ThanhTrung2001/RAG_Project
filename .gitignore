@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Env / secrets
+.env
+.env.*
+
+# Data artifacts (large / generated)
+data/*.zip
+data/*.pkl
+data/*.index
+data/*.npy
+data/images/
+
+# Logs
+*.log
+
+# Báo cáo .md - tạm thời không đưa lên
+BAO_CAO_A2.md
+BAO_CAO_A3.md
+BAO_CAO_BPM.md
+BAO_CAO_TONG_HOP.md
+HOC_LY_THUYET.md
+HUONG_DAN_STEP_BY_STEP.md
+KE_HOACH_TONG_HOP.md
