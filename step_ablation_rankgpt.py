@@ -16,10 +16,10 @@ Các cấu hình, cùng một pool ứng viên từ hybrid BM25 + Dense của A1
 Metric: nDCG@1/5/10 như paper, thêm Recall@10 và thời gian rerank trung bình.
 Với RankGPT còn đếm lỗi permutation theo cách phân loại của Table 10.
 
-Khác paper (cần nêu khi báo cáo):
+Khác paper:
     - Paper rerank top-100 BM25 trên TREC-DL/BEIR, nhãn nhiều mức.
-    - Ở đây rerank top-30 hybrid trên 30 câu hỏi của data/eval_set.jsonl,
-      mỗi câu một sản phẩm đúng (nhãn nhị phân).
+    - Ở đây rerank top-30 hybrid trên các câu hỏi text của data/eval_set.jsonl
+      (250 câu), mỗi câu một sản phẩm đúng (nhãn nhị phân).
 
 Chuẩn bị:
     ollama pull llama3.1
@@ -34,6 +34,8 @@ import json
 import os
 import time
 
+import requests
+
 from metrics import ndcg_at_k, recall_at_k
 from search_core import (DISTILLED_RERANKER_PATH, distilled_rerank,
                          rankgpt_rerank_with_stats, rerank, search)
@@ -45,6 +47,7 @@ POOL_SIZE = 30            # với window 20, step 10: mỗi câu hỏi 2 lượt
 NDCG_CUTOFFS = (1, 5, 10)
 RECALL_K = 10
 RANKGPT_MODELS = ["llama3.1", "qwen2.5:0.5b"]
+OLLAMA_TAGS_URL = "http://localhost:11434/api/tags"
 STAT_KEYS = ("windows", "repetition", "missing", "out_of_range", "rejection")
 
 
@@ -70,10 +73,22 @@ def build_configs():
     else:
         print(f"Bỏ qua DeBERTa distill: không thấy thư mục {DISTILLED_RERANKER_PATH}\n")
 
+    if RANKGPT_MODELS and not ollama_available():
+        print(f"Bỏ qua RankGPT: không kết nối được Ollama tại {OLLAMA_TAGS_URL}\n")
+        return configs
+
     for model in RANKGPT_MODELS:
         configs.append((f"RankGPT ({model})",
                         lambda q, c, m=model: rankgpt_rerank_with_stats(q, c, llm_model=m)))
     return configs
+
+
+def ollama_available():
+    try:
+        requests.get(OLLAMA_TAGS_URL, timeout=3).raise_for_status()
+        return True
+    except requests.RequestException:
+        return False
 
 
 def run_config(rerank_fn, eval_set):

@@ -1,27 +1,9 @@
 """
-================================================================================
-ABLATION — SO SÁNH TRƯỜNG DỮ LIỆU ĐƯA VÀO INDEX (mục 5.4 template A1)
-================================================================================
+Ablation theo trường dữ liệu index: BM25 trên title, trên title + description, và title + description + Dense.
 
-CÂU HỎI THỰC NGHIỆM: BM25 index trên "chỉ title" (caption ngắn) có tệ hơn
-"title + description" (search_text, đang dùng ở step3_build_index.py) không?
-Và thêm nhánh Dense (ảnh) vào (hybrid) cải thiện thêm bao nhiêu nữa?
-
-TẠI SAO KHÔNG SỬA step3_build_index.py ĐỂ CHẠY 3 LẦN?
-    step3 ghi ĐÈ data/bm25.pkl mỗi lần chạy -- nếu chạy 3 lần với 3 trường
-    khác nhau sẽ mất bản BM25 "title+description" đang dùng cho app.py/A3.
-    Script này build 2 chỉ mục BM25 TẠM TRONG RAM (không ghi ra đĩa, không
-    đụng tới data/bm25.pkl) để so sánh, giữ nguyên toàn bộ hệ thống thật.
-
-3 CẤU HÌNH:
-    1. "title only"              -- BM25 trên riêng caption (tên sản phẩm)
-    2. "title + description"     -- BM25 trên search_text (đang dùng thật ở A1)
-    3. "title + description + ảnh" -- (2) fusion RRF với Dense (CLIP ảnh),
-                                        CHÍNH LÀ cấu hình "hybrid" của step8
-
-CHẠY: python step9_ablation_index_fields.py
-YÊU CẦU TRƯỚC: đã có data/catalog.jsonl, data/eval_set.jsonl, data/dense.index
-      (không cần data/bm25.pkl vì script tự build BM25 riêng trong RAM).
+BM25 được build tạm trong RAM, không ghi đè data/bm25.pkl.
+Input: data/catalog.jsonl, data/eval_set.jsonl, data/dense.index -> in bảng Recall@10, nDCG@10, MRR.
+Chạy: python step9_ablation_index_fields.py
 """
 import json
 
@@ -34,7 +16,7 @@ from metrics import evaluate_all
 EVAL_SET_PATH = "data/eval_set.jsonl"
 CATALOG_PATH = "data/catalog.jsonl"
 K = 10
-TOP_N = 50   # số ứng viên lấy từ mỗi nhánh trước khi fusion -- khớp mặc định của search()
+TOP_N = 50   # bằng top_n mặc định của search()
 
 
 def load_eval_set():
@@ -48,16 +30,12 @@ def load_catalog_rows():
 
 
 def simple_tokenize(text: str):
-    """Giống hệt step3_build_index.py -- BẮT BUỘC tokenize nhất quán để so
-    sánh công bằng, không phải do field khác mà do cách tách từ khác."""
+    """Cùng cách tách từ với step3, để chỉ có field là khác nhau."""
     return text.lower().split()
 
 
 def build_bm25(rows, field_getter):
-    """
-    field_getter: hàm (row) -> str, chọn field nào đưa vào BM25 (caption
-    hoặc search_text). Trả về (bm25, ids) giống cấu trúc data/bm25.pkl.
-    """
+    """field_getter: row -> text đưa vào BM25. Trả về (bm25, ids) như data/bm25.pkl."""
     tokenized = [simple_tokenize(field_getter(r)) for r in rows]
     bm25 = BM25Okapi(tokenized)
     ids = [r["id"] for r in rows]
@@ -65,9 +43,7 @@ def build_bm25(rows, field_getter):
 
 
 def bm25_search(bm25, ids, query: str, top_n: int):
-    """Y hệt logic _run_bm25() trong search_core.py, viết lại độc lập ở đây
-    vì search_core._run_bm25 gắn cứng với self._bm25 (bản title+description
-    đã build sẵn ở step3) -- không nhận bm25 tuỳ ý làm tham số."""
+    """Như search_core._run_bm25 nhưng nhận bm25 bất kỳ (bản gốc dùng biến module _bm25)."""
     tokens = query.lower().split()
     scores = bm25.get_scores(tokens)
     ranked = np.argsort(scores)[::-1][:top_n]
@@ -75,11 +51,7 @@ def bm25_search(bm25, ids, query: str, top_n: int):
 
 
 def make_search_fn(bm25, ids, fuse_with_dense: bool):
-    """
-    Trả về 1 hàm search_fn(query, query_type, k, ...) tương thích chữ ký
-    với search_core.search() -- để dùng lại NGUYÊN VẸN metrics.evaluate_all()
-    (không viết lại vòng lặp tính Recall/nDCG/MRR/Latency lần thứ 2).
-    """
+    """Tạo hàm cùng chữ ký với search_core.search() để dùng lại evaluate_all()."""
 
     def search_fn(query, query_type, k=K, **_ignored):
         bm25_results = bm25_search(bm25, ids, query, TOP_N)

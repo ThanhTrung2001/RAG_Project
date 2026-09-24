@@ -1,46 +1,11 @@
 """
-================================================================================
-SCRIPT DÙNG TRÊN KAGGLE — Ablation embedding model THẬT: CLIP B/32 vs
-CLIP L/14 vs SigLIP (mục 5.1 template A1)
-================================================================================
+Ablation embedding model trên Kaggle: CLIP ViT-B/32 vs CLIP ViT-L/14 vs SigLIP base, dense-only.
 
-TẠI SAO CHẠY TRÊN KAGGLE, KHÔNG CHẠY LOCAL?
-    CLIP ViT-L/14 encode 2000 ảnh trên CPU mất ~35-40 phút CHỈ CHO 1 MODEL
-    (đã đo thật: ~1.1 giây/ảnh). Kaggle có GPU T4 miễn phí -- cùng việc đó
-    chỉ mất vài phút. SigLIP còn cần thêm thư viện `sentencepiece` (thường
-    không có sẵn trong venv local đã cài cho A1) -- Kaggle cài `pip install`
-    lại từ đầu mỗi phiên nên không xung đột với requirements.txt của A1.
-
-TẠI SAO KHÔNG DÙNG data/catalog.jsonl CÓ SẴN (tải qua .zip)?
-    Script này TỰ TẢI LẠI dataset gốc (giống hệt step1/kaggle_build_A1_data.py,
-    CÙNG seed=42 -> CÙNG 2000 sản phẩm, CÙNG thứ tự id) -- để không phải
-    upload cả data/images/ (200MB ảnh) làm input Kaggle. Chỉ cần upload
-    ĐÚNG 1 file nhỏ: data/eval_set.jsonl (30 câu query + id đúng đã viết ở
-    Bước 4/6 local) -- đây là dữ liệu KHÔNG THỂ tự sinh lại, phải mang theo.
-
-CÁCH DÙNG:
-    1. Tạo Kaggle Notebook mới, Settings -> Accelerator: GPU (T4 x2 đủ)
-    2. Settings -> Internet: ON (bắt buộc)
-    3. Add Input -> Upload file `data/eval_set.jsonl` từ máy làm 1 Dataset
-       riêng (đặt tên bất kỳ, ví dụ "a1-eval-set") -> gắn vào notebook
-    4. Cài thư viện (dấu == với số cụ thể, không dùng dấu <):
-           !pip install -q datasets "transformers==4.57.1" sentencepiece faiss-cpu
-    5. Copy nguyên file này vào 1 cell (hoặc upload làm Dataset thứ 2, ít
-       tiện hơn upload trực tiếp) -- SỬA biến EVAL_SET_PATH bên dưới cho
-       khớp đường dẫn Kaggle thật tìm thấy ở tab "Input" (thường dạng
-       /kaggle/input/<tên-dataset>/eval_set.jsonl)
-    6. Chạy: !python kaggle_ablation_embedding_models.py
-    7. Copy bảng kết quả in ra (hoặc tải results.json ở tab Output) về máy,
-       dán vào BAO_CAO_TONG_HOP.md mục 5.1 (thay bảng nhận định lý thuyết
-       bằng số liệu thật)
-
-LƯU Ý:
-    - Mỗi model encode xong sẽ GIẢI PHÓNG khỏi GPU trước khi tải model kế
-      tiếp (torch.cuda.empty_cache()) -- tránh tràn VRAM khi chạy tuần tự
-      3 model lớn trong cùng 1 session.
-    - Đánh giá DENSE-ONLY (không BM25/RRF) cho cả 3 model -- vì mục đích là
-      SO SÁNH CHẤT LƯỢNG EMBEDDING với nhau, không phải so hệ thống hybrid
-      đầy đủ (BM25 không đổi giữa 3 lần chạy nên không cần lặp lại).
+Tự tải lại dataset (cùng seed=42 như step1 nên cùng id), chỉ cần upload data/eval_set.jsonl làm Kaggle Dataset
+và sửa EVAL_SET_PATH. Bật GPU + Internet, rồi chạy
+    !pip install -q datasets "transformers==4.57.1" sentencepiece faiss-cpu
+    !python kaggle_ablation_embedding_models.py
+Output: bảng kết quả in ra màn hình + embedding_model_ablation_results.json.
 """
 import json
 import math
@@ -53,17 +18,14 @@ import torch
 from PIL import Image
 from datasets import load_dataset
 
-# ---------------- Cấu hình ----------------
+# Cấu hình
 DATASET_NAME = "Shopify/product-catalogue"
 SPLIT = "train"
 MAX_ITEMS = 2000
 BATCH_SIZE = 32
 K = 10
 
-# SỬA đường dẫn này cho khớp dataset bạn attach ở Kaggle (xem Bước 3 ở docstring trên).
-# Nếu upload eval_set.jsonl vào CÙNG dataset đã dùng cho kaggle_build_A1_data.py
-# (vd tên dataset "shopify-a1-research" như đã dùng ở lần chạy trước), đường dẫn
-# sẽ là "/kaggle/input/<tên-dataset-của-bạn>/eval_set.jsonl".
+# Sửa cho khớp đường dẫn dataset đã attach (xem tab Input trên Kaggle).
 EVAL_SET_PATH = "/kaggle/input/datasets/thanhtrungtran/shopify-a1-research/eval_set.jsonl"
 
 MODELS = [
@@ -73,8 +35,7 @@ MODELS = [
 ]
 
 
-# ---------------- Metric tự viết (copy tối giản từ metrics.py -- xem file gốc
-# để đọc giải thích lý thuyết đầy đủ, ở đây chỉ giữ lại phần TÍNH TOÁN) ----------------
+# Metric (bản rút gọn của metrics.py, relevance nhị phân)
 
 def recall_at_k(retrieved_ids, relevant_ids, k):
     if not relevant_ids:
@@ -101,7 +62,7 @@ def mrr(retrieved_ids, relevant_ids):
     return 0.0
 
 
-# ---------------- Bước A: build lại catalog (giống hệt step1, CÙNG seed) ----------------
+# Bước A: build lại catalog giống step1 (ảnh giữ trong RAM)
 
 def build_catalog():
     print("=== Tải lại dataset gốc (cùng seed=42 -> cùng 2000 sản phẩm, cùng id với local) ===")
@@ -131,14 +92,14 @@ def load_eval_set():
         return [json.loads(line) for line in f]
 
 
-# ---------------- Bước B: encode ảnh catalog + build FAISS cho 1 model ----------------
+# Bước B: load model, encode ảnh và query
 
 def load_model(hf_id, family, device):
     if family == "clip":
         from transformers import CLIPModel, CLIPProcessor
         model = CLIPModel.from_pretrained(hf_id).to(device).eval()
         processor = CLIPProcessor.from_pretrained(hf_id, use_fast=False)
-    else:   # siglip -- cùng interface get_image_features/get_text_features như CLIP
+    else:   # siglip: cùng interface get_image_features/get_text_features
         from transformers import AutoModel, AutoProcessor
         model = AutoModel.from_pretrained(hf_id).to(device).eval()
         processor = AutoProcessor.from_pretrained(hf_id)
@@ -162,15 +123,8 @@ def encode_images(model, processor, catalog, device):
 
 def encode_query_text(model, processor, text, device, family="clip"):
     """
-    family="siglip" PHẢI pad tới ĐỘ DÀI CỐ ĐỊNH (padding="max_length", 64 token)
-    -- khác CLIP (padding=True, pad động theo câu ngắn nhất trong batch). Lý do:
-    SigLIP KHÔNG dùng attention_mask, nó lấy biểu diễn tại VỊ TRÍ TOKEN CUỐI
-    CÙNG của chuỗi đã pad. Lúc huấn luyện, SigLIP LUÔN pad tới 64 -- token
-    "cuối cùng" luôn nằm ở vị trí 63. Nếu pad động (câu ngắn ra length 5),
-    "token cuối" rơi vào vị trí 4 -- một vùng positional embedding CHƯA TỪNG
-    được huấn luyện ở ngữ cảnh này, làm embedding gần như nhiễu ngẫu nhiên
-    (đây chính là nguyên nhân SigLIP ra Recall/nDCG/MRR = 0.000 khi chạy lần
-    đầu -- không phải model tệ, mà là dùng sai cách gọi processor).
+    Encode 1 câu query thành vector đã chuẩn hoá L2.
+    SigLIP phải pad cố định max_length=64 (như lúc train) vì nó lấy biểu diễn ở token cuối, không dùng attention_mask.
     """
     with torch.no_grad():
         if family == "siglip":
@@ -183,7 +137,7 @@ def encode_query_text(model, processor, text, device, family="clip"):
     return feat.cpu().numpy().astype("float32")
 
 
-# ---------------- Bước C: đánh giá dense-only cho 1 model ----------------
+# Bước C: đánh giá dense-only cho 1 model
 
 def evaluate_model(model_cfg, catalog, eval_set, device):
     print(f"\n### {model_cfg['name']} ({model_cfg['hf_id']}) ###")
@@ -198,7 +152,7 @@ def evaluate_model(model_cfg, catalog, eval_set, device):
 
     recalls, ndcgs, mrrs, latencies = [], [], [], []
     for item in eval_set:
-        t0 = time.perf_counter()
+        t0 = time.perf_counter()   # latency gồm encode query + FAISS search
         query_vec = encode_query_text(model, processor, item["query"], device, family=model_cfg["family"])
         scores, idxs = index.search(query_vec, K)
         latencies.append((time.perf_counter() - t0) * 1000)
@@ -214,9 +168,9 @@ def evaluate_model(model_cfg, catalog, eval_set, device):
         if m is not None:
             mrrs.append(m)
 
-    embedding_dim = int(image_embs.shape[1])   # lưu lại TRƯỚC khi del, xem chú thích dưới
+    embedding_dim = int(image_embs.shape[1])   # lấy trước khi del image_embs
 
-    # Giải phóng model khỏi GPU trước khi load model tiếp theo -- tránh tràn VRAM
+    # Giải phóng VRAM trước khi load model tiếp theo.
     del model, processor, image_embs, index
     if torch.cuda.is_available():
         torch.cuda.empty_cache()

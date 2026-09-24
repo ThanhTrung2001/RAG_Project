@@ -1,40 +1,10 @@
 """
-================================================================================
-BPM — MÔ PHỎNG EVENT LOG CHO QUY TRÌNH "SALES TƯ VẤN SẢN PHẨM" (3 KỊCH BẢN)
-================================================================================
+BPM: mô phỏng event log cho quy trình "Sales tư vấn sản phẩm" có Loop "khách chưa hài lòng -> tìm lại".
 
-QUY TRÌNH ĐÚNG (không phải Order Processing -- đó là quy trình khác, sau khi
-khách đã CHỐT mua):
-
-    Khách nêu yêu cầu -> Sales tìm kiếm sản phẩm -> Trình bày kết quả
-         -> Gateway "Khách hài lòng?" --Không--> LOOP quay lại tìm kiếm
-                                     --Có--> Chuyển sang lập đơn hàng (kết thúc)
-
-TẠI SAO ĐÂY LÀ LOOP (Buổi 2), KHÔNG PHẢI XOR LỒNG NHAU?
-    Khâu nghẽn là "Sales tìm kiếm sản phẩm": giao diện search hiện tại yêu
-    cầu nhập riêng từng ô (tên, category, khoảng giá), KHÔNG có filter màu
-    sắc/thuộc tính tự do -- khách nói "áo đen khoảng 200 nghìn" nhưng Sales
-    không nhập được đúng ý, khách thường CHƯA HÀI LÒNG lần đầu, quay lại
-    tìm lần nữa. Đây đúng cấu trúc Loop:
-        CT = T(tìm kiếm) / (1 - p)
-    với p = xác suất phải lặp lại (khách chưa hài lòng).
-
-TẠI SAO AGENTIC RAG (đã build trong rag_core.py) LÀ LỜI GIẢI ĐÚNG CHO LOOP NÀY?
-    answer_agentic() tự đánh giá kết quả, tự viết lại query, tự search lại
-    tối đa 2 lần -- TRƯỚC KHI trả kết quả cuối cùng. Nói cách khác, nó đưa
-    cái Loop "khách chưa hài lòng -> tìm lại" vào BÊN TRONG 1 lần gọi API,
-    thay vì để Sales phải lặp lại thao tác nhiều lần với khách đứng chờ.
-    Đây là lý do kịch bản C dưới đây có T/lần cao hơn kịch bản B (vì mỗi
-    lần gọi có thể chạy ngầm 1-2 lượt search+đánh giá) nhưng xác suất phải
-    lặp lại (nhìn từ phía Sales/khách) THẤP HƠN NHIỀU.
-
-3 KỊCH BẢN:
-    A. Không có gì hỗ trợ -- giao diện search nhiều ô, thiếu filter
-    B. Chỉ có A1 (search)  -- 1 câu tự nhiên, hiểu được "đen", "200 nghìn"
-    C. Có A1 + A3 Agentic  -- hệ thống tự lặp lại BÊN TRONG, Sales chỉ gọi 1 lần
-
-CHẠY: python bpm_event_log_simulation.py
-OUTPUT: bpm_event_log.csv + bảng so sánh CT (công thức Loop + mô phỏng thật)
+3 kịch bản: A không hỗ trợ, B chỉ có search A1, C có A1 + Agentic RAG (A3).
+Thời gian mỗi lần tìm và xác suất lặp p là giả định trong SCENARIOS; so với công thức Loop CT = T / (1 - p).
+Caption lấy từ vài dòng đầu data/catalog.jsonl, chỉ làm nhãn cho case.
+CHẠY: python bpm_event_log_simulation.py -> ghi bpm_event_log.csv và in bảng so sánh CT.
 """
 import csv
 import json
@@ -44,21 +14,21 @@ from datetime import datetime, timedelta
 CATALOG_PATH = "data/catalog.jsonl"
 OUTPUT_CSV = "bpm_event_log.csv"
 N_CASES_PER_SCENARIO = 8
-MAX_ATTEMPTS_SAFETY = 10   # chặn vòng lặp vô hạn khi mô phỏng (thực tế Loop có thể kéo dài)
+MAX_ATTEMPTS_SAFETY = 10   # chặn vòng lặp vô hạn khi mô phỏng
 
-# (T_min, T_max) mỗi lần thử tìm kiếm (phút), và xác suất PHẢI LẶP LẠI (p)
+# duration_range: (T_min, T_max) phút cho 1 lần tìm; loop_probability: xác suất phải tìm lại
 SCENARIOS = {
     "A_khong_ho_tro": {
         "duration_range": (4.0, 6.0),
-        "loop_probability": 0.40,   # 40% Sales phải tìm lại vì thiếu filter đúng ý khách
+        "loop_probability": 0.40,
     },
     "B_chi_co_A1": {
         "duration_range": (0.5, 1.0),
-        "loop_probability": 0.15,   # search ngữ nghĩa hiểu tốt hơn, nhưng vẫn có thể trật
+        "loop_probability": 0.15,
     },
     "C_co_A1_va_A3_agentic": {
-        "duration_range": (1.0, 1.5),   # cao hơn B vì hệ thống có thể tự search ngầm 1-2 lần
-        "loop_probability": 0.03,       # Loop đã được xử lý NGẦM bên trong, hiếm khi lộ ra ngoài
+        "duration_range": (1.0, 1.5),   # lâu hơn B vì Agentic có thể search ngầm thêm lượt
+        "loop_probability": 0.03,       # phần lớn việc lặp đã nằm trong Agentic RAG
     },
 }
 
@@ -74,11 +44,7 @@ def load_sample_products():
 
 
 def simulate_case(scenario_cfg, case_id, product, start_time):
-    """
-    Mô phỏng 1 case: lặp lại "tìm kiếm" cho tới khi thành công hoặc chạm
-    ngưỡng an toàn. Mỗi lần lặp là 1 dòng event log riêng -- đúng cấu trúc
-    event log thật (1 case có thể có NHIỀU dòng cùng activity, khác timestamp).
-    """
+    """Lặp "tìm kiếm" tới khi khách hài lòng hoặc chạm MAX_ATTEMPTS_SAFETY; mỗi lần là 1 dòng log."""
     rows = []
     lo, hi = scenario_cfg["duration_range"]
     p_loop = scenario_cfg["loop_probability"]
@@ -101,8 +67,7 @@ def simulate_case(scenario_cfg, case_id, product, start_time):
         })
         current_time = task_end
 
-        # random.random() < p_loop -> khách CHƯA hài lòng, lặp lại
-        must_loop = random.random() < p_loop
+        must_loop = random.random() < p_loop   # khách chưa hài lòng -> tìm lại
         if not must_loop or attempt >= MAX_ATTEMPTS_SAFETY:
             break
 
@@ -110,7 +75,7 @@ def simulate_case(scenario_cfg, case_id, product, start_time):
 
 
 def compute_ct_by_case(rows):
-    """CT thật của mỗi case = tổng thời gian TẤT CẢ các lần lặp cộng lại."""
+    """CT mỗi case = tổng thời gian mọi lần tìm."""
     case_ids = sorted(set(r["case_id"] for r in rows))
     cycle_times = []
     for cid in case_ids:
@@ -120,10 +85,7 @@ def compute_ct_by_case(rows):
 
 
 def theoretical_ct_loop_formula(scenario_cfg):
-    """
-    So sánh với công thức Loop lý thuyết đã học: CT = T(activity) / (1 - p)
-    Dùng T trung bình của khoảng (lo, hi) làm T(activity).
-    """
+    """CT = T / (1 - p), với T là trung bình của duration_range."""
     lo, hi = scenario_cfg["duration_range"]
     t_avg = (lo + hi) / 2
     p = scenario_cfg["loop_probability"]
@@ -144,10 +106,9 @@ def main():
             case_id = f"CONSULT-{scenario_name[:1]}-{i+1:03d}"
             case_rows, t = simulate_case(cfg, case_id, product, t)
             rows.extend(case_rows)
-            t += timedelta(minutes=1)   # nghỉ ngắn giữa các case
+            t += timedelta(minutes=1)   # nghỉ giữa các case
         all_rows_by_scenario[scenario_name] = rows
 
-    # Ghi toàn bộ ra 1 file CSV chung
     all_rows_flat = [r for rows in all_rows_by_scenario.values() for r in rows]
     with open(OUTPUT_CSV, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=[

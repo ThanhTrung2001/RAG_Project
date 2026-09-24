@@ -1,18 +1,8 @@
 """
-================================================================================
-BƯỚC 14 — ĐÁNH GIÁ TRUY VẤN ẢNH (mục 4.3 template A1: "Kết quả truy vấn ảnh")
-================================================================================
+Bước 14: đánh giá truy vấn ảnh (Recall@K, nDCG@K, MRR) theo từng loại biến đổi.
 
-KHÁC GÌ VỚI step8_run_ablation.py?
-    step8 đánh giá query TEXT (đọc thẳng string từ eval_set.jsonl). Query ẢNH
-    không thể lưu trong .jsonl dưới dạng dùng ngay được -- .jsonl chỉ lưu
-    ĐƯỜNG DẪN ảnh (`query_image`), phải tự mở bằng PIL.Image.open() trước khi
-    đưa vào search() (đúng kiểu dữ liệu _encode_image() trong search_core.py
-    yêu cầu: PIL.Image, không phải string).
-
-CHẠY: python step14_eval_image_queries.py
-YÊU CẦU TRƯỚC: đã chạy step13_build_image_eval_set.py (có data/eval_set_image.jsonl
-      + data/query_images/*.jpg).
+Input: data/eval_set_image.jsonl + data/query_images/ (Bước 13); dùng search_core.search và metrics.py.
+Chạy: python step14_eval_image_queries.py
 """
 import json
 
@@ -23,9 +13,7 @@ from metrics import recall_at_k, ndcg_at_k, mrr
 
 EVAL_SET_IMAGE_PATH = "data/eval_set_image.jsonl"
 K = 10
-COMPONENTS = ["bm25", "dense"]   # giống hybrid mặc định của A1 -- bm25 tự trả []
-                                    # cho query ảnh (xem _run_bm25 trong search_core.py),
-                                    # không cần loại bỏ tay khỏi danh sách này
+COMPONENTS = ["bm25", "dense"]   # bm25 tự trả [] với query ảnh nên chỉ dense có tác dụng
 
 
 def load_eval_set_image():
@@ -37,10 +25,11 @@ def main():
     eval_set = load_eval_set_image()
     print(f"Đánh giá {len(eval_set)} câu query ẢNH, k={K}, components={COMPONENTS}\n")
 
-    per_transform = {}   # transform -> list các dict {recall, ndcg, mrr}
+    per_transform = {}   # transform -> list {recall, ndcg, mrr}
     rows_detail = []
 
     for item in eval_set:
+        # search() nhận PIL.Image cho query ảnh, không nhận đường dẫn.
         image = Image.open(item["query_image"]).convert("RGB")
         results = search(image, query_type="image", k=K, components=COMPONENTS)
         retrieved_ids = [r["id"] for r in results]

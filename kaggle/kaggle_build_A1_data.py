@@ -1,37 +1,11 @@
 """
-================================================================================
-SCRIPT DÙNG TRÊN KAGGLE — Gộp cả step1+step2+step3, xuất 1 file .zip để tải về
-================================================================================
+Chạy step1 + step2 + step3 trên Kaggle (GPU) và đóng gói data/ thành a1_data_output.zip.
 
-CÁCH DÙNG:
-    1. Tạo notebook mới trên Kaggle
-    2. Settings (bên phải) -> Accelerator: chọn GPU (GPU T4 x2 là đủ)
-    3. Settings -> Internet: bật ON (bắt buộc, mặc định Kaggle tắt internet)
-    4. Upload file này lên (hoặc copy nguyên nội dung vào 1 cell)
-    5. QUAN TRỌNG -- nếu đã từng chạy thử trước đó trong cùng notebook này,
-       BẮT BUỘC bấm Restart Session trước (menu "..." góc phải trên) --
-       chỉ cài lại thư viện bằng pip KHÔNG đủ, vì bản cũ đã nạp vào RAM.
-    6. Chạy: !pip install -q datasets transformers==4.57.1 faiss-cpu rank_bm25
-       (dùng dấu == với số cụ thể, KHÔNG dùng dấu < -- ký tự < trong dòng lệnh
-       shell dễ bị hiểu nhầm thành "input redirection" nếu gõ thiếu ngoặc kép,
-       khiến việc ghim phiên bản bị bỏ qua âm thầm mà không báo lỗi rõ ràng)
-    7. Kiểm tra lại đã cài đúng bản chưa (bước hay bị bỏ qua nhưng nên làm):
-           !python -c "import transformers; print(transformers.__version__)"
-       Kết quả PHẢI là 4.57.1 -- nếu ra số khác (vd 5.x), quay lại bước 5.
-    8. Chạy: !python kaggle_build_A1_data.py
-    9. Sau khi chạy xong, vào tab "Output" bên phải Kaggle, tải file
-       a1_data_output.zip về máy
-
-SAU KHI TẢI VỀ MÁY:
-    Giải nén a1_data_output.zip đè vào thư mục data/ của project A1
-    (giữ đúng cấu trúc data/catalog.jsonl, data/images/, data/dense.index,
-    data/bm25.pkl) -- rồi chạy `uvicorn app:app --reload` như bình thường,
-    KHÔNG cần chạy lại step1/step2/step3 trên máy nữa.
-
-LƯU Ý QUAN TRỌNG:
-    Kaggle session có giới hạn thời gian (thường 9-12 tiếng cho GPU) và
-    KHÔNG tự lưu file sau khi session đóng -- phải tải file .zip về TRƯỚC
-    KHI đóng notebook, hoặc lưu thành Kaggle Dataset để giữ lại lâu dài.
+Kaggle: bật GPU và Internet, restart session nếu đã cài thư viện khác phiên bản, rồi chạy
+    !pip install -q datasets transformers==4.57.1 faiss-cpu rank_bm25
+    !python kaggle_build_A1_data.py
+Tải a1_data_output.zip ở tab Output, giải nén vào thư mục project (tạo data/...), không cần chạy lại step1-3.
+Lưu ý: chỉ sinh embedding ảnh, không tạo data/text_embeddings.npy như step2_build_embeddings.py.
 """
 import json
 import os
@@ -46,7 +20,7 @@ from datasets import load_dataset
 from rank_bm25 import BM25Okapi
 from transformers import CLIPModel, CLIPProcessor
 
-# ---------------- Cấu hình (giống hệt step1-3 gốc) ----------------
+# Cấu hình giống step1-3
 OUT_DIR = "data"
 IMAGES_DIR = os.path.join(OUT_DIR, "images")
 CATALOG_PATH = os.path.join(OUT_DIR, "catalog.jsonl")
@@ -65,8 +39,7 @@ def step1_build_catalog():
     print("=== BƯỚC 1: Tải dataset, build catalog ===")
     os.makedirs(IMAGES_DIR, exist_ok=True)
     ds = load_dataset(DATASET_NAME, split=SPLIT)
-    ds = ds.shuffle(seed=42)   # xáo trộn trước khi cắt -- đảm bảo đa dạng category,
-                                 # xem giải thích chi tiết trong step1_build_catalog.py
+    ds = ds.shuffle(seed=42)   # cùng seed với step1 để ra cùng tập sản phẩm và id
 
     catalog = []
     n = min(MAX_ITEMS, len(ds))

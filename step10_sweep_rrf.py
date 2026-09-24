@@ -1,27 +1,8 @@
 """
-================================================================================
-ABLATION — SWEEP THAM SỐ RRF: k × N (mục 5.2 template A1)
-================================================================================
+Sweep tham số của hybrid (bm25 + dense): hằng số RRF k x số ứng viên mỗi nhánh N (top_n).
 
-2 THAM SỐ CẦN SWEEP LÀ GÌ?
-    k:  hằng số trong công thức RRF, score(doc) = sum(1/(k + rank + 1)).
-        k CÀNG NHỎ -> chênh lệch điểm giữa hạng 1 và hạng 10 CÀNG LỚN (fusion
-        "tin tưởng" mạnh vào thứ hạng gốc). k CÀNG LỚN -> các hạng được coi
-        gần như ngang nhau (fusion "làm mờ" khác biệt thứ hạng).
-    N:  số ứng viên lấy từ MỖI nhánh (BM25/Dense) TRƯỚC KHI fusion (tham số
-        top_n của search()). N càng lớn -> fusion có nhiều "nguyên liệu" hơn
-        để chọn, nhưng cũng có nguy cơ đưa vào nhiều ứng viên nhiễu ở hạng thấp.
-
-CÁCH ĐỌC BẢNG KẾT QUẢ:
-    Cormack et al. (2009) - paper gốc đề xuất RRF - nói rằng kết quả KHÔNG
-    nhạy với k trong khoảng 20-100. Bảng dưới đây CHẠY THẬT trên dataset A1
-    để tự kiểm chứng nhận định đó có đúng ở QUY MÔ NHỎ (2000 sản phẩm, 30
-    câu eval) như ở đây hay không -- có thể khác paper gốc (chạy trên
-    TREC, hàng triệu tài liệu).
-
-CHẠY: python step10_sweep_rrf.py
-YÊU CẦU TRƯỚC: đã có đủ data/dense.index, data/bm25.pkl, data/eval_set.jsonl
-      (dùng lại search() thật của A1, không build lại gì mới).
+Input: data/eval_set.jsonl, data/catalog.jsonl -> in Recall@10, nDCG@10, MRR cho từng cặp (k, N).
+Chạy: python step10_sweep_rrf.py (dùng search() thật, cần index từ step1-3).
 """
 import json
 
@@ -32,7 +13,7 @@ EVAL_SET_PATH = "data/eval_set.jsonl"
 CATALOG_PATH = "data/catalog.jsonl"
 K = 10
 
-RRF_K_VALUES = [10, 60, 100]
+RRF_K_VALUES = [10, 60, 100]   # k nhỏ: chênh lệch điểm giữa các hạng lớn hơn
 TOP_N_VALUES = [20, 50, 100]
 
 
