@@ -36,6 +36,7 @@ data/*.pkl
 data/*.index
 data/*.npy
 data/images/
+data/query_images/
 
 # Logs
 *.log

@@ -42,17 +42,28 @@ uvicorn app:app --reload --port 8000
 | `step2_build_embeddings.py` | 2 | Sinh CLIP embedding cho ảnh + caption, lưu ra `.npy` |
 | `step3_build_index.py` | 3 | Build FAISS (`dense.index`) + BM25 (`bm25.pkl`) |
 | `search_core.py` | 4 | Registry pattern: `@component("bm25")`, `@component("dense")`, `search()`, `rrf_fusion()` |
-| `metrics.py` | 5 | `recall_at_k()`, `ndcg_at_k()` tự viết tay (không dùng sklearn) |
+| `metrics.py` | 5 | `recall_at_k()`, `ndcg_at_k()`, `mrr()`, `ndcg_at_k_graded()` (relevance đa mức 0/1/2) tự viết tay (không dùng sklearn); `evaluate_all()` đo thêm latency avg/p95 |
 | `data/eval_set_template.jsonl` | 6 | 8 câu mẫu thật từ dataset — cần viết thêm cho đủ 20-40 câu |
 | `app.py` | 7 | FastAPI: `/api/v1/search`, `/api/v1/search_by_image`, `/api/v1/components` |
-| `step8_run_ablation.py` | 8 | Chạy 3 cấu hình (bm25-only / dense-only / hybrid), in bảng so sánh |
+| `step8_run_ablation.py` | 8 | Chạy 4 cấu hình (bm25-only / dense-only / hybrid / hybrid+rerank), in bảng Recall@10, nDCG@10, nDCG đa mức, MRR, Latency |
 | *(bạn tự làm, không code sẵn được)* | 9 | Error analysis — đọc kết quả ablation, gom nhóm lỗi theo nguyên nhân |
 | `frontend/index.html` | 10 | UI tối giản, checkbox tự sinh từ `/api/v1/components` |
 | `BAO_CAO_TONG_HOP.md` | 11 | Toàn bộ lý thuyết + code + rubric — rút gọn thành báo cáo ≤8 trang khi nộp |
 
+### Ablation nâng cao (tuỳ chọn, đã có sẵn — dùng khi viết mục 5.x của báo cáo)
+
+| File | Vai trò |
+|---|---|
+| `step9_ablation_index_fields.py` | So sánh BM25 index theo trường: title-only / title+description / +ảnh (build BM25 tạm trong RAM, không đụng `data/bm25.pkl` thật) |
+| `step10_sweep_rrf.py` | Sweep `rrf_k ∈ {10,60,100}` × `top_n (N) ∈ {20,50,100}` — dùng tham số `rrf_k` mới thêm ở `search()` |
+| `step12_case_study_trace.py` | Truy vết 1 câu qua từng tầng BM25 → Dense → RRF → Rerank, tự diễn giải tầng nào cứu/làm hỏng hạng |
+| `step13_build_image_eval_set.py` | Dựng bộ truy vấn ẢNH bằng crop/rotate/brightness từ ảnh thật trong `data/images/` |
+| `step14_eval_image_queries.py` | Đánh giá bộ truy vấn ảnh vừa dựng — Recall/nDCG/MRR theo từng loại transform |
+| `kaggle/kaggle_ablation_embedding_models.py` | So CLIP B/32 vs CLIP L/14 vs SigLIP bằng số thật — chạy trên Kaggle (GPU), xem hướng dẫn trong docstring đầu file |
+
 ## Mọi file `.py` đều có comment đầy đủ theo cấu trúc
 
-M��i file bắt đầu bằng 1 khối docstring giải thích:
+M��i file bắt đầu bằng 1 khối docstring giải thích:
 - **Bước này giải quyết vấn đề gì** (tại sao cần, nếu bỏ qua thì sao)
 - **Cách hoạt động** (thuật toán, công thức, ví dụ tính tay nếu có)
 - **Cách chạy + output mong đợi**

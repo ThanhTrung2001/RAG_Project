@@ -199,11 +199,15 @@ def rrf_fusion(list_a, list_b, k: int = 60):
     return sorted(fused.items(), key=lambda x: x[1], reverse=True)
 
 
-def _fuse_all(results_list):
+def _fuse_all(results_list, rrf_k: int = 60):
     """
     Hợp nhất N danh sách (không giới hạn chỉ 2) -- để nếu sau này thêm
     component thứ 3 (ví dụ color-histogram similarity), code KHÔNG cần sửa.
     Cách làm: fusion lần lượt từng cặp một (fold), giống hàm reduce().
+
+    rrf_k: truyền thẳng xuống rrf_fusion() -- xem giải thích ở đó. Tham số
+           hoá ra ngoài (thay vì hardcode) để step10_sweep_rrf.py sweep được
+           nhiều giá trị k khác nhau qua search(), không cần sửa code ở đây.
     """
     non_empty = [r for r in results_list if r]   # bỏ qua danh sách rỗng
                                                     # (ví dụ BM25 trả [] khi query là ảnh)
@@ -213,11 +217,12 @@ def _fuse_all(results_list):
         return non_empty[0]   # chỉ 1 component bật -- không cần fusion, trả thẳng
     fused = non_empty[0]
     for other in non_empty[1:]:
-        fused = rrf_fusion(fused, other)
+        fused = rrf_fusion(fused, other, k=rrf_k)
     return fused
 
 
-def search(query, query_type: str, k: int = 10, components=None, top_n: int = 50, use_rerank: bool = False):
+def search(query, query_type: str, k: int = 10, components=None, top_n: int = 50,
+           use_rerank: bool = False, rrf_k: int = 60):
     """
     Hàm CHÍNH -- được gọi từ app.py (API thật) và step8_run_ablation.py (ablation).
 
@@ -234,6 +239,9 @@ def search(query, query_type: str, k: int = 10, components=None, top_n: int = 50
                  (mặc định) -> giữ nguyên hành vi cũ, không đổi gì cho A1
                  gốc -- đây là lý do use_rerank có default False, để không
                  phá code cũ đang chạy khi thêm tính năng mới.
+    rrf_k:       tham số k của công thức RRF (xem rrf_fusion()). Mặc định 60
+                 giữ nguyên hành vi gốc -- chỉ đổi khi cố ý sweep (xem
+                 step10_sweep_rrf.py) để đo độ nhạy của fusion với k.
     """
     if components is None:
         components = list(COMPONENT_REGISTRY.keys())   # bật hết nếu không chỉ định
@@ -247,7 +255,7 @@ def search(query, query_type: str, k: int = 10, components=None, top_n: int = 50
             continue
         results_by_component.append(fn(query, query_type, top_n))
 
-    fused = _fuse_all(results_by_component)
+    fused = _fuse_all(results_by_component, rrf_k=rrf_k)
 
     # QUAN TRỌNG: nếu use_rerank=True, KHÔNG cắt xuống k ngay -- lấy nguyên
     # top_n để rerank có đủ ứng viên chọn lọc lại (xem docstring hàm rerank()
