@@ -60,8 +60,11 @@ MAX_ITEMS = 2000
 BATCH_SIZE = 32
 K = 10
 
-# SỬA đường dẫn này cho khớp dataset bạn attach ở Kaggle (xem Bước 3 ở docstring trên)
-EVAL_SET_PATH = "/kaggle/input/a1-eval-set/eval_set.jsonl"
+# SỬA đường dẫn này cho khớp dataset bạn attach ở Kaggle (xem Bước 3 ở docstring trên).
+# Nếu upload eval_set.jsonl vào CÙNG dataset đã dùng cho kaggle_build_A1_data.py
+# (vd tên dataset "shopify-a1-research" như đã dùng ở lần chạy trước), đường dẫn
+# sẽ là "/kaggle/input/<tên-dataset-của-bạn>/eval_set.jsonl".
+EVAL_SET_PATH = "/kaggle/input/datasets/thanhtrungtran/shopify-a1-research/eval_set.jsonl"
 
 MODELS = [
     {"name": "CLIP ViT-B/32 (baseline A1 gốc)", "hf_id": "openai/clip-vit-base-patch32", "family": "clip"},
@@ -157,9 +160,24 @@ def encode_images(model, processor, catalog, device):
     return np.concatenate(embs, axis=0).astype("float32")
 
 
-def encode_query_text(model, processor, text, device):
+def encode_query_text(model, processor, text, device, family="clip"):
+    """
+    family="siglip" PHẢI pad tới ĐỘ DÀI CỐ ĐỊNH (padding="max_length", 64 token)
+    -- khác CLIP (padding=True, pad động theo câu ngắn nhất trong batch). Lý do:
+    SigLIP KHÔNG dùng attention_mask, nó lấy biểu diễn tại VỊ TRÍ TOKEN CUỐI
+    CÙNG của chuỗi đã pad. Lúc huấn luyện, SigLIP LUÔN pad tới 64 -- token
+    "cuối cùng" luôn nằm ở vị trí 63. Nếu pad động (câu ngắn ra length 5),
+    "token cuối" rơi vào vị trí 4 -- một vùng positional embedding CHƯA TỪNG
+    được huấn luyện ở ngữ cảnh này, làm embedding gần như nhiễu ngẫu nhiên
+    (đây chính là nguyên nhân SigLIP ra Recall/nDCG/MRR = 0.000 khi chạy lần
+    đầu -- không phải model tệ, mà là dùng sai cách gọi processor).
+    """
     with torch.no_grad():
-        inputs = processor(text=[text], return_tensors="pt", padding=True, truncation=True).to(device)
+        if family == "siglip":
+            inputs = processor(text=[text], return_tensors="pt", padding="max_length",
+                                truncation=True, max_length=64).to(device)
+        else:
+            inputs = processor(text=[text], return_tensors="pt", padding=True, truncation=True).to(device)
         feat = model.get_text_features(**inputs)
         feat = feat / feat.norm(dim=-1, keepdim=True)
     return feat.cpu().numpy().astype("float32")
@@ -181,7 +199,7 @@ def evaluate_model(model_cfg, catalog, eval_set, device):
     recalls, ndcgs, mrrs, latencies = [], [], [], []
     for item in eval_set:
         t0 = time.perf_counter()
-        query_vec = encode_query_text(model, processor, item["query"], device)
+        query_vec = encode_query_text(model, processor, item["query"], device, family=model_cfg["family"])
         scores, idxs = index.search(query_vec, K)
         latencies.append((time.perf_counter() - t0) * 1000)
 
@@ -196,6 +214,8 @@ def evaluate_model(model_cfg, catalog, eval_set, device):
         if m is not None:
             mrrs.append(m)
 
+    embedding_dim = int(image_embs.shape[1])   # lưu lại TRƯỚC khi del, xem chú thích dưới
+
     # Giải phóng model khỏi GPU trước khi load model tiếp theo -- tránh tràn VRAM
     del model, processor, image_embs, index
     if torch.cuda.is_available():
@@ -207,7 +227,7 @@ def evaluate_model(model_cfg, catalog, eval_set, device):
         "ndcg@k": sum(ndcgs) / len(ndcgs) if ndcgs else None,
         "mrr": sum(mrrs) / len(mrrs) if mrrs else None,
         "latency_ms_avg": sum(latencies) / len(latencies) if latencies else None,
-        "embedding_dim": int(image_embs.shape[1]) if hasattr(image_embs, "shape") else None,
+        "embedding_dim": embedding_dim,
     }
 
 

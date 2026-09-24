@@ -1,0 +1,26 @@
+[
+  {
+    "model": "CLIP ViT-B/32 (baseline A1 gốc)",
+    "recall@k": 0.7666666666666667,
+    "ndcg@k": 0.6084375141622268,
+    "mrr": 0.5577777777777778,
+    "latency_ms_avg": 17.816130833330135,
+    "embedding_dim": 512
+  },
+  {
+    "model": "CLIP ViT-L/14",
+    "recall@k": 0.8666666666666667,
+    "ndcg@k": 0.7299236254066617,
+    "mrr": 0.6844444444444445,
+    "latency_ms_avg": 10.602116566667519,
+    "embedding_dim": 768
+  },
+  {
+    "model": "SigLIP base patch16-224",
+    "recall@k": 0.9666666666666667,
+    "ndcg@k": 0.9139271166250958,
+    "mrr": 0.8972222222222223,
+    "latency_ms_avg": 7.997445166661994,
+    "embedding_dim": 768
+  }
+]
