@@ -1,7 +1,8 @@
 """
 A3 - Tầng RAG: dùng lại search_core.search() của A1 rồi nhờ LLM viết câu trả lời có trích dẫn.
 
-Luồng: search() -> build_context() -> build_prompt() -> call_llm().
+Luồng: retrieve() -> build_context() -> build_prompt() -> call_llm().
+retrieve() gọi search() của A1; tuỳ chọn rerank bằng cross-encoder MiniLM (A1) hoặc DeBERTa distill (A2).
 Có 2 pipeline: answer() (Naive RAG) và answer_agentic() (tự đánh giá, viết lại query, search lại),
 kèm Memory hội thoại lưu trong RAM theo session_id.
 Yêu cầu: Ollama chạy ở localhost:11434 và đã `ollama pull llama3.1`.
@@ -12,6 +13,8 @@ from search_core import search
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 LLM_MODEL = "llama3.1"   # đổi nếu đã pull model khác trong Ollama
+
+RERANK_POOL = 30   # số ứng viên đưa vào rerank; cùng pool với step_ablation_rerank.py
 
 
 # ---------------------------------------------------------------------------
@@ -86,25 +89,42 @@ def call_llm(prompt: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Retrieval: search() của A1, tuỳ chọn rerank trước khi đưa vào context
+# ---------------------------------------------------------------------------
+
+def retrieve(query: str, k: int, components=None, reranker: str = None):
+    """
+    reranker=None: search() mặc định của A1 (BM25 + Dense + RRF), lấy k kết quả.
+    reranker="cross_encoder" | "deberta": lấy RERANK_POOL ứng viên, xếp lại, giữ k kết quả đầu.
+    """
+    if reranker is None:
+        return search(query, query_type="text", k=k, components=components)
+    return search(query, query_type="text", k=k, components=components,
+                  top_n=RERANK_POOL, reranker=reranker, rerank_pool=RERANK_POOL)
+
+
+# ---------------------------------------------------------------------------
 # Naive RAG (baseline)
 # ---------------------------------------------------------------------------
 
-def answer(query: str, k: int = 5, components=None, session_id: str = None):
+def answer(query: str, k: int = 5, components=None, session_id: str = None,
+           reranker: str = None):
     """
     Search 1 lần -> gọi LLM 1 lần (0 lần nếu search rỗng).
     session_id: bật Memory (đọc và ghi lịch sử); None = mỗi câu độc lập.
-    Trả về {"answer", "sources"}; sources là kết quả search để hiển thị kèm.
+    reranker:   None, "cross_encoder" hoặc "deberta" (xem retrieve()).
+    Trả về {"answer", "sources", "reranker"}; sources là kết quả search để hiển thị kèm.
     """
     history = get_history(session_id) if session_id else []
 
-    results = search(query, query_type="text", k=k, components=components)
+    results = retrieve(query, k=k, components=components, reranker=reranker)
 
     if not results:
         # Không gọi LLM với context rỗng để tránh bịa.
         fallback = "Không tìm thấy sản phẩm nào phù hợp với câu hỏi này."
         if session_id:
             append_history(session_id, query, fallback)
-        return {"answer": fallback, "sources": []}
+        return {"answer": fallback, "sources": [], "reranker": reranker}
 
     context = build_context(results)
     prompt = build_prompt(query, context, history=history)
@@ -113,7 +133,7 @@ def answer(query: str, k: int = 5, components=None, session_id: str = None):
     if session_id:
         append_history(session_id, query, llm_answer)
 
-    return {"answer": llm_answer, "sources": results}
+    return {"answer": llm_answer, "sources": results, "reranker": reranker}
 
 
 # ---------------------------------------------------------------------------
@@ -143,10 +163,12 @@ CHỈ trả về câu truy vấn mới, không giải thích gì thêm."""
     return call_llm(prompt).strip()
 
 
-def answer_agentic(query: str, k: int = 5, components=None, max_iters: int = 2, session_id: str = None):
+def answer_agentic(query: str, k: int = 5, components=None, max_iters: int = 2,
+                   session_id: str = None, reranker: str = None):
     """
     Lặp tối đa max_iters lần: search -> judge -> (chưa đủ) rewrite. Sau đó 1 lượt trả lời.
     Với max_iters=2: 2 lượt gọi LLM nếu đủ ngay, 4 lượt nếu phải search lại.
+    reranker áp dụng cho mọi lượt search (xem retrieve()).
     Trả về thêm "final_query_used" (query cuối dùng để search).
     """
     history = get_history(session_id) if session_id else []
@@ -155,7 +177,7 @@ def answer_agentic(query: str, k: int = 5, components=None, max_iters: int = 2, 
     results, context = [], ""
 
     for attempt in range(max_iters):
-        results = search(current_query, query_type="text", k=k, components=components)
+        results = retrieve(current_query, k=k, components=components, reranker=reranker)
         context = build_context(results) if results else "(không có kết quả)"
 
         verdict = judge_sufficiency(query, context)   # luôn so với query gốc
@@ -176,4 +198,5 @@ def answer_agentic(query: str, k: int = 5, components=None, max_iters: int = 2, 
         "answer": llm_answer,
         "sources": results,
         "final_query_used": current_query,
+        "reranker": reranker,
     }

@@ -6,6 +6,7 @@ Không chạy trực tiếp; được import bởi app.py, rag_core.py và các 
 Cần có sẵn data/catalog.jsonl, data/dense.index, data/bm25.pkl (step1-3).
 """
 import json
+import os
 import pickle
 
 import faiss
@@ -123,15 +124,22 @@ def _fuse_all(results_list, rrf_k: int = 60):
 
 
 def search(query, query_type: str, k: int = 10, components=None, top_n: int = 50,
-           use_rerank: bool = False, rrf_k: int = 60):
+           use_rerank: bool = False, rrf_k: int = 60, reranker: str = None,
+           rerank_pool: int = None):
     """
     query / query_type: str với "text", PIL.Image với "image".
-    k:          số kết quả trả về.
-    components: tên component cần bật, vd ["bm25", "dense"]; None = bật hết, tên lạ bị bỏ qua.
-    top_n:      số ứng viên lấy từ mỗi nhánh trước khi gộp.
-    use_rerank: rerank toàn bộ pool sau RRF bằng cross-encoder rồi mới cắt k (chỉ với text).
-    rrf_k:      hằng số k của RRF.
+    k:           số kết quả trả về.
+    components:  tên component cần bật, vd ["bm25", "dense"]; None = bật hết, tên lạ bị bỏ qua.
+    top_n:       số ứng viên lấy từ mỗi nhánh trước khi gộp.
+    use_rerank:  True tương đương reranker="cross_encoder".
+    rrf_k:       hằng số k của RRF.
+    reranker:    None, "cross_encoder" hoặc "deberta" (xem RERANKERS); chỉ áp dụng cho text.
+    rerank_pool: số ứng viên đầu sau RRF đưa vào rerank; None = toàn bộ pool.
     """
+    if use_rerank and reranker is None:
+        reranker = "cross_encoder"
+    if reranker is not None and reranker not in RERANKERS:
+        raise ValueError(f"reranker không hợp lệ: {reranker}. Chọn một trong {list(RERANKERS)}")
     if components is None:
         components = list(COMPONENT_REGISTRY.keys())
 
@@ -144,8 +152,14 @@ def search(query, query_type: str, k: int = 10, components=None, top_n: int = 50
 
     fused = _fuse_all(results_by_component, rrf_k=rrf_k)
 
-    # Khi rerank, giữ cả pool để rerank có thể kéo ứng viên hạng thấp lên top-k.
-    pool = fused if use_rerank else fused[:k]
+    # Cross-encoder cần cặp (text, text) nên query ảnh bỏ qua rerank.
+    do_rerank = reranker is not None and query_type == "text"
+
+    # Khi rerank, giữ cả pool (hoặc rerank_pool) để rerank có thể kéo ứng viên hạng thấp lên top-k.
+    if do_rerank:
+        pool = fused[:rerank_pool] if rerank_pool else fused
+    else:
+        pool = fused[:k]
 
     results = []
     for doc_id, score in pool:
@@ -157,9 +171,8 @@ def search(query, query_type: str, k: int = 10, components=None, top_n: int = 50
             "score": round(float(score), 4)
         })
 
-    if use_rerank and query_type == "text":
-        # Cross-encoder cần cặp (text, text) nên query ảnh bỏ qua rerank.
-        results = rerank(query, results)
+    if do_rerank:
+        results = RERANKERS[reranker](query, results)
 
     return results[:k]
 
@@ -201,145 +214,13 @@ def rerank(query: str, candidates: list):
 
 
 # ---------------------------------------------------------------------------
-# RankGPT — Sun et al. (EMNLP 2023), "Is ChatGPT Good at Search? Investigating
-# Large Language Models as Re-Ranking Agents". Xem docs/BAO_CAO_A2.md.
+# Reranker distill từ ChatGPT — Sun et al. (EMNLP 2023), "Is ChatGPT Good at
+# Search?", mục 4 và 7 (permutation distillation). Xem docs/BAO_CAO_A2.md.
 #
-# Cài theo rank_gpt.py của github.com/sunnweiwei/RankGPT:
-#   - Prompt chat nhiều lượt ở Appendix A.5: mỗi ứng viên là một lượt user,
-#     lượt cuối yêu cầu LLM trả về thứ tự dạng [2] > [1] > ...
-#   - temperature = 0, mỗi passage cắt còn tối đa 300 từ.
-#   - Đọc output: lấy mọi số, bỏ số trùng và số ngoài phạm vi, ứng viên bị
-#     thiếu được nối vào cuối theo thứ tự cũ (footnote 9 của paper).
-#   - Sliding window từ cuối danh sách lên đầu (mục 3.2), window = 20,
-#     step = 10 như mục 6.1.
-#
-# Khác bản gốc: LLM chạy local qua Ollama (/api/chat) thay vì OpenAI API.
-# ---------------------------------------------------------------------------
-
-OLLAMA_CHAT_URL = "http://localhost:11434/api/chat"
-RANKGPT_WINDOW_SIZE = 20
-RANKGPT_STEP = 10
-RANKGPT_MAX_WORDS = 300
-
-
-def _rankgpt_messages(query: str, captions: list):
-    """Prompt permutation generation dạng chat, giữ nguyên câu chữ của Appendix A.5."""
-    num = len(captions)
-    messages = [
-        {"role": "system",
-         "content": "You are RankGPT, an intelligent assistant that can rank passages "
-                    "based on their relevancy to the query."},
-        {"role": "user",
-         "content": f"I will provide you with {num} passages, each indicated by number "
-                    f"identifier []. Rank them based on their relevance to query: {query}."},
-        {"role": "assistant", "content": "Okay, please provide the passages."},
-    ]
-    for i, caption in enumerate(captions, start=1):
-        passage = " ".join(caption.split()[:RANKGPT_MAX_WORDS])
-        messages.append({"role": "user", "content": f"[{i}] {passage}"})
-        messages.append({"role": "assistant", "content": f"Received passage [{i}]"})
-    messages.append({
-        "role": "user",
-        "content": f"Search Query: {query}.\nRank the {num} passages above based on their "
-                   "relevance to the search query. The passages should be listed in descending "
-                   "order using identifiers, and the most relevant passages should be listed "
-                   "first, and the output format should be [] > [], e.g., [1] > [2]. Only "
-                   "response the ranking results, do not say any word or explain.",
-    })
-    return messages
-
-
-def _ollama_chat(messages: list, llm_model: str) -> str:
-    import requests
-
-    response = requests.post(OLLAMA_CHAT_URL, json={
-        "model": llm_model,
-        "messages": messages,
-        "stream": False,
-        "options": {"temperature": 0},
-    })
-    response.raise_for_status()
-    return response.json()["message"]["content"]
-
-
-def _parse_permutation(raw_output: str, num: int):
-    """
-    Chuyển output của LLM thành thứ tự đủ `num` ứng viên (index 0-based).
-
-    Trả về (order, stats). stats đếm lỗi theo cách phân loại của Table 10:
-        repetition   -- số lần một số thứ tự bị lặp lại
-        missing      -- số ứng viên không có trong output (được nối vào cuối)
-        out_of_range -- số xuất hiện trong output nhưng không phải số thứ tự hợp lệ
-        rejection    -- 1 nếu output không có số thứ tự hợp lệ nào (LLM từ chối
-                        hoặc trả lời lạc đề); khi đó không tính missing
-    """
-    import re
-
-    stats = {"repetition": 0, "missing": 0, "out_of_range": 0, "rejection": 0}
-    order, seen = [], set()
-    for token in re.findall(r"\d+", raw_output):
-        idx = int(token) - 1
-        if not 0 <= idx < num:
-            stats["out_of_range"] += 1
-        elif idx in seen:
-            stats["repetition"] += 1
-        else:
-            order.append(idx)
-            seen.add(idx)
-
-    missing = [i for i in range(num) if i not in seen]
-    if order:
-        stats["missing"] = len(missing)
-    else:
-        stats["rejection"] = 1
-    return order + missing, stats
-
-
-def rankgpt_rerank_with_stats(query: str, candidates: list, llm_model: str = "llama3.1",
-                              window_size: int = RANKGPT_WINDOW_SIZE, step: int = RANKGPT_STEP):
-    """
-    Rerank bằng sliding window từ cuối lên đầu. Ví dụ 30 ứng viên, window 20,
-    step 10: xếp lại [10:30] trước, rồi [0:20] -- ứng viên tốt ở cuối được
-    đẩy dần lên đầu.
-
-    Trả về (candidates đã xếp lại, stats cộng dồn qua mọi cửa sổ).
-    """
-    ranked = list(candidates)
-    totals = {"windows": 0, "repetition": 0, "missing": 0, "out_of_range": 0, "rejection": 0}
-
-    end = len(ranked)
-    start = max(0, end - window_size)
-    while end > 0:
-        window = ranked[start:end]
-        raw_output = _ollama_chat(_rankgpt_messages(query, [c["caption"] for c in window]), llm_model)
-        order, stats = _parse_permutation(raw_output, len(window))
-        ranked[start:end] = [window[i] for i in order]
-
-        totals["windows"] += 1
-        for key, value in stats.items():
-            totals[key] += value
-
-        if start == 0:
-            break
-        end -= step
-        start = max(0, start - step)
-
-    return ranked, totals
-
-
-def rankgpt_rerank(query: str, candidates: list, llm_model: str = "llama3.1"):
-    """Như rankgpt_rerank_with_stats() nhưng chỉ trả về danh sách đã xếp lại."""
-    ranked, _ = rankgpt_rerank_with_stats(query, candidates, llm_model=llm_model)
-    return ranked
-
-
-# ---------------------------------------------------------------------------
-# Reranker distill từ ChatGPT — mục 4 và 7 của paper RankGPT.
-#
-# Cross-encoder DeBERTa được huấn luyện (RankNet loss) để bắt chước thứ tự
+# Cross-encoder DeBERTa-v3-base được huấn luyện (RankNet loss) để bắt chước thứ tự
 # do ChatGPT sinh ra cho 10K query MS MARCO. Checkpoint "deberta-10k-rank_net"
-# tải thủ công ở mục "Download data and model" của repo RankGPT, giải nén
-# vào DISTILLED_RERANKER_PATH (thư mục chứa config.json).
+# tải thủ công ở mục "Download data and model" của github.com/sunnweiwei/RankGPT,
+# giải nén vào DISTILLED_RERANKER_PATH (thư mục chứa config.json).
 #
 # Cách nạp và chấm điểm theo specialization.py: AutoModelForSequenceClassification
 # với 1 nhãn, điểm = logit, ghép (query, passage) với max_length = 500.
@@ -379,3 +260,16 @@ def distilled_rerank(query: str, candidates: list):
         c["rerank_score"] = round(float(s), 4)
 
     return sorted(candidates, key=lambda c: c["rerank_score"], reverse=True)
+
+
+# Reranker chọn được qua search(reranker=...): cross-encoder MiniLM (A1) hoặc DeBERTa distill (A2).
+RERANKERS = {
+    "cross_encoder": rerank,
+    "deberta": distilled_rerank,
+}
+
+
+def available_rerankers():
+    """Tên các reranker dùng được; "deberta" chỉ có khi đã tải checkpoint vào DISTILLED_RERANKER_PATH."""
+    return [name for name in RERANKERS
+            if name != "deberta" or os.path.isdir(DISTILLED_RERANKER_PATH)]

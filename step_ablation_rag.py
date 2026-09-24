@@ -1,5 +1,7 @@
 """
-Ablation A3: so sánh Naive RAG và Agentic RAG trên data/eval_set.jsonl (dùng chung với A1).
+Ablation A3 trên data/eval_set.jsonl (dùng chung với A1). Các cấu hình:
+  Naive RAG | Naive RAG + cross-encoder MiniLM | Naive RAG + DeBERTa distill | Agentic RAG
+Cấu hình DeBERTa bị bỏ qua nếu chưa có models/deberta-10k-rank_net.
 
 Metric: Context Recall@k, Context Precision@k, Faithfulness, Answer Relevancy,
 mention hit rate (answer_should_mention), citation rate, latency trung bình.
@@ -13,7 +15,7 @@ import time
 from rag_core import answer as naive_answer
 from rag_core import answer_agentic, call_llm
 from rag_core import build_context
-from search_core import search
+from search_core import search, available_rerankers
 from metrics import recall_at_k
 from rag_metrics import context_precision_at_k, faithfulness, answer_relevancy
 
@@ -111,19 +113,23 @@ def run_ablation_config(name, answer_fn, eval_set):
 def main():
     eval_set = load_eval_set()
     print(f"Chạy ablation RAG trên {len(eval_set)} câu hỏi (SAMPLE_SIZE={SAMPLE_SIZE}), k={K}")
-    print("Lưu ý: cần Ollama đang chạy -- mỗi câu hỏi gọi LLM 2 lần (trả lời + chấm faithfulness).\n")
+    print("Lưu ý: cần Ollama đang chạy -- mỗi câu: Naive 2 lượt LLM, Agentic 3 hoặc 5 lượt "
+          "(gồm 1 lượt chấm faithfulness).\n")
 
-    configs = [
-        ("Naive RAG", lambda q, k: naive_answer(q, k=k)),
-        ("Agentic RAG", lambda q, k: answer_agentic(q, k=k)),
-    ]
+    configs = [("Naive RAG", lambda q, k: naive_answer(q, k=k))]
+    for name, label in [("cross_encoder", "Naive + MiniLM"), ("deberta", "Naive + DeBERTa")]:
+        if name in available_rerankers():
+            configs.append((label, lambda q, k, r=name: naive_answer(q, k=k, reranker=r)))
+        else:
+            print(f"Bỏ qua {label}: chưa có model")
+    configs.append(("Agentic RAG", lambda q, k: answer_agentic(q, k=k)))
 
     results = []
     for name, fn in configs:
         print(f"Đang chạy: {name}...")
         results.append(run_ablation_config(name, fn, eval_set))
 
-    header = (f"{'Cấu hình':<14} {'Ctx Recall':<11} {'Ctx Precision':<14} {'Faithfulness':<13} "
+    header = (f"{'Cấu hình':<16} {'Ctx Recall':<11} {'Ctx Precision':<14} {'Faithfulness':<13} "
               f"{'Ans Relevancy':<14} {'Mention hit':<12} {'Citation':<10} {'Latency(s)':<10}")
     print(f"\n{header}")
     print("-" * len(header))
@@ -133,21 +139,21 @@ def main():
             if v is None:
                 return "N/A"
             return f"{v*100:.1f}%" if pct else f"{v:.3f}"
-        print(f"{r['name']:<14} {fmt('context_recall@k'):<11} {fmt('context_precision@k'):<14} "
+        print(f"{r['name']:<16} {fmt('context_recall@k'):<11} {fmt('context_precision@k'):<14} "
               f"{fmt('faithfulness'):<13} {fmt('answer_relevancy'):<14} {fmt('mention_hit_rate'):<12} "
               f"{fmt('citation_rate', pct=True):<10} {r['avg_latency_sec']:.2f}")
 
     print("\nCách đọc bảng:")
-    print("- Context Recall/Precision giống tầng retrieval -- 2 cấu hình gọi cùng search_core.search()")
-    print("  bên dưới nên thường KHÔNG khác nhau nhiều ở Naive vs Agentic vòng đầu, trừ khi Agentic")
-    print("  đã tự viết lại query (search KHÁC câu gốc) -- xem 'final_query_used' nếu cần debug.")
+    print("- Context Recall/Precision đo tầng retrieval: 'Naive' và 'Naive + reranker' chỉ khác ở")
+    print("  bước rerank, nên chênh lệch 2 cột này là tác dụng của reranker lên context đưa cho LLM.")
+    print("- Naive vs Agentic cùng gọi search() ở vòng đầu; khác nhau khi Agentic tự viết lại query.")
     print("- Faithfulness thấp -> LLM đang BỊA thông tin ngoài context -- lỗi tầng Generation.")
     print("- Answer Relevancy thấp nhưng Faithfulness cao -> câu trả lời ĐÚNG (không bịa) nhưng")
     print("  LẠC ĐỀ -- có thể do prompt chưa ép rõ 'phải trả lời thẳng vào câu hỏi'.")
     print("- Mention hit rate thấp -> đối chiếu qrels (answer_should_mention) cho thấy LLM bỏ sót")
     print("  chi tiết QUAN TRỌNG dù không bịa gì sai -- khác lỗi Faithfulness.")
-    print("- Latency cao hơn ở Agentic là BÌNH THƯỜNG (chạy ngầm nhiều lượt) -- đối chiếu với")
-    print("  phân tích đánh đổi trong BAO_CAO_BPM.md mục 7 (ngưỡng ~42% mới đáng bật Agentic).")
+    print("- Latency của Agentic cao hơn vì gọi LLM nhiều lượt; latency của reranker cộng thêm")
+    print("  thời gian chấm 30 ứng viên (DeBERTa chậm hơn MiniLM trên CPU).")
 
 
 if __name__ == "__main__":

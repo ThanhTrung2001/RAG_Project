@@ -1,24 +1,29 @@
 """
-API FastAPI cho tìm kiếm đa phương thức (A1) và hỏi đáp RAG (A3), kèm giao diện web.
+API FastAPI cho tìm kiếm đa phương thức (A1) và chatbot RAG (A3), kèm 2 trang web riêng.
 
-Chạy: uvicorn app:app --reload --port 8000, rồi mở http://localhost:8000
-Cần có dữ liệu và index từ step1-3; /api/v1/ask cần thêm rag_core.
+Chạy: uvicorn app:app --reload --port 8000
+  - http://localhost:8000/search : giao diện tìm kiếm A1
+  - http://localhost:8000/chat   : giao diện chatbot A3
+Cần có dữ liệu và index từ step1-3; /api/v1/ask cần Ollama (xem rag_core.py).
 """
 import time
 import io
 
-from fastapi import FastAPI, UploadFile, File, Query
-from fastapi.responses import FileResponse
+import requests
+from fastapi import FastAPI, UploadFile, File, Query, HTTPException
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 
-from search_core import search, available_components
+from search_core import search, available_components, available_rerankers
 from rag_core import answer as rag_answer, answer_agentic as rag_answer_agentic, clear_history
 
-app = FastAPI(title="A1 Multimodal Search API")
+app = FastAPI(title="A1 Multimodal Search + A3 RAG API")
 
 # data/images/000001.jpg -> /images/000001.jpg cho thẻ <img> ở frontend.
 app.mount("/images", StaticFiles(directory="data/images"), name="images")
+# frontend/style.css -> /static/style.css, dùng chung cho 2 trang.
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 
 def _parse_components(components: str | None):
@@ -27,6 +32,29 @@ def _parse_components(components: str | None):
         return None
     return [c.strip() for c in components.split(",") if c.strip()]
 
+
+# ---------------------------------------------------------------------------
+# Trang web
+# ---------------------------------------------------------------------------
+
+@app.get("/")
+def root():
+    return RedirectResponse("/search")
+
+
+@app.get("/search")
+def search_page():
+    return FileResponse("frontend/search.html")
+
+
+@app.get("/chat")
+def chat_page():
+    return FileResponse("frontend/chat.html")
+
+
+# ---------------------------------------------------------------------------
+# A1: tìm kiếm
+# ---------------------------------------------------------------------------
 
 @app.get("/api/v1/components")
 def list_components():
@@ -39,15 +67,18 @@ def search_text(
     q: str = Query(..., description="Câu truy vấn text"),
     k: int = 10,
     components: str | None = Query(None, description="vd: 'bm25,dense' -- rỗng = bật hết"),
+    rerank: bool = Query(False, description="True = rerank bằng cross-encoder MiniLM sau RRF"),
 ):
-    """Tìm bằng text, vd GET /api/v1/search?q=folding+pocket+knife&k=10&components=bm25,dense"""
+    """Tìm bằng text, vd GET /api/v1/search?q=folding+pocket+knife&k=10&components=bm25,dense&rerank=true"""
     start = time.time()
-    results = search(q, query_type="text", k=k, components=_parse_components(components))
+    results = search(q, query_type="text", k=k, components=_parse_components(components),
+                     use_rerank=rerank)
     latency_ms = round((time.time() - start) * 1000, 1)
 
     return {
         "query": q,
         "components_used": _parse_components(components) or available_components(),
+        "rerank": rerank,
         "latency_ms": latency_ms,
         "results": results
     }
@@ -59,7 +90,7 @@ async def search_by_image(
     k: int = 10,
     components: str | None = Query(None),
 ):
-    """Tìm bằng ảnh upload (multipart, field "file")."""
+    """Tìm bằng ảnh upload (multipart, field "file"). Không có rerank vì cross-encoder cần text."""
     start = time.time()
     image_bytes = await file.read()
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
@@ -69,33 +100,47 @@ async def search_by_image(
     return {
         "query": f"[image: {file.filename}]",
         "components_used": _parse_components(components) or available_components(),
+        "rerank": False,
         "latency_ms": latency_ms,
         "results": results
     }
 
 
-@app.get("/")
-def root():
-    return FileResponse("frontend/index.html")
+# ---------------------------------------------------------------------------
+# A3: chatbot RAG
+# ---------------------------------------------------------------------------
+
+@app.get("/api/v1/rerankers")
+def list_rerankers():
+    """Reranker dùng được cho /api/v1/ask ("deberta" chỉ có khi đã tải checkpoint)."""
+    return {"rerankers": available_rerankers()}
 
 
-# RAG (A3), tách riêng khỏi /api/v1/search.
 @app.get("/api/v1/ask")
 def ask(
     q: str = Query(..., description="Câu hỏi tự nhiên, vd: 'giày leo núi chống nước'"),
     k: int = 5,
     agentic: bool = Query(False, description="True = tự đánh giá và search lại nếu thiếu"),
     session_id: str = Query(None, description="ID phiên chat -- có thì hệ thống nhớ ngữ cảnh câu trước"),
+    reranker: str = Query("none", description="none | cross_encoder | deberta"),
 ):
     """
     Search + sinh câu trả lời. agentic=False: naive RAG; True: tự đánh giá, search tối đa 2 lượt.
     session_id: giữ lịch sử hội thoại theo phiên; bỏ trống thì mỗi câu hỏi độc lập.
+    reranker: xếp lại ứng viên trước khi đưa vào context (xem rag_core.retrieve()).
     """
-    if agentic:
-        result = rag_answer_agentic(q, k=k, session_id=session_id)
-    else:
-        result = rag_answer(q, k=k, session_id=session_id)
-    return result
+    if reranker == "none":
+        reranker = None
+    elif reranker not in available_rerankers():
+        raise HTTPException(400, f"reranker không hợp lệ hoặc chưa có model: {reranker}")
+
+    try:
+        if agentic:
+            return rag_answer_agentic(q, k=k, session_id=session_id, reranker=reranker)
+        return rag_answer(q, k=k, session_id=session_id, reranker=reranker)
+    except requests.RequestException as e:
+        raise HTTPException(503, f"Không gọi được LLM qua Ollama ({type(e).__name__}). "
+                                 "Kiểm tra Ollama đã chạy và đã pull model chưa.")
 
 
 @app.post("/api/v1/reset_session")

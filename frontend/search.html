@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A1 - Multimodal Search</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">Product <span>Search</span></div>
+      <nav class="tabs">
+        <a href="/search" class="active">A1 · Tìm kiếm</a>
+        <a href="/chat">A3 · Chatbot RAG</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Tìm kiếm sản phẩm đa phương thức</h1>
+    <p class="subtitle">Tìm bằng câu chữ hoặc bằng ảnh. BM25 + Dense (CLIP) + RRF, tuỳ chọn rerank bằng cross-encoder.</p>
+
+    <section class="card">
+      <div class="row" style="margin-bottom: 14px;">
+        <input type="text" id="query" placeholder="Ví dụ: folding pocket knife"
+               onkeydown="if (event.key === 'Enter') searchByText()">
+        <button class="btn" id="btnText" onclick="searchByText()">Tìm bằng text</button>
+      </div>
+      <div class="row" style="margin-bottom: 16px;">
+        <input type="file" id="imageFile" class="file-input" accept="image/*">
+        <button class="btn secondary" id="btnImage" onclick="searchByImage()">Tìm bằng ảnh</button>
+      </div>
+
+      <div class="row">
+        <span class="section-title" style="margin: 0;">Component</span>
+        <span class="row" id="componentChips"><span class="hint">Đang tải...</span></span>
+        <span class="divider"></span>
+        <label class="switch">
+          <input type="checkbox" id="rerank">
+          <span class="track"></span>
+          Rerank bằng cross-encoder MiniLM
+        </label>
+        <span class="hint">(chỉ áp dụng khi tìm bằng text)</span>
+      </div>
+    </section>
+
+    <div class="status" id="status"></div>
+    <div class="results" id="results"></div>
+  </main>
+
+<script>
+// Chip component sinh từ /api/v1/components (registry ở search_core.py), không viết cứng.
+async function loadComponents() {
+  const res = await fetch('/api/v1/components');
+  const data = await res.json();
+  const container = document.getElementById('componentChips');
+  container.innerHTML = '';
+  for (const name of data.components) {
+    const label = document.createElement('label');
+    label.className = 'chip';
+    label.innerHTML = `<input type="checkbox" value="${name}" checked><span>${name}</span>`;
+    container.appendChild(label);
+  }
+}
+
+function getEnabledComponents() {
+  const checked = document.querySelectorAll('#componentChips input:checked');
+  return Array.from(checked).map(cb => cb.value).join(',');
+}
+
+function badge(label, value, on = false) {
+  const el = document.createElement('span');
+  el.className = on ? 'badge on' : 'badge';
+  el.innerHTML = `${label}: <b></b>`;
+  el.querySelector('b').textContent = value;
+  return el;
+}
+
+function setBusy(busy) {
+  document.getElementById('btnText').disabled = busy;
+  document.getElementById('btnImage').disabled = busy;
+}
+
+function renderResults(data) {
+  const status = document.getElementById('status');
+  status.innerHTML = '';
+  status.append(
+    badge('Query', data.query),
+    badge('Component', data.components_used.join(' + ')),
+    badge('Rerank', data.rerank ? 'bật' : 'tắt', data.rerank),
+    badge('Latency', `${data.latency_ms} ms`),
+    badge('Kết quả', data.results.length),
+  );
+
+  const container = document.getElementById('results');
+  container.innerHTML = '';
+  if (!data.results.length) {
+    container.innerHTML = '<div class="empty">Không có kết quả.</div>';
+    return;
+  }
+  data.results.forEach((r, i) => {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    card.innerHTML = `
+      <span class="rank">#${i + 1}</span>
+      <div class="thumb"><img loading="lazy" alt=""></div>
+      <div class="body"><div class="caption"></div><div class="score"></div></div>`;
+    card.querySelector('img').src = `/images/${r.image_path.split('/').pop()}`;
+    card.querySelector('.caption').textContent = r.caption;
+    card.querySelector('.caption').title = r.caption;
+    card.querySelector('.score').textContent = r.rerank_score !== undefined
+      ? `rerank ${r.rerank_score} · rrf ${r.score}`
+      : `rrf ${r.score}`;
+    container.appendChild(card);
+  });
+}
+
+function renderError(message) {
+  const status = document.getElementById('status');
+  status.innerHTML = '';
+  const el = document.createElement('span');
+  el.className = 'badge error';
+  el.textContent = message;
+  status.appendChild(el);
+  document.getElementById('results').innerHTML = '';
+}
+
+async function run(request) {
+  setBusy(true);
+  try {
+    const res = await request();
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || res.status);
+    renderResults(data);
+  } catch (err) {
+    renderError(`Lỗi: ${err.message}`);
+  } finally {
+    setBusy(false);
+  }
+}
+
+function searchByText() {
+  const q = document.getElementById('query').value.trim();
+  if (!q) return;
+  const params = new URLSearchParams({
+    q, k: 10,
+    components: getEnabledComponents(),
+    rerank: document.getElementById('rerank').checked,
+  });
+  run(() => fetch(`/api/v1/search?${params}`));
+}
+
+function searchByImage() {
+  const fileInput = document.getElementById('imageFile');
+  if (!fileInput.files.length) return;
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  const params = new URLSearchParams({ k: 10, components: getEnabledComponents() });
+  run(() => fetch(`/api/v1/search_by_image?${params}`, { method: 'POST', body: formData }));
+}
+
+loadComponents();
+</script>
+</body>
+</html>

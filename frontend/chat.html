@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A3 - Chatbot RAG</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">Product <span>Assistant</span></div>
+      <nav class="tabs">
+        <a href="/search">A1 · Tìm kiếm</a>
+        <a href="/chat" class="active">A3 · Chatbot RAG</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Trợ lý tư vấn sản phẩm</h1>
+    <p class="subtitle">Tìm sản phẩm bằng hệ search của A1, rồi LLM (Ollama) trả lời có trích dẫn nguồn [n].</p>
+
+    <section class="card settings">
+      <label class="switch">
+        <input type="checkbox" id="rerankToggle" onchange="syncRerankSelect()">
+        <span class="track"></span>
+        Rerank trước khi đưa vào context
+      </label>
+      <select id="reranker" disabled></select>
+      <span class="divider"></span>
+      <label class="switch">
+        <input type="checkbox" id="agentic">
+        <span class="track"></span>
+        Agentic (tự đánh giá, search lại nếu thiếu)
+      </label>
+      <span class="hint" id="rerankHint"></span>
+    </section>
+
+    <div class="chat-layout">
+      <section class="card chat-card">
+        <div class="chat-log" id="chatLog">
+          <div class="bubble bot">Xin chào! Hãy mô tả sản phẩm bạn cần tìm.</div>
+        </div>
+        <div class="chat-input">
+          <input type="text" id="question" placeholder="Ví dụ: waterproof hiking boots for winter"
+                 onkeydown="if (event.key === 'Enter') ask()">
+          <button class="btn" id="btnSend" onclick="ask()">Gửi</button>
+          <button class="btn secondary" onclick="resetChat()">Mới</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <p class="section-title">Nguồn đưa vào context</p>
+        <div class="status" id="status" style="margin-top: 0;"></div>
+        <div class="source-list" id="sources"><div class="hint">Chưa có câu hỏi.</div></div>
+      </section>
+    </div>
+  </main>
+
+<script>
+const RERANKER_LABELS = {
+  cross_encoder: 'Cross-encoder MiniLM (A1)',
+  deberta: 'DeBERTa distill từ ChatGPT (A2)',
+};
+
+// Cùng session_id cho mọi lượt hỏi để backend nhớ lịch sử hội thoại (Memory).
+let SESSION_ID = newSessionId();
+
+function newSessionId() {
+  return 'session-' + Math.random().toString(36).slice(2);
+}
+
+// Chỉ liệt kê reranker server có sẵn ("deberta" cần checkpoint trong models/).
+async function loadRerankers() {
+  const res = await fetch('/api/v1/rerankers');
+  const data = await res.json();
+  const select = document.getElementById('reranker');
+  for (const name of data.rerankers) {
+    const option = document.createElement('option');
+    option.value = name;
+    option.textContent = RERANKER_LABELS[name] || name;
+    select.appendChild(option);
+  }
+  if (!data.rerankers.length) {
+    document.getElementById('rerankToggle').disabled = true;
+    document.getElementById('rerankHint').textContent = 'Server chưa có reranker nào.';
+  } else if (!data.rerankers.includes('deberta')) {
+    document.getElementById('rerankHint').textContent = 'DeBERTa chưa khả dụng (thiếu models/deberta-10k-rank_net).';
+  }
+}
+
+// Chỉ chọn được reranker khi công tắc rerank đang bật.
+function syncRerankSelect() {
+  document.getElementById('reranker').disabled = !document.getElementById('rerankToggle').checked;
+}
+
+function selectedReranker() {
+  return document.getElementById('rerankToggle').checked
+    ? document.getElementById('reranker').value
+    : 'none';
+}
+
+function appendBubble(role, text, extraClass = '') {
+  const log = document.getElementById('chatLog');
+  const bubble = document.createElement('div');
+  bubble.className = `bubble ${role} ${extraClass}`.trim();
+  bubble.textContent = text;
+  log.appendChild(bubble);
+  log.scrollTop = log.scrollHeight;
+  return bubble;
+}
+
+function badge(label, value, on = false) {
+  const el = document.createElement('span');
+  el.className = on ? 'badge on' : 'badge';
+  el.innerHTML = `${label}: <b></b>`;
+  el.querySelector('b').textContent = value;
+  return el;
+}
+
+function renderSources(data, agentic) {
+  const status = document.getElementById('status');
+  status.innerHTML = '';
+  status.append(
+    badge('Rerank', data.reranker ? (RERANKER_LABELS[data.reranker] || data.reranker) : 'tắt', !!data.reranker),
+    badge('Chế độ', agentic ? 'Agentic' : 'Naive', agentic),
+  );
+
+  const list = document.getElementById('sources');
+  list.innerHTML = '';
+  if (!(data.sources || []).length) {
+    list.innerHTML = '<div class="hint">Không có sản phẩm nào.</div>';
+    return;
+  }
+  data.sources.forEach((r, i) => {
+    const item = document.createElement('div');
+    item.className = 'source-item';
+    item.innerHTML = `
+      <img loading="lazy" alt="">
+      <div><div class="caption"><span class="num"></span><span class="text"></span></div><div class="score"></div></div>`;
+    item.querySelector('img').src = `/images/${r.image_path.split('/').pop()}`;
+    item.querySelector('.num').textContent = `[${i + 1}]`;
+    item.querySelector('.text').textContent = r.caption;
+    item.querySelector('.caption').title = r.caption;
+    item.querySelector('.score').textContent = r.rerank_score !== undefined
+      ? `rerank ${r.rerank_score} · rrf ${r.score}`
+      : `rrf ${r.score}`;
+    list.appendChild(item);
+  });
+}
+
+async function ask() {
+  const input = document.getElementById('question');
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = '';
+
+  const agentic = document.getElementById('agentic').checked;
+  appendBubble('user', q);
+  const botBubble = appendBubble('bot', 'Đang tìm và soạn câu trả lời...', 'typing');
+  document.getElementById('btnSend').disabled = true;
+
+  try {
+    const params = new URLSearchParams({
+      q, k: 5, agentic,
+      reranker: selectedReranker(),
+      session_id: SESSION_ID,
+    });
+    const res = await fetch(`/api/v1/ask?${params}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || res.status);
+
+    botBubble.classList.remove('typing');
+    botBubble.textContent = data.answer;
+    if (data.final_query_used && data.final_query_used !== q) {
+      const note = document.createElement('span');
+      note.className = 'note';
+      note.textContent = `Đã tự viết lại câu hỏi để search: "${data.final_query_used}"`;
+      botBubble.appendChild(note);
+    }
+    renderSources(data, agentic);
+  } catch (err) {
+    botBubble.classList.remove('typing');
+    botBubble.classList.add('error');
+    botBubble.textContent = `Lỗi: ${err.message}`;
+  } finally {
+    document.getElementById('btnSend').disabled = false;
+  }
+}
+
+async function resetChat() {
+  await fetch(`/api/v1/reset_session?session_id=${SESSION_ID}`, { method: 'POST' });
+  SESSION_ID = newSessionId();
+  document.getElementById('chatLog').innerHTML =
+    '<div class="bubble bot">Đã bắt đầu cuộc trò chuyện mới.</div>';
+  document.getElementById('sources').innerHTML = '<div class="hint">Chưa có câu hỏi.</div>';
+  document.getElementById('status').innerHTML = '';
+}
+
+loadRerankers();
+</script>
+</body>
+</html>
