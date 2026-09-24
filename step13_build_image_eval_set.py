@@ -1,7 +1,8 @@
 """
 Bước 13: tạo bộ query ảnh bằng cách biến đổi ảnh sản phẩm có trong eval set.
 
-Lấy N_SAMPLES câu đầu của data/eval_set.jsonl, mỗi ảnh áp 1 phép biến đổi (crop/rotate/brightness).
+Lấy N_SAMPLES sản phẩm khác nhau theo thứ tự trong data/eval_set.jsonl (bỏ id trùng),
+mỗi ảnh áp đúng 1 phép biến đổi, xoay vòng crop / rotate / brightness.
 Output: data/query_images/*.jpg + data/eval_set_image.jsonl.
 Chạy: python step13_build_image_eval_set.py (cần data/eval_set.jsonl, data/catalog.jsonl, data/images/).
 """
@@ -15,7 +16,7 @@ CATALOG_PATH = "data/catalog.jsonl"
 OUT_DIR = "data/query_images"
 OUT_EVAL_PATH = "data/eval_set_image.jsonl"
 
-N_SAMPLES = 12   # chia đều 3 phép biến đổi, mỗi loại 4 ảnh
+N_SAMPLES = 100   # 34 crop, 33 rotate, 33 brightness
 TRANSFORMS = ["crop", "rotate", "brightness"]
 
 
@@ -43,11 +44,18 @@ def main():
     catalog = {r["id"]: r for r in load_jsonl(CATALOG_PATH)}
     os.makedirs(OUT_DIR, exist_ok=True)
 
-    samples = eval_set[:N_SAMPLES]
-    rows = []
-
-    for i, item in enumerate(samples):
+    # Mỗi sản phẩm chỉ lấy 1 lần (eval set có vài câu cùng trỏ tới 1 sản phẩm).
+    target_ids = []
+    for item in eval_set:
         target_id = item["relevant_ids"][0]
+        if target_id not in target_ids:
+            target_ids.append(target_id)
+    target_ids = target_ids[:N_SAMPLES]
+    if len(target_ids) < N_SAMPLES:
+        print(f"Cảnh báo: eval set chỉ có {len(target_ids)} sản phẩm khác nhau")
+
+    rows = []
+    for i, target_id in enumerate(target_ids):
         row = catalog[target_id]
         transform = TRANSFORMS[i % len(TRANSFORMS)]
 

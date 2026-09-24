@@ -44,6 +44,8 @@ def main():
             "transform": transform, "target_id": item["relevant_ids"][0],
             "source_caption": item["source_caption"], "recall": r,
             "top1_caption": results[0]["caption"] if results else None,
+            "rank": retrieved_ids.index(item["relevant_ids"][0]) + 1
+                    if item["relevant_ids"][0] in retrieved_ids else None,
         })
 
     print(f"{'Transform':<12} {'n':<4} {'Recall@'+str(K):<10} {'nDCG@'+str(K):<10} {'MRR':<8}")
@@ -56,20 +58,26 @@ def main():
               f"{sum(recalls)/len(recalls):.3f}      {sum(ndcgs)/len(ndcgs):.3f}      "
               f"{sum(mrrs)/len(mrrs):.3f}")
 
-    all_recalls = [r["recall"] for rows in per_transform.values() for r in rows if r["recall"] is not None]
-    print("-" * 46)
-    print(f"{'TỔNG':<12} {len(eval_set):<4} {sum(all_recalls)/len(all_recalls):.3f}")
+    all_rows = [r for rows in per_transform.values() for r in rows]
 
-    print("\nChi tiết từng câu (để đối chiếu bằng mắt, viết case study mục 6 nếu cần):")
-    for row in rows_detail:
-        status = "OK" if row["recall"] == 1.0 else "MISS"
-        print(f"  [{status:<4}][{row['transform']:<10}] id={row['target_id']} "
+    def avg(key):
+        values = [r[key] for r in all_rows if r[key] is not None]
+        return sum(values) / len(values)
+
+    print("-" * 46)
+    print(f"{'TỔNG':<12} {len(eval_set):<4} {avg('recall'):.3f}      {avg('ndcg'):.3f}      {avg('mrr'):.3f}")
+
+    misses = [row for row in rows_detail if row["recall"] != 1.0]
+    print(f"\nKhông tìm thấy sản phẩm đúng trong top-{K}: {len(misses)}/{len(rows_detail)}")
+    for row in misses:
+        print(f"  [MISS][{row['transform']:<10}] id={row['target_id']} "
               f"({row['source_caption'][:40]}) -> top1: {row['top1_caption']}")
 
-    print("\n-> Copy bảng theo transform vào BAO_CAO_TONG_HOP.md mục 4.3 (Kết quả truy vấn ảnh).")
-    print("-> Nếu 1 loại transform (vd rotate) có Recall thấp hẳn so với 2 loại còn lại,")
-    print("   đó là bằng chứng cụ thể về ĐIỂM YẾU của CLIP với phép biến đổi đó -- nêu")
-    print("   trong phần hạn chế/đề xuất cải tiến của báo cáo.")
+    not_top1 = [row for row in rows_detail if row["rank"] not in (None, 1)]
+    print(f"Tìm thấy nhưng không ở hạng 1: {len(not_top1)}/{len(rows_detail)}")
+    for row in not_top1:
+        print(f"  [hạng {row['rank']}][{row['transform']:<10}] id={row['target_id']} "
+              f"({row['source_caption'][:40]}) -> top1: {row['top1_caption']}")
 
 
 if __name__ == "__main__":
