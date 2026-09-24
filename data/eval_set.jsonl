@@ -1,30 +1,250 @@
-{"query": "portable outdoor storage shed with zipper doors", "query_type": "text", "relevant_ids": [76]}
-{"query": "shockproof silicone case with stand for Huawei MatePad Pro tablet", "query_type": "text", "relevant_ids": [98]}
-{"query": "something to keep pets from running out of drinking water automatically", "query_type": "text", "relevant_ids": [121]}
-{"query": "recessed channel for track lighting", "query_type": "text", "relevant_ids": [143]}
-{"query": "fly tying nippers with comfortable grip", "query_type": "text", "relevant_ids": [176]}
-{"query": "cornhole board set with eagle flag design", "query_type": "text", "relevant_ids": [192]}
-{"query": "rug for stairs so people don't slip", "query_type": "text", "relevant_ids": [241]}
-{"query": "NuWave Bravo Pro air fryer toaster oven combo", "query_type": "text", "relevant_ids": [272]}
-{"query": "handheld concrete cutting saw", "query_type": "text", "relevant_ids": [308]}
-{"query": "duplex electrical wire cable 14 gauge", "query_type": "text", "relevant_ids": [370]}
-{"query": "JET vertical milling machine with variable speed control", "query_type": "text", "relevant_ids": [439]}
-{"query": "padding to protect a crawling baby's knees", "query_type": "text", "relevant_ids": [631]}
-{"query": "replacement handle for wheelbarrow", "query_type": "text", "relevant_ids": [663]}
-{"query": "inflatable towable tube for boating", "query_type": "text", "relevant_ids": [748]}
-{"query": "DT Swiss front wheel for road bike", "query_type": "text", "relevant_ids": [808]}
-{"query": "smith machine squat rack for home gym", "query_type": "text", "relevant_ids": [812]}
-{"query": "cart used to carry anesthesia supplies in a hospital", "query_type": "text", "relevant_ids": [856]}
-{"query": "server hutch furniture with built-in LED lights", "query_type": "text", "relevant_ids": [858]}
-{"query": "rubber bag you fill with hot water to stay warm", "query_type": "text", "relevant_ids": [888]}
-{"query": "lug nut kit for aftermarket wheels", "query_type": "text", "relevant_ids": [1107]}
-{"query": "smart wifi controlled garden hose timer", "query_type": "text", "relevant_ids": [1128]}
-{"query": "portable PA speaker system with mixer", "query_type": "text", "relevant_ids": [1147]}
-{"query": "essential oil diffuser with decorative tray", "query_type": "text", "relevant_ids": [1158]}
-{"query": "matte black and red motorcycle helmet", "query_type": "text", "relevant_ids": [1181]}
-{"query": "hockey shoulder and chest protector pads", "query_type": "text", "relevant_ids": [1191]}
-{"query": "oil to take care of nail cuticles", "query_type": "text", "relevant_ids": [1284]}
-{"query": "round basket for serving bread", "query_type": "text", "relevant_ids": [1396]}
-{"query": "device that helps someone relearn to walk after an injury", "query_type": "text", "relevant_ids": [1681]}
-{"query": "fast fold portable projection screen", "query_type": "text", "relevant_ids": [1758]}
-{"query": "pink hoodie for a small dog with drawstring", "query_type": "text", "relevant_ids": [1999]}
+{"query": "portable outdoor storage shed with zipper doors", "query_type": "text", "relevant_ids": [76], "answer_should_mention": ["ADVANCEOUTDOOR", "ADVANCE OUTDOOR 6x8"]}
+{"query": "shockproof silicone case with stand for Huawei MatePad Pro tablet", "query_type": "text", "relevant_ids": [98], "answer_should_mention": ["Maverick Sales", "For Huawei MatePad"]}
+{"query": "something to keep pets from running out of drinking water automatically", "query_type": "text", "relevant_ids": [121], "answer_should_mention": ["STALTWO", "1.58 Gallon Automatic"]}
+{"query": "recessed channel for track lighting", "query_type": "text", "relevant_ids": [143], "answer_should_mention": ["Luxrite", "96\" RECESSED 0.48\""]}
+{"query": "fly tying nippers with comfortable grip", "query_type": "text", "relevant_ids": [176], "answer_should_mention": ["Stone Creek Outfitters", "Loon - Rogue"]}
+{"query": "cornhole board set with eagle flag design", "query_type": "text", "relevant_ids": [192], "answer_should_mention": ["Backyard Games USA", "Eagle Art Flag"]}
+{"query": "rug for stairs so people don't slip", "query_type": "text", "relevant_ids": [241], "answer_should_mention": ["VHC Brands", "Cobblestone Jute Stair"]}
+{"query": "NuWave Bravo Pro air fryer toaster oven combo", "query_type": "text", "relevant_ids": [272], "answer_should_mention": ["NuWave", "Nuwave Bravo Pro"]}
+{"query": "handheld concrete cutting saw", "query_type": "text", "relevant_ids": [308], "answer_should_mention": ["DZA", "DZA AZE180 Concrete"]}
+{"query": "duplex electrical wire cable 14 gauge", "query_type": "text", "relevant_ids": [370], "answer_should_mention": ["Ancor", "Ancor Safety Duplex"]}
+{"query": "JET vertical milling machine with variable speed control", "query_type": "text", "relevant_ids": [439], "answer_should_mention": ["JET", "Jet - 54\""]}
+{"query": "padding to protect a crawling baby's knees", "query_type": "text", "relevant_ids": [631], "answer_should_mention": ["Dorian's Top Selling Products", "Anti Slip Knee"]}
+{"query": "replacement handle for wheelbarrow", "query_type": "text", "relevant_ids": [663], "answer_should_mention": ["Greenworks Tools Canada Inc.", "Upper Handle Assembly"]}
+{"query": "inflatable towable tube for boating", "query_type": "text", "relevant_ids": [748], "answer_should_mention": ["WOW Sports", "Ace Racing"]}
+{"query": "DT Swiss front wheel for road bike", "query_type": "text", "relevant_ids": [808], "answer_should_mention": ["DT Swiss", "DT Swiss PR"]}
+{"query": "smith machine squat rack for home gym", "query_type": "text", "relevant_ids": [812], "answer_should_mention": ["MADETOBUILDWITHYOU", "Mikolo Smith Machine,"]}
+{"query": "cart used to carry anesthesia supplies in a hospital", "query_type": "text", "relevant_ids": [856], "answer_should_mention": ["Harloff", "Harloff Treatment Cart"]}
+{"query": "server hutch furniture with built-in LED lights", "query_type": "text", "relevant_ids": [858], "answer_should_mention": ["Furniture of America", "Furniture Of America"]}
+{"query": "rubber bag you fill with hot water to stay warm", "query_type": "text", "relevant_ids": [888], "answer_should_mention": ["Salrog ( Powered By Solnuance LLC )", "2L Long-strip Multifunctional"]}
+{"query": "lug nut kit for aftermarket wheels", "query_type": "text", "relevant_ids": [1107], "answer_should_mention": ["Race Star", "Race Star 14mmx1.50"]}
+{"query": "smart wifi controlled garden hose timer", "query_type": "text", "relevant_ids": [1128], "answer_should_mention": ["RainPoint", "RAINPOINT WiFi Water"]}
+{"query": "portable PA speaker system with mixer", "query_type": "text", "relevant_ids": [1147], "answer_should_mention": ["VEVOR", "Vevor Portable Pa"]}
+{"query": "essential oil diffuser with decorative tray", "query_type": "text", "relevant_ids": [1158], "answer_should_mention": ["AngelShop.ie", "Clear Quartz Oil"]}
+{"query": "matte black and red motorcycle helmet", "query_type": "text", "relevant_ids": [1181], "answer_should_mention": ["SPEC-X", "Spec-x integraalhelm sx-82.03"]}
+{"query": "hockey shoulder and chest protector pads", "query_type": "text", "relevant_ids": [1191], "answer_should_mention": ["Sanderson Lacrosse", "Bauer Vapor Fly40"]}
+{"query": "oil to take care of nail cuticles", "query_type": "text", "relevant_ids": [1284], "answer_should_mention": ["MC's Health & Beauty", "MAYA Cuticle Oil"]}
+{"query": "round basket for serving bread", "query_type": "text", "relevant_ids": [1396], "answer_should_mention": ["Logistiek Centrum Benelux", "APS Brood- en"]}
+{"query": "device that helps someone relearn to walk after an injury", "query_type": "text", "relevant_ids": [1681], "answer_should_mention": ["Drive Medical", "Drive Medical tk"]}
+{"query": "fast fold portable projection screen", "query_type": "text", "relevant_ids": [1758], "answer_should_mention": ["Legrand Group", "Da-Lite Fast-Fold Deluxe"]}
+{"query": "pink hoodie for a small dog with drawstring", "query_type": "text", "relevant_ids": [1999], "answer_should_mention": ["During Days", "4XL Pink Cute"]}
+{"query": "10-in-1 air fryer toaster oven combo", "relevant_ids": [272], "answer_should_mention": ["NuWave", "Air Fryer"], "query_type": "text"}
+{"query": "smart thermostat with air quality sensor", "relevant_ids": [443], "answer_should_mention": ["ecobee", "Thermostat"], "query_type": "text"}
+{"query": "16 inch chainsaw guide bar", "relevant_ids": [508], "answer_should_mention": ["STIHL", "Guide Bar"], "query_type": "text"}
+{"query": "steel side tool cabinet with keyed lock", "relevant_ids": [514], "answer_should_mention": ["Proto", "Cabinet"], "query_type": "text"}
+{"query": "brake drum for a Jeep", "relevant_ids": [779], "answer_should_mention": ["Crown Automotive", "Brake Drum"], "query_type": "text"}
+{"query": "bathroom scale that can hold 440 pounds", "relevant_ids": [1227], "answer_should_mention": ["Etekcity", "Scale"], "query_type": "text"}
+{"query": "toilet seat with a built-in bidet spray", "relevant_ids": [1401], "answer_should_mention": ["Duravit", "SensoWash"], "query_type": "text"}
+{"query": "inflatable water roller for the pool", "relevant_ids": [1434], "answer_should_mention": ["Inflatable", "Water Roller"], "query_type": "text"}
+{"query": "one-person camping tent with a stove jack", "relevant_ids": [1623], "answer_should_mention": ["ONETIGRIS", "Tent"], "query_type": "text"}
+{"query": "SFI rated junior racing suit", "relevant_ids": [1764], "answer_should_mention": ["RaceQuip", "Racing Suit"], "query_type": "text"}
+{"query": "memory foam cervical pillow for neck pain", "relevant_ids": [1847], "answer_should_mention": ["Memory Foam", "Pillow"], "query_type": "text"}
+{"query": "rotating makeup organizer with multiple tiers", "relevant_ids": [1921], "answer_should_mention": ["SONGMICS", "Organizer"], "query_type": "text"}
+{"query": "asphalt lute with a long handle", "relevant_ids": [366], "answer_should_mention": ["Kraft Tool", "Lute"], "query_type": "text"}
+{"query": "microfibre applicator pad for car wax", "relevant_ids": [794], "answer_should_mention": ["Gtechniq", "Applicator"], "query_type": "text"}
+{"query": "tool lanyard with a carabiner for working at height", "relevant_ids": [827], "answer_should_mention": ["Ergodyne", "Lanyard"], "query_type": "text"}
+{"query": "toggle style guitar capo", "relevant_ids": [1002], "answer_should_mention": ["Dunlop", "Capo"], "query_type": "text"}
+{"query": "slide stopper accessory for a trombone", "relevant_ids": [1397], "answer_should_mention": ["Yamaha", "Slide"], "query_type": "text"}
+{"query": "long track speed skates", "relevant_ids": [1493], "answer_should_mention": ["Zandstra", "Skate"], "query_type": "text"}
+{"query": "electric combi oven for a commercial kitchen", "relevant_ids": [1614], "answer_should_mention": ["Convotherm", "Combi Oven"], "query_type": "text"}
+{"query": "wall plate with an HDMI and ethernet port", "relevant_ids": [1479], "answer_should_mention": ["RiteAV", "HDMI"], "query_type": "text"}
+{"query": "need to buy 3d toilet paper on flat white background, isolated", "relevant_ids": [1344], "answer_should_mention": ["Imagella", "3D toilet paper"], "query_type": "text"}
+{"query": "recommend a good transparent premium exam pad with centimeter measuring side", "relevant_ids": [234], "answer_should_mention": ["OmniBazzar", "Transparent Premium Exam"], "query_type": "text"}
+{"query": "looking for storz optical biopsy forceps extra large, d/a |", "relevant_ids": [51], "answer_should_mention": ["Storz", "Storz Optical Biopsy"], "query_type": "text"}
+{"query": "price of kadee 158 - #158 ho gauge whisker® scale", "relevant_ids": [1559], "answer_should_mention": ["KADEE", "Kadee 158 -"], "query_type": "text"}
+{"query": "recommend a good faraday bag for phone, faraday pouch for key", "relevant_ids": [578], "answer_should_mention": ["MULVINNIE", "Faraday Bag for"], "query_type": "text"}
+{"query": "in stock: handy ceiling fan installation, under 15 feet", "relevant_ids": [516], "answer_should_mention": ["Handy", "Handy Ceiling Fan"], "query_type": "text"}
+{"query": "do you have pirate raft with treasure (#71794)", "relevant_ids": [470], "answer_should_mention": ["Playmobil", "Pirate Raft with"], "query_type": "text"}
+{"query": "need to buy dioramansion 150 study", "relevant_ids": [293], "answer_should_mention": ["ピーエルエム", "Dioramansion 150 Study"], "query_type": "text"}
+{"query": "CCA Occasions Limited walk of love personalised wedding aisle runner, personalised", "relevant_ids": [1549], "answer_should_mention": ["CCA Occasions Limited", "Walk of Love"], "query_type": "text"}
+{"query": "need to buy plasă de ricoșeu fotbal dublă, reglabilă, galben/negru, oțel", "relevant_ids": [215], "answer_should_mention": ["vidaXL", "Plasă de ricoșeu"], "query_type": "text"}
+{"query": "recommend a good clorox kitchen bouquet 12/1qt institutional", "relevant_ids": [1423], "answer_should_mention": ["Clorox", "Clorox Kitchen Bouquet"], "query_type": "text"}
+{"query": "recommend a good tumbl trak 3 in 1 adjustable handstand canes", "relevant_ids": [1557], "answer_should_mention": ["TumblTrak", "Tumbl Trak 3"], "query_type": "text"}
+{"query": "westcott ac-e10812 magnet blau packung mit 10 stück.", "relevant_ids": [1874], "answer_should_mention": ["Fahrradzubehor.de", "Westcott ac-e10812 Magnet"], "query_type": "text"}
+{"query": "in stock: voice-controlled smart lighter - metal ignition device", "relevant_ids": [1145], "answer_should_mention": ["The Outdoor Vault", "Voice-Controlled Smart Lighter"], "query_type": "text"}
+{"query": "Activeshop pedicure bowl with blue lich rollers", "relevant_ids": [183], "answer_should_mention": ["Activeshop", "Pedicure bowl with"], "query_type": "text"}
+{"query": "where can I find jupiter performance 系列 jhr1100dq f調 / 降b調雙調性法國號", "relevant_ids": [1243], "answer_should_mention": ["Jupiter", "Jupiter Performance 系列"], "query_type": "text"}
+{"query": "houblonmonstre tripel ipa extract beer recipe kit", "relevant_ids": [890], "answer_should_mention": ["Northern Brewer", "Houblonmonstre Tripel IPA"], "query_type": "text"}
+{"query": "looking for okko billiard pool table plastic 8 ball triangle", "relevant_ids": [65], "answer_should_mention": ["OKKO", "OKKO Billiard Pool"], "query_type": "text"}
+{"query": "Foxhound Bee Company extra long j hook hive tool", "relevant_ids": [61], "answer_should_mention": ["Foxhound Bee Company", "Extra Long J"], "query_type": "text"}
+{"query": "price of commode 'polar' extra breed", "relevant_ids": [197], "answer_should_mention": ["Pinolino Kinderträume", "Commode 'Polar' extra"], "query_type": "text"}
+{"query": "do you have zebra eth card 10-100 print server", "relevant_ids": [460], "answer_should_mention": ["Zebra Technologies Corporation", "Zebra Eth Card"], "query_type": "text"}
+{"query": "controltek coin wrapper and bill strap single-tier rack,", "relevant_ids": [489], "answer_should_mention": ["2xSavings", "CONTROLTEK Coin Wrapper"], "query_type": "text"}
+{"query": "do you have elm dirt's bloom juice for all flowering plants", "relevant_ids": [1061], "answer_should_mention": ["ElmDirt", "Elm Dirt's Bloom"], "query_type": "text"}
+{"query": "in stock: oxygen absorbers 2000cc", "relevant_ids": [1266], "answer_should_mention": ["The Sausage Maker", "Oxygen Absorbers 2000cc"], "query_type": "text"}
+{"query": "looking for men women gradient color socks silicone antiskidding breathable", "relevant_ids": [54], "answer_should_mention": ["WAYBIKER", "Men Women Gradient"], "query_type": "text"}
+{"query": "looking for multifunctional household cookie biscuit machine tool mold decorating", "relevant_ids": [1180], "answer_should_mention": ["Style Studio", "Multifunctional Household Cookie"], "query_type": "text"}
+{"query": "where can I find vfulie 100pcs reed diffuser sticks, 10 inch natural", "relevant_ids": [418], "answer_should_mention": ["VFULIE", "VFULIE 100PCS Reed"], "query_type": "text"}
+{"query": "looking for bærbar fjernkontroll for kameralukker på smarttelefoner", "relevant_ids": [1507], "answer_should_mention": ["freijord", "Bærbar fjernkontroll for"], "query_type": "text"}
+{"query": "recommend a good lee's 3/8 inch rigid airline tubing (36 inches)", "relevant_ids": [1365], "answer_should_mention": ["Lee's Pet Products", "Lee's 3/8 Inch"], "query_type": "text"}
+{"query": "need to buy leatt enduro 4.5 pant", "relevant_ids": [1475], "answer_should_mention": ["Leatt", "Leatt Enduro 4.5"], "query_type": "text"}
+{"query": "need to buy scotty 141 kayak/sup transducer arm mount w/438 gear", "relevant_ids": [884], "answer_should_mention": ["Scotty", "Scotty 141 Kayak/SUP"], "query_type": "text"}
+{"query": "where can I find enfile chaussette outil flexible d'aide", "relevant_ids": [464], "answer_should_mention": ["OrtoGenix", "Enfile Chaussette Outil"], "query_type": "text"}
+{"query": "recommend a good cleaning sheets for a6 duplex or a6 simplex", "relevant_ids": [945], "answer_should_mention": ["Acuant", "Cleaning Sheets for"], "query_type": "text"}
+{"query": "need to buy 07 kvm. kite evo. dkt 24", "relevant_ids": [1240], "answer_should_mention": ["Duotone", "07 KVM. KITE"], "query_type": "text"}
+{"query": "price of labor saving devices 81-130 creep-zit fiberfuse 30-ft. wire-running", "relevant_ids": [584], "answer_should_mention": ["LABOR SAVING DEVICES", "Labor Saving Devices"], "query_type": "text"}
+{"query": "recommend a good baumgartens translucent plastic mini staplers - mini -", "relevant_ids": [1701], "answer_should_mention": ["Baumgartens", "Baumgartens Translucent Plastic"], "query_type": "text"}
+{"query": "in stock: design toscano aesop's turtle ornament garden tortoise animal", "relevant_ids": [1826], "answer_should_mention": ["DesignToscano", "Design Toscano Aesop's"], "query_type": "text"}
+{"query": "is there a cheaper [fresh] organic french bean 200g malaysia", "relevant_ids": [13], "answer_should_mention": ["ZENXIN Singapore", "[FRESH] Organic French"], "query_type": "text"}
+{"query": "do you have plissé", "relevant_ids": [1595], "answer_should_mention": ["Alessi", "Plissé"], "query_type": "text"}
+{"query": "recommend a good uwell caliburn kit- red", "relevant_ids": [1694], "answer_should_mention": ["Vapro Vapes", "Uwell Caliburn Kit-"], "query_type": "text"}
+{"query": "do you have jar,ss,clr,6oz,phen,ptfeclear glass straight-sided", "relevant_ids": [335], "answer_should_mention": ["Neta Scientific", "JAR,SS,CLR,6OZ,PHEN,PTFEClear Glass Straight-Sided"], "query_type": "text"}
+{"query": "price of lenovo ideapad s210 touch lcd bezel glass digitizer", "relevant_ids": [1468], "answer_should_mention": ["Lenovo", "Lenovo Ideapad S210"], "query_type": "text"}
+{"query": "is there a cheaper macaron stainless steel coffee powder flat powder filling", "relevant_ids": [891], "answer_should_mention": ["Shop2India", "Macaron Stainless Steel"], "query_type": "text"}
+{"query": "Valkenpower verrijdbare werkbank 2x 7 laden kast incl. gereedschapswand", "relevant_ids": [713], "answer_should_mention": ["Valkenpower", "Verrijdbare werkbank 2x"], "query_type": "text"}
+{"query": "where can I find proplus opbouw- / installatieframe tweevoudig", "relevant_ids": [327], "answer_should_mention": ["ProPlus", "ProPlus Opbouw- /"], "query_type": "text"}
+{"query": "recommend a good new genuine lenovo thinkpad x1 2 in 1", "relevant_ids": [453], "answer_should_mention": ["Lenovo", "New Genuine Lenovo"], "query_type": "text"}
+{"query": "where can I find harken micro carbo-cam base w/bullseye - fishing [379f]", "relevant_ids": [1604], "answer_should_mention": ["Harken", "Harken Micro Carbo-Cam"], "query_type": "text"}
+{"query": "looking for latin percussion güiro con raspador lp305 merengue", "relevant_ids": [706], "answer_should_mention": ["Latin Percussion", "Latin Percussion Güiro"], "query_type": "text"}
+{"query": "do you have 1 x raw customer returns 9 inch atoto", "relevant_ids": [195], "answer_should_mention": ["Jobalots", "1 x RAW"], "query_type": "text"}
+{"query": "do you have schagerl ep900s euphonium", "relevant_ids": [798], "answer_should_mention": ["Schagerl", "Schagerl EP900S Euphonium"], "query_type": "text"}
+{"query": "looking for race speed skin", "relevant_ids": [204], "answer_should_mention": ["Madshus", "Race Speed Skin"], "query_type": "text"}
+{"query": "EGO Power+ ego power+ snt2100 snow blower cover", "relevant_ids": [753], "answer_should_mention": ["EGO Power+", "Ego Power+ Snt2100"], "query_type": "text"}
+{"query": "cat girl deecee rayon feeding kurtis supplier", "relevant_ids": [1781], "answer_should_mention": ["Deecee", "Cat Girl Deecee"], "query_type": "text"}
+{"query": "in stock: michael kors men's perforated faux-leather moto jacket xl", "relevant_ids": [721], "answer_should_mention": ["Bristol Apparel Co", "Michael Kors Men's"], "query_type": "text"}
+{"query": "recommend a good 10/15/20pcs pure natural catnip pet cat toy molar", "relevant_ids": [1270], "answer_should_mention": ["eprolo", "10/15/20pcs Pure Natural"], "query_type": "text"}
+{"query": "do you have talking dancing duck toy, repeating what you say,", "relevant_ids": [556], "answer_should_mention": ["MILEGI", "Talking Dancing Duck"], "query_type": "text"}
+{"query": "in stock: handi-foil disposable aluminum foil broiler baking cooking pan", "relevant_ids": [1696], "answer_should_mention": ["Handi-Foil of America", "Handi-Foil Disposable Aluminum"], "query_type": "text"}
+{"query": "do you have la golf tour axs red driver/wood shafts (0.355\")", "relevant_ids": [89], "answer_should_mention": ["LA Golf", "LA Golf Tour"], "query_type": "text"}
+{"query": "bolsa con 1 kg de tachuelas pavonadas no.", "relevant_ids": [1535], "answer_should_mention": ["FIERO", "BOLSA CON 1"], "query_type": "text"}
+{"query": "looking for t5 luxury pet stroller for medium dog under", "relevant_ids": [966], "answer_should_mention": ["BeberoadPets", "T5 Luxury Pet"], "query_type": "text"}
+{"query": "ebc s1 brake pad and rotor kit", "relevant_ids": [1126], "answer_should_mention": ["EBC", "EBC S1 Brake"], "query_type": "text"}
+{"query": "do you have savox ultra lightweight flat screwdriver (4.0) (online order", "relevant_ids": [262], "answer_should_mention": ["RC Hop Up Parts", "Savox ULTRA LIGHTWEIGHT"], "query_type": "text"}
+{"query": "looking for vidaxl folding balcony table 90x50x74 cm solid acacia", "relevant_ids": [1936], "answer_should_mention": ["vidaXL", "vidaXL Folding Balcony"], "query_type": "text"}
+{"query": "stanley fatmax® pro torpedo level 25cm", "relevant_ids": [795], "answer_should_mention": ["Stanley", "Stanley FatMax® Pro"], "query_type": "text"}
+{"query": "TT tt 5.5 inch braid scissor", "relevant_ids": [165], "answer_should_mention": ["TT", "TT 5.5 inch"], "query_type": "text"}
+{"query": "looking for portable large volleyball badminton tennis net with carrying", "relevant_ids": [1161], "answer_should_mention": ["mgsport", "Portable Large Volleyball"], "query_type": "text"}
+{"query": "recommend a good cinturino per la prevenzione del russamento", "relevant_ids": [615], "answer_should_mention": ["Tebru", "Cinturino per la"], "query_type": "text"}
+{"query": "do you have slippery flex lite gloves - black/charcoal - xs", "relevant_ids": [1742], "answer_should_mention": ["SLIPPERY", "SLIPPERY Flex Lite"], "query_type": "text"}
+{"query": "price of electric vehicle sales by company factory price", "relevant_ids": [1322], "answer_should_mention": ["RooderEV", "electric vehicle sales"], "query_type": "text"}
+{"query": "where can I find evolved habitats evo20720 hog wild pig punch fruit", "relevant_ids": [1301], "answer_should_mention": ["Evolved Habitats", "Evolved Habitats EVO20720"], "query_type": "text"}
+{"query": "do you have grilled chicken cutlet", "relevant_ids": [1860], "answer_should_mention": ["Gourmet Glatt", "GRILLED CHICKEN CUTLET"], "query_type": "text"}
+{"query": "recommend a good bamboo mattress protector queen size 🔥limited stock left🔥", "relevant_ids": [1810], "answer_should_mention": ["Workingdeals", "Bamboo Mattress Protector"], "query_type": "text"}
+{"query": "need to buy jagwire sport 4mm mini inline cable tension adjusters", "relevant_ids": [758], "answer_should_mention": ["Jagwire", "Jagwire Sport 4mm"], "query_type": "text"}
+{"query": "in stock: brown digital camera accessories camera pu leather film", "relevant_ids": [1215], "answer_should_mention": ["MadeMine", "Brown Digital Camera"], "query_type": "text"}
+{"query": "in stock: mini bluetooth štampač za telefon", "relevant_ids": [404], "answer_should_mention": ["beogradshopic.rs", "Mini Bluetooth Štampač"], "query_type": "text"}
+{"query": "where can I find stens 751-226. glove / x-large", "relevant_ids": [1482], "answer_should_mention": ["STENS", "STENS 751-226. Glove"], "query_type": "text"}
+{"query": "do you have marplast paper towel dispenser «coloured edition» light blue", "relevant_ids": [146], "answer_should_mention": ["Medvana UK", "Marplast Paper Towel"], "query_type": "text"}
+{"query": "where can I find roca a890121010 duplo wc bajo ventana", "relevant_ids": [94], "answer_should_mention": ["ROCA", "ROCA A890121010 DUPLO"], "query_type": "text"}
+{"query": "is there a cheaper ｔｒｕｓｃｏ 安心クッション コーナー用 小 １個入り アイボリー tac-31 1", "relevant_ids": [1389], "answer_should_mention": ["トラスコ中山（株）", "ＴＲＵＳＣＯ 安心クッション コーナー用"], "query_type": "text"}
+{"query": "do you have thermo fisher scientific - spectrometer with nicolet id7", "relevant_ids": [479], "answer_should_mention": ["DC Auctions", "Thermo Fisher Scientific"], "query_type": "text"}
+{"query": "looking for sunblaster nanotech t5 ho fixture - 3 ft,", "relevant_ids": [1626], "answer_should_mention": ["SunBlaster", "SunBlaster NanoTech T5"], "query_type": "text"}
+{"query": "looking for manfrotto 1p shutter link cable", "relevant_ids": [607], "answer_should_mention": ["Manfrotto", "Manfrotto 1P Shutter"], "query_type": "text"}
+{"query": "is there a cheaper toyota r series transmission basic bearing kit", "relevant_ids": [167], "answer_should_mention": ["Speedtek Auto Racing", "Toyota R Series"], "query_type": "text"}
+{"query": "Bosch injector bosch 0 986 435 211", "relevant_ids": [1797], "answer_should_mention": ["Bosch", "Injector BOSCH 0"], "query_type": "text"}
+{"query": "is there a cheaper yamaha rbs1455 snare drum recording custom birch 14”", "relevant_ids": [1820], "answer_should_mention": ["Yamaha", "Yamaha RBS1455 Snare"], "query_type": "text"}
+{"query": "is there a cheaper digital scale pallet trucks, 44.5\" l x 27\"", "relevant_ids": [212], "answer_should_mention": ["KLETON", "Digital Scale Pallet"], "query_type": "text"}
+{"query": "where can I find omega equine rosehips", "relevant_ids": [954], "answer_should_mention": ["Omega Equine", "Omega Equine Rosehips"], "query_type": "text"}
+{"query": "breville smart oven", "relevant_ids": [1336], "answer_should_mention": ["Breville", "Breville Smart Oven"], "query_type": "text"}
+{"query": "looking for led power supply 100w 24v white dali", "relevant_ids": [1752], "answer_should_mention": ["SLV", "LED power supply"], "query_type": "text"}
+{"query": "spirit lei 6ct | rainbow", "relevant_ids": [765], "answer_should_mention": ["Rich Imports", "Spirit Lei 6ct"], "query_type": "text"}
+{"query": "is there a cheaper кърпа за обувки - гъвкав връх", "relevant_ids": [342], "answer_should_mention": ["Sundo", "Кърпа за обувки"], "query_type": "text"}
+{"query": "Stairs-Nosing 19.5 x 20mm anodised aluminium stair edge nosing", "relevant_ids": [776], "answer_should_mention": ["Stairs-Nosing", "19.5 x 20mm"], "query_type": "text"}
+{"query": "looking for g-form pro rugged elbow guards - army green", "relevant_ids": [744], "answer_should_mention": ["G-Form", "G-Form Pro Rugged"], "query_type": "text"}
+{"query": "do you have 日本好市多合食香辣鱈魚條 170g*2入", "relevant_ids": [441], "answer_should_mention": ["合食", "日本好市多合食香辣鱈魚條 170g*2入"], "query_type": "text"}
+{"query": "do you have 60x30 inch led bathroom medicine cabinet surface mount", "relevant_ids": [1410], "answer_should_mention": ["w995 bestgo", "60X30 Inch Led"], "query_type": "text"}
+{"query": "do you have really easy bassoon book", "relevant_ids": [561], "answer_should_mention": ["Hal Leonard", "REALLY EASY BASSOON"], "query_type": "text"}
+{"query": "recommend a good puckator peace of heaven endless love cherub mantle", "relevant_ids": [1476], "answer_should_mention": ["Kang Blossom", "Puckator Peace of"], "query_type": "text"}
+{"query": "where can I find stamp hub self inking personalized stamp - up", "relevant_ids": [1966], "answer_should_mention": ["Stamp Hub", "Stamp Hub Self"], "query_type": "text"}
+{"query": "need to buy tripod case tripod carrying case bag for photography", "relevant_ids": [1438], "answer_should_mention": ["Shanvis", "Tripod Case Tripod"], "query_type": "text"}
+{"query": "is there a cheaper cobra pool shield medal bronze 75mm", "relevant_ids": [1362], "answer_should_mention": ["Trend", "Cobra Pool Shield"], "query_type": "text"}
+{"query": "need to buy round black sai", "relevant_ids": [150], "answer_should_mention": ["ProForce", "Round Black Sai"], "query_type": "text"}
+{"query": "price of 7510014316244 abilityone nsn4316244 round ring binder - no", "relevant_ids": [1281], "answer_should_mention": ["SKILCRAFT", "7510014316244 AbilityOne NSN4316244"], "query_type": "text"}
+{"query": "where can I find heavy‑duty steel power rack g100 squat cage with", "relevant_ids": [1335], "answer_should_mention": ["Gym Equipment for Home gym", "Heavy‑Duty Steel Power"], "query_type": "text"}
+{"query": "do you have 28\" x 32\" - switchable privacy window -", "relevant_ids": [359], "answer_should_mention": ["eglasswindows", "28\" x 32\""], "query_type": "text"}
+{"query": "looking for bogg bevy - off to the races, red", "relevant_ids": [1121], "answer_should_mention": ["Bogg Bag", "Bogg Bevy -"], "query_type": "text"}
+{"query": "where can I find hi-res carbon bluetooth turntable", "relevant_ids": [1534], "answer_should_mention": ["Hi-Res Carbon Bluetooth"], "query_type": "text"}
+{"query": "recommend a good jardines texasalsa medium salsa, 16 oz (case of", "relevant_ids": [343], "answer_should_mention": ["Jardines", "Jardines Texasalsa Medium"], "query_type": "text"}
+{"query": "looking for 6 packs gradient green slime kit - cloud", "relevant_ids": [972], "answer_should_mention": ["LAWOHO", "6 Packs Gradient"], "query_type": "text"}
+{"query": "local living sliced carrots 12x300g", "relevant_ids": [797], "answer_should_mention": ["Dhamecha - Asetena Pa", "Local Living Sliced"], "query_type": "text"}
+{"query": "recommend a good happilo premium super soft kimia dates - 400", "relevant_ids": [567], "answer_should_mention": ["happilo", "Happilo Premium Super"], "query_type": "text"}
+{"query": "tuinkrukken 4 st met kussens poly rattan grijs", "relevant_ids": [1943], "answer_should_mention": ["vidaXL", "Tuinkrukken 4 st"], "query_type": "text"}
+{"query": "looking for sonos | ensemble de divertissement haut de gamme", "relevant_ids": [1345], "answer_should_mention": ["SONOS", "Sonos | Ensemble"], "query_type": "text"}
+{"query": "do you have paletni okvirji 3 kosi 100x100 cm trdna borovina", "relevant_ids": [1448], "answer_should_mention": ["vidaXL", "Paletni okvirji 3"], "query_type": "text"}
+{"query": "need to buy [pre order] ever red mini loropetalum", "relevant_ids": [1171], "answer_should_mention": ["Pixies Gardens", "[PRE ORDER] Ever"], "query_type": "text"}
+{"query": "is there a cheaper &incense no.013 sandalwood | 老山白檀", "relevant_ids": [462], "answer_should_mention": ["KUNJUDO", "&Incense No.013 Sandalwood"], "query_type": "text"}
+{"query": "where can I find boston international ihr cocktail beverage paper napkins, 5", "relevant_ids": [1441], "answer_should_mention": ["Boston International", "Boston International IHR"], "query_type": "text"}
+{"query": "where can I find lp12/15 3 lead defib paper 10 rolls/box", "relevant_ids": [681], "answer_should_mention": ["LP12/15 3 LEAD"], "query_type": "text"}
+{"query": "do you have s101503743004", "relevant_ids": [1772], "answer_should_mention": ["Danfoss", "S101503743004"], "query_type": "text"}
+{"query": "is there a cheaper minn kota terrova quest 90/115 trolling motor w/wireless", "relevant_ids": [1615], "answer_should_mention": ["Minn Kota", "Minn Kota Terrova"], "query_type": "text"}
+{"query": "everpure ev910817 cg5-10s replacement water filter cartridge -", "relevant_ids": [1632], "answer_should_mention": ["Everpure", "Everpure EV910817 CG5-10S"], "query_type": "text"}
+{"query": "need to buy your mom loves my beard balm", "relevant_ids": [116], "answer_should_mention": ["Doc Spartan®", "Your Mom Loves"], "query_type": "text"}
+{"query": "is there a cheaper ny bros iii alto mouthpiece", "relevant_ids": [482], "answer_should_mention": ["Theo Wanne™", "NY BROS III"], "query_type": "text"}
+{"query": "igus - 1 ft. long, igumid g, snap", "relevant_ids": [1727], "answer_should_mention": ["Igus", "Igus - 1"], "query_type": "text"}
+{"query": "is there a cheaper 20\"h fabric velvet striped stocking, red", "relevant_ids": [1692], "answer_should_mention": ["CCOI", "20\"H Fabric Velvet"], "query_type": "text"}
+{"query": "price of pop up privacy shower tent portable outdoor sun", "relevant_ids": [662], "answer_should_mention": ["Petgin", "Pop Up Privacy"], "query_type": "text"}
+{"query": "where can I find zone3 large mesh training bag, blue/orange", "relevant_ids": [844], "answer_should_mention": ["Zone3", "ZONE3 Large Mesh"], "query_type": "text"}
+{"query": "price of carter - bed in 1 box", "relevant_ids": [563], "answer_should_mention": ["Crown Mark", "Carter - Bed"], "query_type": "text"}
+{"query": "is there a cheaper ethic dtc gripy do hulajnogi wyczynowej - black/transparent", "relevant_ids": [138], "answer_should_mention": ["Ethic", "Ethic DTC Gripy"], "query_type": "text"}
+{"query": "recommend a good magic gel premium deep conditioning heat cap. a", "relevant_ids": [445], "answer_should_mention": ["Magic Gel", "Magic Gel Premium"], "query_type": "text"}
+{"query": "where can I find controlador para videowall / 4k (3840 x 1080)", "relevant_ids": [1917], "answer_should_mention": ["HIKVISION", "Controlador para Videowall"], "query_type": "text"}
+{"query": "need to buy lux fetish door slam love swing", "relevant_ids": [1979], "answer_should_mention": ["Electric EEL, Inc", "Lux Fetish Door"], "query_type": "text"}
+{"query": "do you have hella lamp sb 2sb", "relevant_ids": [1194], "answer_should_mention": ["Hella", "Hella Lamp Sb"], "query_type": "text"}
+{"query": "price of posapie trasero izq / vc04030001", "relevant_ids": [1840], "answer_should_mention": ["VENTO", "Posapie Trasero Izq"], "query_type": "text"}
+{"query": "do you have saxophone ténor selmer suprême verni or", "relevant_ids": [1511], "answer_should_mention": ["Twigg Musique", "Saxophone Ténor Selmer"], "query_type": "text"}
+{"query": "first team ft1350-sa surface anchor", "relevant_ids": [660], "answer_should_mention": ["First Team", "First Team FT1350-SA"], "query_type": "text"}
+{"query": "in stock: robot coupe r502g food processor three phase", "relevant_ids": [448], "answer_should_mention": ["Robot Coupe", "Robot Coupe R502G"], "query_type": "text"}
+{"query": "recommend a good palm pod xl - 1 unidad", "relevant_ids": [1377], "answer_should_mention": ["MANGROVE PROJECT", "Palm Pod XL"], "query_type": "text"}
+{"query": "ovsené vločky naklíčené 500 g - provita", "relevant_ids": [1049], "answer_should_mention": ["Farma Chut", "Ovsené vločky naklíčené"], "query_type": "text"}
+{"query": "ByMonCheri eyelash curler portable electric heated comb eye lash", "relevant_ids": [833], "answer_should_mention": ["ByMonCheri", "Eyelash Curler Portable"], "query_type": "text"}
+{"query": "powerhand set of 8 straight coils - 15mm", "relevant_ids": [1858], "answer_should_mention": ["Powerhand", "POWERHAND Set Of"], "query_type": "text"}
+{"query": "tecnoseal x1al shaft anode - aluminum - 3/4\"", "relevant_ids": [1919], "answer_should_mention": ["Tecnoseal", "Tecnoseal X1AL Shaft"], "query_type": "text"}
+{"query": "in stock: coat western fur collar coat", "relevant_ids": [1351], "answer_should_mention": ["Shein Cheaper", "Coat Western fur"], "query_type": "text"}
+{"query": "where can I find cw-b27fh1rs", "relevant_ids": [965], "answer_should_mention": ["US Cabinet Depot", "CW-B27FH1RS"], "query_type": "text"}
+{"query": "recommend a good vestil - rack & machinery guards type: rack", "relevant_ids": [300], "answer_should_mention": ["Vestil", "Vestil - Rack"], "query_type": "text"}
+{"query": "recommend a good galileo industrial solid wood ladder display shelf", "relevant_ids": [557], "answer_should_mention": ["Wholesale Italy Furniture", "GALILEO Industrial Solid"], "query_type": "text"}
+{"query": "need to buy 🌿aquarium-nilpferd-blasendekoration💦", "relevant_ids": [520], "answer_should_mention": ["comeforya", "🌿Aquarium-Nilpferd-Blasendekoration💦"], "query_type": "text"}
+{"query": "richland - counter ht bench - white", "relevant_ids": [1566], "answer_should_mention": ["New Classic", "Richland - Counter"], "query_type": "text"}
+{"query": "recommend a good doxey faux fur cropped jacket", "relevant_ids": [1132], "answer_should_mention": ["Astr", "Doxey Faux Fur"], "query_type": "text"}
+{"query": "looking for cooper wiring devices - 3 pole, 120 to", "relevant_ids": [553], "answer_should_mention": ["Cooper Wiring Devices", "Cooper Wiring Devices"], "query_type": "text"}
+{"query": "need to buy duratwill broek donker blauw maat : 164", "relevant_ids": [1570], "answer_should_mention": ["Meno", "DuraTwill Broek Donker"], "query_type": "text"}
+{"query": "looking for ridgid - camera & borescope accessories accessory type:", "relevant_ids": [1231], "answer_should_mention": ["Ridgid", "Ridgid - Camera"], "query_type": "text"}
+{"query": "in stock: shark industrial steam dryer installation kit - 6ft", "relevant_ids": [903], "answer_should_mention": ["Shark Industrial", "Shark Industrial Steam"], "query_type": "text"}
+{"query": "looking for pigeon softouch wide neck feeder t-ester 200ml logo", "relevant_ids": [1885], "answer_should_mention": ["The Mum Box", "PIGEON Softouch Wide"], "query_type": "text"}
+{"query": "do you have kelon 24 000 btu split air conditioner", "relevant_ids": [1229], "answer_should_mention": ["Kelon", "Kelon 24 000"], "query_type": "text"}
+{"query": "is there a cheaper asp sentry hinge handcuffs stainless", "relevant_ids": [840], "answer_should_mention": ["ASP", "ASP Sentry Hinge"], "query_type": "text"}
+{"query": "looking for leprosy", "relevant_ids": [759], "answer_should_mention": ["MovieMars", "Leprosy"], "query_type": "text"}
+{"query": "in stock: petromax scraper", "relevant_ids": [291], "answer_should_mention": ["classicoutdoors", "Petromax Scraper"], "query_type": "text"}
+{"query": "do you have kanao's nichirin sword samurai katana-1045 carbon steel version", "relevant_ids": [1070], "answer_should_mention": ["Leones Marvelous Items", "Kanao's Nichirin Sword"], "query_type": "text"}
+{"query": "in stock: 0c5426", "relevant_ids": [1037], "answer_should_mention": ["ELECTROLUX PROFESSIONAL PARTS", "0C5426"], "query_type": "text"}
+{"query": "in stock: blade wash", "relevant_ids": [191], "answer_should_mention": ["Oster", "BLADE WASH"], "query_type": "text"}
+{"query": "songmics laundry basket with wheels, 76.6 gallons (290", "relevant_ids": [1588], "answer_should_mention": ["SONGMICSbySONGMICSHOME", "SONGMICS Laundry Basket"], "query_type": "text"}
+{"query": "in stock: - old glory - cigar humidor", "relevant_ids": [97], "answer_should_mention": ["Gentleman Lounge", "- Old Glory"], "query_type": "text"}
+{"query": "looking for drinking water treatment kit", "relevant_ids": [1809], "answer_should_mention": ["Coghlan's", "Drinking Water Treatment"], "query_type": "text"}
+{"query": "is there a cheaper beatriz ball: vida havana pedestal white", "relevant_ids": [230], "answer_should_mention": ["Opie and Eleanors", "Beatriz Ball: Vida"], "query_type": "text"}
+{"query": "in stock: kylie and the machine - '''grandma made it''", "relevant_ids": [322], "answer_should_mention": ["Kylie and the Machine", "KYLIE AND THE"], "query_type": "text"}
+{"query": "in stock: riva roma fluted freestanding bathtub gloss white", "relevant_ids": [1320], "answer_should_mention": ["Absolute Renovation Supplies", "Riva Roma Fluted"], "query_type": "text"}
+{"query": "recommend a good alien hydroponics easyfeed 7 pot 1 row kit", "relevant_ids": [336], "answer_should_mention": ["Alien Hydroponics", "Alien Hydroponics EasyFeed"], "query_type": "text"}
+{"query": "펫샵 13 pet hair removal gloves brush, reusable cat dog", "relevant_ids": [1665], "answer_should_mention": ["펫샵 13", "Pet Hair Removal"], "query_type": "text"}
+{"query": "price of escape - long key etagere - light brown", "relevant_ids": [1431], "answer_should_mention": ["Coastal Living", "Escape - Long"], "query_type": "text"}
+{"query": "do you have large peacock eye feathers - (1ct) 76-88cm", "relevant_ids": [1255], "answer_should_mention": ["Oaktree", "Large Peacock Eye"], "query_type": "text"}
+{"query": "Utah Vibe Tribe pinch me therapy dough peachy", "relevant_ids": [133], "answer_should_mention": ["Utah Vibe Tribe", "Pinch Me Therapy"], "query_type": "text"}
+{"query": "do you have 0051512699 tip maintenance kit, soldering iron weller", "relevant_ids": [809], "answer_should_mention": ["WELLER", "0051512699 Tip Maintenance"], "query_type": "text"}
+{"query": "price of sp1 reed valve rebuild kit - 59-90154", "relevant_ids": [801], "answer_should_mention": ["Sp1", "SP1 REED VALVE"], "query_type": "text"}
+{"query": "is there a cheaper iptv smarters pro service - new zealand 1", "relevant_ids": [1254], "answer_should_mention": ["iptvsmartersproservice", "IPTV Smarters Pro"], "query_type": "text"}
+{"query": "need to buy els60-0783-aic generator brush", "relevant_ids": [984], "answer_should_mention": ["AIC Replacement Parts - FEDEX2DAY", "ELS60-0783-AIC Generator Brush"], "query_type": "text"}
+{"query": "price of wall mount hair dryer holder with suction cup,", "relevant_ids": [1111], "answer_should_mention": ["Chinmay enterprises", "Wall Mount Hair"], "query_type": "text"}
+{"query": "where can I find sport_5_football_field1", "relevant_ids": [529], "answer_should_mention": ["joe-dog-collar-dev", "SPORT_5_Football_field1"], "query_type": "text"}
+{"query": "Berkfield Home berkfield bed frame with headboard 200x200 cm solid", "relevant_ids": [1164], "answer_should_mention": ["Berkfield Home", "Berkfield Bed Frame"], "query_type": "text"}
+{"query": "looking for bowlift | the best gift for gardening -", "relevant_ids": [1808], "answer_should_mention": ["BowLift", "BowLift | The"], "query_type": "text"}
+{"query": "acuderm suture 6-0 nylon c-2 acu-suture black 10\"", "relevant_ids": [1978], "answer_should_mention": ["Acuderm", "Acuderm Suture 6-0"], "query_type": "text"}
+{"query": "where can I find visualsource lip plumper device cute pink cat paw", "relevant_ids": [23], "answer_should_mention": ["visualsource", "Visualsource Lip Plumper"], "query_type": "text"}
+{"query": "in stock: set curele pentru casetofon sharp xl-mp150", "relevant_ids": [1517], "answer_should_mention": ["WebSpareParts.ro", "Set curele pentru"], "query_type": "text"}
+{"query": "in stock: flamingo-embroidered maxi skirt", "relevant_ids": [240], "answer_should_mention": ["FARM Rio", "Flamingo-Embroidered Maxi Skirt"], "query_type": "text"}
+{"query": "looking for sachtler 3271 telescopic pan handle (left)", "relevant_ids": [1435], "answer_should_mention": ["Sachtler", "Sachtler 3271 Telescopic"], "query_type": "text"}
+{"query": "looking for rage electric blue youth cue (rgy02)", "relevant_ids": [1859], "answer_should_mention": ["Rage", "Rage Electric Blue"], "query_type": "text"}
+{"query": "recommend a good coppia di staffe a soffitto telescopiche illuminazione su", "relevant_ids": [1127], "answer_should_mention": ["Universo", "Coppia di staffe"], "query_type": "text"}
+{"query": "do you have bauer colorado recreational ice skates - senior", "relevant_ids": [1578], "answer_should_mention": ["Bauer", "Bauer Colorado Recreational"], "query_type": "text"}
+{"query": "recommend a good paste dressing, 0.5 fl oz tube, 10/bx, sold", "relevant_ids": [1616], "answer_should_mention": ["Integra LifeSciences, Corp", "PASTE DRESSING, 0.5"], "query_type": "text"}
+{"query": "price of vox v847 wah wah", "relevant_ids": [1347], "answer_should_mention": ["Vox", "Vox V847 Wah"], "query_type": "text"}
+{"query": "need to buy 40oz nut milk maker machine - multi-functional automatic", "relevant_ids": [616], "answer_should_mention": ["40OZ Nut Milk"], "query_type": "text"}
+{"query": "this shop hauck jump a round hearts baby walker 646021", "relevant_ids": [916], "answer_should_mention": ["Hauck Jump A"], "query_type": "text"}
+{"query": "looking for 100% stainless steel wire cooling rack heavy duty", "relevant_ids": [332], "answer_should_mention": ["InBlossoms", "100% Stainless Steel"], "query_type": "text"}
+{"query": "do you have tom ford tf5681*", "relevant_ids": [955], "answer_should_mention": ["OFGG", "Tom Ford TF5681*"], "query_type": "text"}
+{"query": "Pets Qatar chihiros stand for nova", "relevant_ids": [6], "answer_should_mention": ["Pets Qatar", "Chihiros Stand For"], "query_type": "text"}
+{"query": "price of wheel - 24\" jetset s/w 36h a/v b/s", "relevant_ids": [1519], "answer_should_mention": ["WHEEL - 24\""], "query_type": "text"}
+{"query": "need to buy 9' x 13' blue oriental stain resistant indoor", "relevant_ids": [1839], "answer_should_mention": ["HomeRoots", "9' X 13'"], "query_type": "text"}
+{"query": "where can I find truper replacement square handle for tru-pro post hole", "relevant_ids": [1514], "answer_should_mention": ["TRUPER", "Truper Replacement Square"], "query_type": "text"}
+{"query": "recommend a good cardone new mass air flow sensor p/n:86-9502 fits:", "relevant_ids": [554], "answer_should_mention": ["CARDONE New", "CARDONE New Mass"], "query_type": "text"}
+{"query": "price of grodan slabs each 900 x 300 x 75mm", "relevant_ids": [1052], "answer_should_mention": ["Grodan", "Grodan Slabs Each"], "query_type": "text"}
+{"query": "in stock: tipton 1911 mag well vise - block", "relevant_ids": [1601], "answer_should_mention": ["Tipton", "Tipton 1911 Mag"], "query_type": "text"}

@@ -10,3 +10,4 @@ numpy
 datasets
 python-multipart
 requests
+sentencepiece

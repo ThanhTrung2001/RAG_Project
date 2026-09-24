@@ -37,6 +37,7 @@ data/*.index
 data/*.npy
 data/images/
 data/query_images/
+models/
 
 # Logs
 *.log

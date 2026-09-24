@@ -1,64 +1,76 @@
 """
 ================================================================================
-ABLATION CHO A3 — SO SÁNH NAIVE RAG vs AGENTIC RAG BẰNG METRIC CỤ THỂ
+ABLATION CHO A3 — SO SÁNH NAIVE RAG vs AGENTIC RAG BẰNG ĐỦ METRIC RAG CHUẨN
 ================================================================================
 
 TẠI SAO FILE NÀY BẮT BUỘC PHẢI CÓ (không phải tuỳ chọn)?
     Rubric đồ án ghi rõ: "Cải tiến có kiểm chứng: hệ thống phải có điểm cải
     tiến so với baseline VÀ CHỨNG MINH HIỆU QUẢ CẢI TIẾN BẰNG THÍ NGHIỆM
     ABLATION." Có code Naive RAG và Agentic RAG (2 hàm khác nhau trong
-    rag_core.py) là ĐIỀU KIỆN CẦN, nhưng chưa ĐO được cái nào tốt hơn, tốt
-    hơn ở đâu, đánh đổi gì -- đó là điều kiện ĐỦ mà rubric yêu cầu, và đó
-    chính là việc file này làm.
+    rag_core.py) là ĐIỀU KIỆN CẦN, chưa ĐO được cái nào tốt hơn -- đó là
+    điều kiện ĐỦ mà file này làm.
 
-    Đây là bản mở rộng của tư duy đã áp dụng ở A1 (step8_run_ablation.py:
-    so BM25-only/Dense-only/Hybrid) -- giờ áp dụng lại cho tầng RAG: so
-    Naive RAG / Agentic RAG trên CÙNG một bộ câu hỏi, đo bằng metric cụ thể,
-    không chỉ mô tả bằng lời "agentic thông minh hơn".
+DÙNG CHUNG 1 BỘ EVAL VỚI A1 (KHÔNG PHẢI FILE RIÊNG)
+    Bản đầu tiên đọc nhầm `data/eval_set.jsonl` (KHÔNG có `answer_should_mention`
+    lúc đó). Bản sau đó tách hẳn ra `data/rag_eval_set.jsonl` riêng -- nhưng
+    A3 = "upgrade A1 bằng LLM", không phải hệ thống có qrels riêng biệt.
+    Từ `step15_expand_eval_set.py`, `data/eval_set.jsonl` đã được MỞ RỘNG
+    lên 250 câu VÀ có sẵn `answer_should_mention` cho TẤT CẢ 250 câu -- dùng
+    ĐÚNG 1 file này cho cả A1 (step8/9/10/12) và A3 (file này).
 
-3 METRIC ĐO ĐƯỢC MÀ KHÔNG CẦN NGƯỜI CHẤM TAY (quan trọng vì đánh giá RAG
-thường cần con người đọc từng câu trả lời -- ở đây dùng 3 proxy tự động
-được vì thiết kế prompt trong rag_core.py đã có cấu trúc rõ ràng):
-
-    1. Recall@k của sources -- TÁI SỬ DỤNG eval_set.jsonl và recall_at_k()
-       đã viết ở A1 (metrics.py). Vì rag_core.answer() gọi lại đúng
-       search_core.search() bên trong, sources trả về CHÍNH LÀ kết quả
-       search -- đo được y hệt cách đã đo ở A1.
-
-    2. Tỷ lệ trích dẫn hợp lệ (citation compliance) -- prompt trong
-       rag_core.build_prompt() YÊU CẦU LLM trích dẫn bằng [1], [2]... Đếm
-       xem câu trả lời CÓ chứa ít nhất 1 trích dẫn hợp lệ hay không -- đây
-       là proxy tự động cho "grounding" (LLM có bám vào nguồn không) mà
-       KHÔNG cần con người đọc từng câu để đánh giá đúng/sai nội dung.
-
-    3. Latency trung bình (giây/lần gọi) -- đo bằng time.time(), phản ánh
-       trực tiếp đánh đổi mà BAO_CAO_BPM.md mục 7 đã phát hiện: Agentic có
-       thể CHẬM HƠN vì chạy ngầm nhiều lượt search+đánh giá.
+6 METRIC ĐO ĐƯỢC MÀ KHÔNG CẦN NGƯỜI CHẤM TAY TỪNG CÂU:
+    TẦNG RETRIEVAL (tái sử dụng nguyên vẹn metrics.py + rag_metrics.py):
+      1. Context Recall@k  -- recall_at_k() của A1: tìm đúng sản phẩm không.
+      2. Context Precision@k -- rag_metrics.py: có xếp đúng sản phẩm LÊN
+         TRÊN sản phẩm sai không (khác Recall: quan tâm thứ hạng).
+    TẦNG GENERATION (rag_metrics.py, CẦN gọi LLM/embedding thêm):
+      3. Faithfulness -- câu trả lời có BỊA thông tin ngoài context không.
+      4. Answer Relevancy -- câu trả lời có ĐÚNG CHỦ ĐỀ câu hỏi không.
+      5. Answer-should-mention hit rate -- tỷ lệ từ khoá BẮT BUỘC (đã ghi
+         tay ở ground truth) THỰC SỰ xuất hiện trong câu trả lời -- proxy
+         RẺ (không cần LLM/embedding) cho "câu trả lời có đúng nội dung
+         không", bổ sung cho Faithfulness (đo KHÔNG bịa) và Answer
+         Relevancy (đo ĐÚNG CHỦ ĐỀ) -- 3 cái không thay thế nhau.
+      6. Citation compliance -- có tuân thủ định dạng trích dẫn [1][2] đã
+         yêu cầu trong prompt không (proxy grounding, không cần LLM chấm).
+    7. Latency trung bình -- đánh đổi tốc độ, đối chiếu BAO_CAO_BPM.md mục 7.
 
 CHẠY: python step_ablation_rag.py
-YÊU CẦU TRƯỚC: đã có data/eval_set.jsonl (từ A1) VÀ Ollama đang chạy
-      (rag_core.py cần gọi được LLM).
+YÊU CẦU TRƯỚC: đã có data/eval_set.jsonl (250 câu, Bước 15) VÀ Ollama đang chạy.
+    Với SAMPLE_SIZE=250 x 2 cấu hình x (1 lượt trả lời + 1 lượt chấm
+    faithfulness) = tới ~1000 lượt gọi LLM -- CÓ THỂ MẤT HÀNG GIỜ với model
+    nhỏ chạy CPU. Xem SAMPLE_SIZE bên dưới để chạy thử nhanh trước.
 """
 import json
 import re
 import time
 
 from rag_core import answer as naive_answer
-from rag_core import answer_agentic
+from rag_core import answer_agentic, call_llm
+from rag_core import build_context
+from search_core import search
 from metrics import recall_at_k
+from rag_metrics import context_precision_at_k, faithfulness, answer_relevancy
 
-EVAL_SET_PATH = "data/eval_set.jsonl"
+RAG_EVAL_SET_PATH = "data/eval_set.jsonl"   # dùng chung với A1 -- xem docstring đầu file
 K = 5   # dùng k nhỏ hơn A1 (k=10) vì RAG chỉ nên đưa vài nguồn vào prompt,
          # không phải toàn bộ top-10 -- context dài làm LLM dễ lạc hướng
+
+# Đổi giá trị này để chạy thử nhanh trước khi chạy full 250 câu (vd 20 để
+# sanity-check trong ~5-10 phút, rồi mới chạy None = full cho số liệu nộp
+# bài chính thức). None = dùng hết toàn bộ eval set.
+SAMPLE_SIZE = None
 
 CITATION_PATTERN = re.compile(r"\[\d+\]")   # khớp đúng định dạng [1], [2]... mà prompt yêu cầu
 
 
 def load_eval_set():
     rows = []
-    with open(EVAL_SET_PATH, "r", encoding="utf-8") as f:
+    with open(RAG_EVAL_SET_PATH, "r", encoding="utf-8") as f:
         for line in f:
             rows.append(json.loads(line))
+    if SAMPLE_SIZE is not None:
+        rows = rows[:SAMPLE_SIZE]
     return rows
 
 
@@ -72,17 +84,29 @@ def has_valid_citation(answer_text: str) -> bool:
     return bool(CITATION_PATTERN.search(answer_text))
 
 
+def mention_hit_rate(answer_text: str, must_mention: list) -> float:
+    """Tỷ lệ từ khoá trong `answer_should_mention` THỰC SỰ xuất hiện (so
+    khớp không phân biệt hoa/thường) trong câu trả lời. So khớp SUBSTRING
+    đơn giản -- proxy thô nhưng không cần LLM, nhất quán cách A1 đã chọn
+    "đơn giản hoá có chủ đích" (simple_tokenize() ở step3_build_index.py)."""
+    if not must_mention:
+        return None
+    answer_lower = answer_text.lower()
+    hits = sum(1 for kw in must_mention if kw.lower() in answer_lower)
+    return hits / len(must_mention)
+
+
 def run_ablation_config(name, answer_fn, eval_set):
     """
-    Chạy 1 cấu hình (Naive hoặc Agentic) trên toàn bộ eval_set, đo 3 metric.
+    Chạy 1 cấu hình (Naive hoặc Agentic) trên toàn bộ eval_set, đo đủ 6 metric.
     answer_fn: rag_core.answer hoặc rag_core.answer_agentic -- cùng chữ ký
                gọi (query, k=...), khác nhau ở cơ chế BÊN TRONG.
     """
-    recalls = []
+    recalls, precisions, faiths, relevancies, mention_rates = [], [], [], [], []
     citation_hits = 0
     latencies = []
 
-    for item in eval_set:
+    for i, item in enumerate(eval_set, start=1):
         query = item["query"]
         relevant_ids = item["relevant_ids"]
 
@@ -93,25 +117,52 @@ def run_ablation_config(name, answer_fn, eval_set):
 
         retrieved_ids = [s["id"] for s in result["sources"]]
         r = recall_at_k(retrieved_ids, relevant_ids, K)
+        p = context_precision_at_k(retrieved_ids, relevant_ids, K)
         if r is not None:
             recalls.append(r)
+        if p is not None:
+            precisions.append(p)
 
         if has_valid_citation(result["answer"]):
             citation_hits += 1
 
+        m = mention_hit_rate(result["answer"], item.get("answer_should_mention", []))
+        if m is not None:
+            mention_rates.append(m)
+
+        # 2 metric CẦN gọi thêm LLM/embedding -- nặng nhất trong toàn bộ vòng lặp
+        context_text = build_context(result["sources"]) if result["sources"] else ""
+        f = faithfulness(result["answer"], context_text, call_llm)
+        if f is not None:
+            faiths.append(f)
+
+        rel = answer_relevancy(result["answer"], query)
+        if rel is not None:
+            relevancies.append(rel)
+
+        if i % 10 == 0:
+            print(f"    [{name}] đã chạy {i}/{len(eval_set)}")
+
+    def avg(values):
+        return sum(values) / len(values) if values else None
+
     n = len(eval_set)
     return {
         "name": name,
-        "recall@k": sum(recalls) / len(recalls) if recalls else None,
+        "context_recall@k": avg(recalls),
+        "context_precision@k": avg(precisions),
+        "faithfulness": avg(faiths),
+        "answer_relevancy": avg(relevancies),
+        "mention_hit_rate": avg(mention_rates),
         "citation_rate": citation_hits / n if n else None,
-        "avg_latency_sec": sum(latencies) / len(latencies) if latencies else None,
+        "avg_latency_sec": avg(latencies),
     }
 
 
 def main():
     eval_set = load_eval_set()
-    print(f"Chạy ablation RAG trên {len(eval_set)} câu hỏi, k={K}")
-    print("Lưu ý: cần Ollama đang chạy -- mỗi câu hỏi sẽ gọi LLM thật.\n")
+    print(f"Chạy ablation RAG trên {len(eval_set)} câu hỏi (SAMPLE_SIZE={SAMPLE_SIZE}), k={K}")
+    print("Lưu ý: cần Ollama đang chạy -- mỗi câu hỏi gọi LLM 2 lần (trả lời + chấm faithfulness).\n")
 
     configs = [
         ("Naive RAG", lambda q, k: naive_answer(q, k=k)),
@@ -123,23 +174,31 @@ def main():
         print(f"Đang chạy: {name}...")
         results.append(run_ablation_config(name, fn, eval_set))
 
-    print(f"\n{'Cấu hình':<15} {'Recall@'+str(K):<12} {'Tỷ lệ trích dẫn':<18} {'Latency TB (s)':<15}")
-    print("-" * 60)
+    header = (f"{'Cấu hình':<14} {'Ctx Recall':<11} {'Ctx Precision':<14} {'Faithfulness':<13} "
+              f"{'Ans Relevancy':<14} {'Mention hit':<12} {'Citation':<10} {'Latency(s)':<10}")
+    print(f"\n{header}")
+    print("-" * len(header))
     for r in results:
-        recall_str = f"{r['recall@k']:.3f}" if r["recall@k"] is not None else "N/A"
-        citation_str = f"{r['citation_rate']*100:.1f}%" if r["citation_rate"] is not None else "N/A"
-        latency_str = f"{r['avg_latency_sec']:.2f}" if r["avg_latency_sec"] is not None else "N/A"
-        print(f"{r['name']:<15} {recall_str:<12} {citation_str:<18} {latency_str:<15}")
+        def fmt(key, pct=False):
+            v = r[key]
+            if v is None:
+                return "N/A"
+            return f"{v*100:.1f}%" if pct else f"{v:.3f}"
+        print(f"{r['name']:<14} {fmt('context_recall@k'):<11} {fmt('context_precision@k'):<14} "
+              f"{fmt('faithfulness'):<13} {fmt('answer_relevancy'):<14} {fmt('mention_hit_rate'):<12} "
+              f"{fmt('citation_rate', pct=True):<10} {r['avg_latency_sec']:.2f}")
 
     print("\nCách đọc bảng:")
-    print("- Recall@k giống hệt A1: 2 cấu hình này gọi cùng search_core.search()")
-    print("  bên dưới nên Recall thường KHÔNG khác nhau nhiều -- điểm khác biệt")
-    print("  thật sự nằm ở 2 cột còn lại.")
-    print("- Tỷ lệ trích dẫn thấp -> LLM không tuân thủ grounding -> cần sửa lại")
-    print("  prompt trong rag_core.build_prompt() cho rõ ràng hơn.")
-    print("- Latency TB cao hơn ở Agentic là BÌNH THƯỜNG (chạy ngầm nhiều lượt) --")
-    print("  đây chính là số liệu cần đối chiếu với phân tích đánh đổi trong")
-    print("  BAO_CAO_BPM.md mục 7 (ngưỡng ~42% mới đáng bật Agentic).")
+    print("- Context Recall/Precision giống tầng retrieval -- 2 cấu hình gọi cùng search_core.search()")
+    print("  bên dưới nên thường KHÔNG khác nhau nhiều ở Naive vs Agentic vòng đầu, trừ khi Agentic")
+    print("  đã tự viết lại query (search KHÁC câu gốc) -- xem 'final_query_used' nếu cần debug.")
+    print("- Faithfulness thấp -> LLM đang BỊA thông tin ngoài context -- lỗi tầng Generation.")
+    print("- Answer Relevancy thấp nhưng Faithfulness cao -> câu trả lời ĐÚNG (không bịa) nhưng")
+    print("  LẠC ĐỀ -- có thể do prompt chưa ép rõ 'phải trả lời thẳng vào câu hỏi'.")
+    print("- Mention hit rate thấp -> đối chiếu qrels (answer_should_mention) cho thấy LLM bỏ sót")
+    print("  chi tiết QUAN TRỌNG dù không bịa gì sai -- khác lỗi Faithfulness.")
+    print("- Latency cao hơn ở Agentic là BÌNH THƯỜNG (chạy ngầm nhiều lượt) -- đối chiếu với")
+    print("  phân tích đánh đổi trong BAO_CAO_BPM.md mục 7 (ngưỡng ~42% mới đáng bật Agentic).")
 
 
 if __name__ == "__main__":

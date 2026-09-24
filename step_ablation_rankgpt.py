@@ -1,108 +1,153 @@
 """
 ================================================================================
-ABLATION — SO SÁNH KHÔNG RERANK / CROSS-ENCODER / RANKGPT (model mạnh vs yếu)
+ABLATION RERANK CHO A2 — RankGPT (Sun et al., EMNLP 2023) TRÊN CATALOG A1
 ================================================================================
 
-MỤC ĐÍCH: thực nghiệm HOÁ đúng ví dụ giảng viên đưa ra trong lớp: "RankGPT
-rerank không tốt vì dùng model mã nguồn mở kém hiệu quả". Thay vì chỉ trích
-dẫn nhận định này, script này CHẠY THẬT với 2 model Ollama khác cỡ, đo bằng
-Recall@k/nDCG@k, để có SỐ LIỆU chứng minh (hoặc bác bỏ) nhận định đó trên
-chính dataset A1.
+Tái hiện trên catalog sản phẩm của A1 hai thí nghiệm của paper:
+    - Mục 6.6 / Table 6: LLM mã nguồn mở làm reranker bằng permutation generation.
+    - Mục 7 / Table 7:   model nhỏ distill từ ChatGPT thay cho LLM.
 
-YÊU CẦU TRƯỚC KHI CHẠY:
-    1. Đã có data/eval_set.jsonl (từ A1)
-    2. Ollama đang chạy, đã pull ÍT NHẤT 2 model khác cỡ để so sánh, vd:
-           ollama pull llama3.1        (mạnh hơn, ~4.7GB)
-           ollama pull qwen2.5:0.5b    (rất nhỏ, để thấy rõ rủi ro model yếu)
-       Nếu chỉ có 1 model, sửa RANKGPT_MODELS bên dưới còn 1 phần tử --
-       vẫn chạy được, chỉ là không so sánh mạnh/yếu được.
+Các cấu hình, cùng một pool ứng viên từ hybrid BM25 + Dense của A1:
+    1. Không rerank
+    2. Cross-encoder MiniLM (ms-marco-MiniLM-L-6-v2)
+    3. DeBERTa distill từ ChatGPT (deberta-10k-rank_net) -- bỏ qua nếu chưa tải
+    4. RankGPT với từng model Ollama trong RANKGPT_MODELS
+
+Metric: nDCG@1/5/10 như paper, thêm Recall@10 và thời gian rerank trung bình.
+Với RankGPT còn đếm lỗi permutation theo cách phân loại của Table 10.
+
+Khác paper (cần nêu khi báo cáo):
+    - Paper rerank top-100 BM25 trên TREC-DL/BEIR, nhãn nhiều mức.
+    - Ở đây rerank top-30 hybrid trên 30 câu hỏi của data/eval_set.jsonl,
+      mỗi câu một sản phẩm đúng (nhãn nhị phân).
+
+Chuẩn bị:
+    ollama pull llama3.1
+    ollama pull qwen2.5:0.5b
+    (tuỳ chọn) tải deberta-10k-rank_net từ repo RankGPT, giải nén vào
+    models/deberta-10k-rank_net
 
 CHẠY: python step_ablation_rankgpt.py
+Kết quả in ra màn hình và lưu vào data/rankgpt_ablation_results.json.
 """
 import json
+import os
+import time
 
-from search_core import search, rerank, rankgpt_rerank
-from metrics import evaluate_all, recall_at_k, ndcg_at_k
+from metrics import ndcg_at_k, recall_at_k
+from search_core import (DISTILLED_RERANKER_PATH, distilled_rerank,
+                         rankgpt_rerank_with_stats, rerank, search)
 
 EVAL_SET_PATH = "data/eval_set.jsonl"
-K = 10
-POOL_SIZE = 30   # lấy top-30 từ hybrid search trước khi rerank -- nhỏ hơn
-                   # top_n=50 mặc định của A1 để prompt RankGPT không quá dài
+RESULTS_PATH = "data/rankgpt_ablation_results.json"
 
-# Đổi tên model cho khớp với model bạn đã "ollama pull" -- xem docstring trên.
+POOL_SIZE = 30            # với window 20, step 10: mỗi câu hỏi 2 lượt gọi LLM
+NDCG_CUTOFFS = (1, 5, 10)
+RECALL_K = 10
 RANKGPT_MODELS = ["llama3.1", "qwen2.5:0.5b"]
+STAT_KEYS = ("windows", "repetition", "missing", "out_of_range", "rejection")
 
 
 def load_eval_set():
-    rows = []
     with open(EVAL_SET_PATH, "r", encoding="utf-8") as f:
-        for line in f:
-            rows.append(json.loads(line))
-    return rows
+        return [json.loads(line) for line in f if line.strip()]
 
 
-def run_config(name, rerank_fn, eval_set):
-    """
-    rerank_fn: hàm nhận (query, candidates) -> candidates đã sắp xếp lại,
-               hoặc None nếu không rerank (dùng thẳng kết quả hybrid).
-    """
-    recalls, ndcgs = [], []
+def mean(values):
+    values = [v for v in values if v is not None]
+    return sum(values) / len(values) if values else None
+
+
+def build_configs():
+    """Mỗi cấu hình là (tên, hàm). Hàm nhận (query, candidates), trả (candidates, stats hoặc None)."""
+    configs = [
+        ("Không rerank", lambda q, c: (c, None)),
+        ("Cross-encoder MiniLM", lambda q, c: (rerank(q, c), None)),
+    ]
+
+    if os.path.isdir(DISTILLED_RERANKER_PATH):
+        configs.append(("DeBERTa distill từ ChatGPT", lambda q, c: (distilled_rerank(q, c), None)))
+    else:
+        print(f"Bỏ qua DeBERTa distill: không thấy thư mục {DISTILLED_RERANKER_PATH}\n")
+
+    for model in RANKGPT_MODELS:
+        configs.append((f"RankGPT ({model})",
+                        lambda q, c, m=model: rankgpt_rerank_with_stats(q, c, llm_model=m)))
+    return configs
+
+
+def run_config(rerank_fn, eval_set):
+    ndcgs = {k: [] for k in NDCG_CUTOFFS}
+    recalls, latencies = [], []
+    stats_total = None
 
     for item in eval_set:
-        query = item["query"]
-        # Lấy pool RỘNG từ hybrid (bm25+dense), KHÔNG rerank ở bước search() --
-        # để tự áp rerank_fn bên ngoài, so sánh công bằng cùng 1 pool đầu vào.
+        query, relevant_ids = item["query"], item["relevant_ids"]
         candidates = search(query, query_type="text", k=POOL_SIZE,
-                             components=["bm25", "dense"], top_n=POOL_SIZE)
+                            components=["bm25", "dense"], top_n=POOL_SIZE)
 
-        if rerank_fn is not None and candidates:
-            candidates = rerank_fn(query, candidates)
+        start = time.perf_counter()
+        ranked, stats = rerank_fn(query, candidates) if candidates else (candidates, None)
+        latencies.append(time.perf_counter() - start)
 
-        retrieved_ids = [c["id"] for c in candidates[:K]]
-        r = recall_at_k(retrieved_ids, item["relevant_ids"], K)
-        n = ndcg_at_k(retrieved_ids, item["relevant_ids"], K)
-        if r is not None:
-            recalls.append(r)
-        if n is not None:
-            ndcgs.append(n)
+        ranked_ids = [c["id"] for c in ranked]
+        for k in NDCG_CUTOFFS:
+            ndcgs[k].append(ndcg_at_k(ranked_ids, relevant_ids, k))
+        recalls.append(recall_at_k(ranked_ids, relevant_ids, RECALL_K))
 
-    return {
-        "name": name,
-        "recall@k": sum(recalls) / len(recalls) if recalls else None,
-        "ndcg@k": sum(ndcgs) / len(ndcgs) if ndcgs else None,
-    }
+        if stats is not None:
+            stats_total = stats_total or dict.fromkeys(STAT_KEYS, 0)
+            for key in STAT_KEYS:
+                stats_total[key] += stats[key]
+
+    result = {f"ndcg@{k}": mean(ndcgs[k]) for k in NDCG_CUTOFFS}
+    result[f"recall@{RECALL_K}"] = mean(recalls)
+    result["rerank_latency_sec_avg"] = mean(latencies)
+    result["permutation_stats"] = stats_total
+    return result
+
+
+def fmt(value):
+    return "N/A" if value is None else f"{value:.3f}"
+
+
+def print_tables(results):
+    metric_keys = [f"ndcg@{k}" for k in NDCG_CUTOFFS] + [f"recall@{RECALL_K}", "rerank_latency_sec_avg"]
+    headers = [f"nDCG@{k}" for k in NDCG_CUTOFFS] + [f"Recall@{RECALL_K}", "Rerank(s)"]
+
+    print(f"\n{'Cấu hình':<30}" + "".join(f"{h:>11}" for h in headers))
+    print("-" * (30 + 11 * len(headers)))
+    for r in results:
+        print(f"{r['name']:<30}" + "".join(f"{fmt(r[key]):>11}" for key in metric_keys))
+
+    rankgpt_rows = [r for r in results if r["permutation_stats"] is not None]
+    if rankgpt_rows:
+        print("\nLỗi permutation của RankGPT (cộng dồn mọi cửa sổ, cách phân loại theo Table 10):")
+        print(f"{'Cấu hình':<30}" + "".join(f"{k:>14}" for k in STAT_KEYS))
+        for r in rankgpt_rows:
+            print(f"{r['name']:<30}" + "".join(f"{r['permutation_stats'][k]:>14}" for k in STAT_KEYS))
 
 
 def main():
     eval_set = load_eval_set()
-    print(f"Chạy ablation rerank trên {len(eval_set)} câu hỏi, pool={POOL_SIZE}, k={K}\n")
+    print(f"Ablation rerank: {len(eval_set)} câu hỏi, pool = {POOL_SIZE} ứng viên hybrid\n")
 
-    configs = [
-        ("Không rerank (hybrid thô)", None),
-        ("Cross-encoder (Nogueira & Cho)", lambda q, c: rerank(q, c)),
-    ]
-    for model_name in RANKGPT_MODELS:
-        configs.append((
-            f"RankGPT ({model_name})",
-            lambda q, c, m=model_name: rankgpt_rerank(q, c, llm_model=m)
-        ))
-
-    print(f"{'Cấu hình':<35} {'Recall@'+str(K):<12} {'nDCG@'+str(K):<12}")
-    print("-" * 59)
-    for name, fn in configs:
+    results = []
+    for name, fn in build_configs():
         print(f"Đang chạy: {name}...")
-        result = run_config(name, fn, eval_set)
-        r = f"{result['recall@k']:.3f}" if result["recall@k"] is not None else "N/A"
-        n = f"{result['ndcg@k']:.3f}" if result["ndcg@k"] is not None else "N/A"
-        print(f"{name:<35} {r:<12} {n:<12}")
+        results.append({"name": name, **run_config(fn, eval_set)})
 
-    print("\nCách đọc bảng:")
-    print("- So 'Không rerank' với 'Cross-encoder': đo giá trị của rerank NÓI CHUNG.")
-    print("- So 2 dòng 'RankGPT (...)' với nhau: đo TRỰC TIẾP ảnh hưởng của việc")
-    print("  chọn model mạnh/yếu -- đúng phát hiện paper Sun et al. (2023)/note")
-    print("  giảng viên. Nếu RankGPT model yếu cho điểm THẤP HƠN cả 'không rerank',")
-    print("  đó là bằng chứng cụ thể: rerank sai có thể làm KẾT QUẢ TỆ HƠN không")
-    print("  làm gì cả -- một insight quan trọng cần nêu trong báo cáo.")
+    print_tables(results)
+
+    output = {
+        "eval_set": EVAL_SET_PATH,
+        "num_queries": len(eval_set),
+        "pool_size": POOL_SIZE,
+        "results": results,
+    }
+    with open(RESULTS_PATH, "w", encoding="utf-8") as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+    print(f"\nĐã lưu kết quả vào {RESULTS_PATH}")
 
 
 if __name__ == "__main__":
