@@ -13,18 +13,22 @@ import faiss
 import numpy as np
 import torch
 from PIL import Image
-from transformers import CLIPModel, CLIPProcessor
+from transformers import AutoModel, AutoProcessor
 
 CATALOG_PATH = "data/catalog.jsonl"
 DENSE_INDEX_PATH = "data/dense.index"
 BM25_INDEX_PATH = "data/bm25.pkl"
-MODEL_NAME = "openai/clip-vit-base-patch32"
+# Đổi từ CLIP B/32 sang SigLIP (ablation embedding model, BAO_CAO_TONG_HOP.md mục 6.5:
+# Recall@10 dense-only 0.920 vs 0.656 trên 250 câu) -- data/dense.index đã build lại bằng
+# SigLIP (768 chiều, xem kaggle/kaggle_build_A1_data_siglip.py), KHÔNG tương thích CLIP cũ.
+MODEL_NAME = "google/siglip-base-patch16-224"
+TEXT_MAX_LENGTH = 64   # SigLIP lấy biểu diễn ở token cuối của chuỗi đã pad cố định --
+                        # PHẢI pad đúng 64 (giống lúc pretrain), xem giải thích ở _encode_text()
 
 # Nạp model và index một lần lúc import, dùng chung cho mọi lần search.
 _device = "cuda" if torch.cuda.is_available() else "cpu"
-_model = CLIPModel.from_pretrained(MODEL_NAME).to(_device).eval()
-# use_fast=False: fast image processor ở transformers mới làm get_image_features() trả sai kiểu.
-_processor = CLIPProcessor.from_pretrained(MODEL_NAME, use_fast=False)
+_model = AutoModel.from_pretrained(MODEL_NAME).to(_device).eval()
+_processor = AutoProcessor.from_pretrained(MODEL_NAME)
 
 _dense_index = faiss.read_index(DENSE_INDEX_PATH)
 
@@ -40,11 +44,23 @@ with open(CATALOG_PATH, "r", encoding="utf-8") as f:
         _catalog[row["id"]] = row
 
 
-# CLIP (Radford et al., 2021): text và ảnh được encode vào cùng một không gian.
+# SigLIP (Zhai et al., 2023): text và ảnh được encode vào cùng một không gian, giống ý
+# tưởng CLIP nhưng huấn luyện bằng sigmoid loss (không phải softmax contrastive).
 def _encode_text(text: str) -> np.ndarray:
-    """Text -> vector CLIP 512 chiều, đã chuẩn hoá L2."""
+    """
+    Text -> vector SigLIP 768 chiều, đã chuẩn hoá L2.
+
+    QUAN TRỌNG: SigLIP KHÔNG dùng attention_mask -- nó lấy biểu diễn tại TOKEN CUỐI CÙNG
+    của chuỗi đã pad. Lúc pretrain, mọi chuỗi LUÔN pad tới đúng 64 token, nên "token cuối"
+    luôn ở vị trí 63. Nếu pad ĐỘNG như CLIP (padding=True, pad theo câu ngắn nhất trong
+    batch), "token cuối" sẽ rơi vào vị trí hoàn toàn khác lúc pretrain -- embedding gần như
+    nhiễu ngẫu nhiên (đã tái hiện đúng bug này khi ablation trên Kaggle: Recall@10 = 0.000
+    tuyệt đối cho tới khi sửa đúng padding="max_length", max_length=64 -- xem
+    kaggle/kaggle_ablation_embedding_models.py và BAO_CAO_TONG_HOP.md mục 6.5).
+    """
     with torch.no_grad():
-        inputs = _processor(text=[text], return_tensors="pt", padding=True, truncation=True).to(_device)
+        inputs = _processor(text=[text], return_tensors="pt", padding="max_length",
+                             truncation=True, max_length=TEXT_MAX_LENGTH).to(_device)
         feat = _model.get_text_features(**inputs)
         # Chuẩn hoá như lúc build index để inner product = cosine.
         feat = feat / feat.norm(dim=-1, keepdim=True)
@@ -52,7 +68,8 @@ def _encode_text(text: str) -> np.ndarray:
 
 
 def _encode_image(image: Image.Image) -> np.ndarray:
-    """PIL.Image -> vector CLIP 512 chiều, đã chuẩn hoá L2."""
+    """PIL.Image -> vector SigLIP 768 chiều, đã chuẩn hoá L2 (ảnh không có vấn đề padding
+    như text -- processor(images=...) không đụng tới tokenizer)."""
     with torch.no_grad():
         inputs = _processor(images=[image], return_tensors="pt").to(_device)
         feat = _model.get_image_features(**inputs)

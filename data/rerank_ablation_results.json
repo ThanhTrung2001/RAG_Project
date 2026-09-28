@@ -5,11 +5,11 @@
   "results": [
     {
       "name": "Không rerank",
-      "ndcg@1": 0.772,
-      "ndcg@5": 0.8787395919342359,
-      "ndcg@10": 0.8880175109853203,
-      "recall@10": 0.992,
-      "rerank_latency_sec_avg": 5.650000210152939e-06
+      "ndcg@1": 0.916,
+      "ndcg@5": 0.9580547188330283,
+      "ndcg@10": 0.9594795475814604,
+      "recall@10": 0.996,
+      "rerank_latency_sec_avg": 5.332799999450799e-06
     },
     {
       "name": "Cross-encoder MiniLM",
@@ -17,15 +17,15 @@
       "ndcg@5": 0.9817227062322936,
       "ndcg@10": 0.9817227062322936,
       "recall@10": 0.984,
-      "rerank_latency_sec_avg": 0.23483323400010703
+      "rerank_latency_sec_avg": 0.2485146412000322
     },
     {
       "name": "DeBERTa distill từ ChatGPT",
       "ndcg@1": 0.972,
-      "ndcg@5": 0.9811185682717957,
-      "ndcg@10": 0.9811185682717957,
-      "recall@10": 0.988,
-      "rerank_latency_sec_avg": 2.196609824800369
+      "ndcg@5": 0.981293863275151,
+      "ndcg@10": 0.9827186920235831,
+      "recall@10": 0.992,
+      "rerank_latency_sec_avg": 1.9959430147999446
     }
   ]
 }

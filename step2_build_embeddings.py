@@ -1,21 +1,27 @@
 """
-Bước 2: sinh embedding CLIP cho ảnh và caption của catalog.
+Bước 2: sinh embedding SigLIP cho ảnh và caption của catalog.
 
 Input: data/catalog.jsonl, data/images/ (Bước 1).
 Output: data/image_embeddings.npy, data/text_embeddings.npy (float32, đã chuẩn hoá L2).
 Chạy: python step2_build_embeddings.py
+
+ĐÃ ĐỔI TỪ CLIP B/32 SANG SigLIP (BAO_CAO_TONG_HOP.md mục 6.5: Recall@10 dense-only
+0.920 vs 0.656 trên 250 câu) -- xem search_core.py để biết lý do cần
+padding="max_length", max_length=64 khi encode TEXT (SigLIP không dùng attention_mask,
+lấy biểu diễn ở token cuối của chuỗi đã pad cố định).
 """
 import json
 import numpy as np
 import torch
 from PIL import Image
-from transformers import CLIPModel, CLIPProcessor
+from transformers import AutoModel, AutoProcessor
 
 CATALOG_PATH = "data/catalog.jsonl"
 OUT_IMAGE_EMB = "data/image_embeddings.npy"
 OUT_TEXT_EMB = "data/text_embeddings.npy"
 
-MODEL_NAME = "openai/clip-vit-base-patch32"   # CLIP nhỏ, chạy được trên CPU
+MODEL_NAME = "google/siglip-base-patch16-224"
+TEXT_MAX_LENGTH = 64
 BATCH_SIZE = 32
 
 
@@ -31,8 +37,8 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Dùng device: {device}")
 
-    model = CLIPModel.from_pretrained(MODEL_NAME).to(device).eval()
-    processor = CLIPProcessor.from_pretrained(MODEL_NAME)
+    model = AutoModel.from_pretrained(MODEL_NAME).to(device).eval()
+    processor = AutoProcessor.from_pretrained(MODEL_NAME)
 
     rows = load_catalog()
     print(f"Đã load {len(rows)} ảnh từ catalog")
@@ -51,7 +57,8 @@ def main():
             # Chuẩn hoá L2 để inner product == cosine (dùng với faiss.IndexFlatIP).
             img_feat = img_feat / img_feat.norm(dim=-1, keepdim=True)
 
-            txt_inputs = processor(text=captions, return_tensors="pt", padding=True, truncation=True).to(device)
+            txt_inputs = processor(text=captions, return_tensors="pt", padding="max_length",
+                                    truncation=True, max_length=TEXT_MAX_LENGTH).to(device)
             txt_feat = model.get_text_features(**txt_inputs)
             txt_feat = txt_feat / txt_feat.norm(dim=-1, keepdim=True)
 
