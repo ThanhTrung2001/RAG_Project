@@ -1,40 +1,61 @@
 """
 Ablation A3 trên data/eval_set.jsonl (dùng chung với A1). Các cấu hình:
-  Naive RAG | Naive RAG + cross-encoder MiniLM | Naive RAG + DeBERTa distill | Agentic RAG
-Cấu hình DeBERTa bị bỏ qua nếu chưa có models/deberta-10k-rank_net.
+  naive          Naive RAG (baseline)
+  naive_minilm   Naive RAG + rerank cross-encoder MiniLM (A1)
+  naive_deberta  Naive RAG + rerank DeBERTa distill (A2); bỏ qua nếu chưa có models/deberta-10k-rank_net
+  agentic        Agentic RAG
 
 Metric: Context Recall@k, Context Precision@k, Faithfulness, Answer Relevancy,
-mention hit rate (answer_should_mention), citation rate, latency trung bình.
+mention hit rate (answer_should_mention), citation rate, latency; Agentic thêm tỷ lệ viết lại query.
 Mỗi câu: Naive 1 lượt LLM, Agentic 2 hoặc 4 lượt (max_iters=2), cộng 1 lượt chấm faithfulness.
-CHẠY: python step_ablation_rag.py (cần Ollama đang chạy; đặt SAMPLE_SIZE để chạy thử nhanh).
+Model LLM lấy từ .env (OLLAMA_MODEL, xem rag_core.py).
+
+CHẠY:
+  python step_ablation_rag.py                      # 250 câu, cả 4 cấu hình
+  python step_ablation_rag.py --sample 20          # chạy thử 20 câu đầu
+  python step_ablation_rag.py --configs naive agentic
+  python step_ablation_rag.py --resume             # chạy tiếp từ data/rag_ablation_details.jsonl
+Output:
+  data/rag_ablation_results.json   bảng tổng hợp (toàn bộ và 50 câu viết tay)
+  data/rag_ablation_details.jsonl  chi tiết từng câu, ghi ngay sau mỗi câu
 """
+import argparse
 import json
+import os
 import re
 import time
+from datetime import datetime
 
+from rag_core import LLM_MODEL
 from rag_core import answer as naive_answer
 from rag_core import answer_agentic, call_llm
 from rag_core import build_context
-from search_core import search, available_rerankers
+from search_core import available_rerankers
 from metrics import recall_at_k
 from rag_metrics import context_precision_at_k, faithfulness, answer_relevancy
 
 RAG_EVAL_SET_PATH = "data/eval_set.jsonl"
+RESULTS_PATH = "data/rag_ablation_results.json"
+DETAILS_PATH = "data/rag_ablation_details.jsonl"
 K = 5   # nhỏ hơn A1 (k=10): context ngắn giúp LLM ít lạc hướng
-
-SAMPLE_SIZE = None   # None = toàn bộ eval set; đặt số nhỏ (vd 20) để chạy thử
+HANDWRITTEN = 50   # 50 dòng đầu eval set là câu viết tay (30 A1 + 20 A3)
 
 CITATION_PATTERN = re.compile(r"\[\d+\]")
 
+CONFIGS = {
+    "naive":         ("Naive RAG",       lambda q, k: naive_answer(q, k=k)),
+    "naive_minilm":  ("Naive + MiniLM",  lambda q, k: naive_answer(q, k=k, reranker="cross_encoder")),
+    "naive_deberta": ("Naive + DeBERTa", lambda q, k: naive_answer(q, k=k, reranker="deberta")),
+    "agentic":       ("Agentic RAG",     lambda q, k: answer_agentic(q, k=k)),
+}
+METRIC_KEYS = ["context_recall", "context_precision", "faithfulness", "answer_relevancy",
+               "mention_hit", "citation", "latency_sec"]
 
-def load_eval_set():
-    rows = []
+
+def load_eval_set(sample_size=None):
     with open(RAG_EVAL_SET_PATH, "r", encoding="utf-8") as f:
-        for line in f:
-            rows.append(json.loads(line))
-    if SAMPLE_SIZE is not None:
-        rows = rows[:SAMPLE_SIZE]
-    return rows
+        rows = [json.loads(line) for line in f if line.strip()]
+    return rows[:sample_size] if sample_size else rows
 
 
 def has_valid_citation(answer_text: str) -> bool:
@@ -51,109 +72,147 @@ def mention_hit_rate(answer_text: str, must_mention: list) -> float:
     return hits / len(must_mention)
 
 
-def run_ablation_config(name, answer_fn, eval_set):
-    """Chạy 1 cấu hình trên eval_set. answer_fn(query, k) trả dict có "answer", "sources"."""
-    recalls, precisions, faiths, relevancies, mention_rates = [], [], [], [], []
-    citation_hits = 0
-    latencies = []
+def evaluate_one(config_key, answer_fn, index, item):
+    """Chạy 1 câu hỏi với 1 cấu hình, trả dict chi tiết (gồm các metric)."""
+    query, relevant_ids = item["query"], item["relevant_ids"]
 
-    for i, item in enumerate(eval_set, start=1):
-        query = item["query"]
-        relevant_ids = item["relevant_ids"]
+    start = time.time()
+    result = answer_fn(query, K)
+    latency = time.time() - start
 
-        start = time.time()
-        result = answer_fn(query, k=K)
-        latency = time.time() - start
-        latencies.append(latency)
+    retrieved_ids = [s["id"] for s in result["sources"]]
+    context_text = build_context(result["sources"]) if result["sources"] else ""
 
-        retrieved_ids = [s["id"] for s in result["sources"]]
-        r = recall_at_k(retrieved_ids, relevant_ids, K)
-        p = context_precision_at_k(retrieved_ids, relevant_ids, K)
-        if r is not None:
-            recalls.append(r)
-        if p is not None:
-            precisions.append(p)
-
-        if has_valid_citation(result["answer"]):
-            citation_hits += 1
-
-        m = mention_hit_rate(result["answer"], item.get("answer_should_mention", []))
-        if m is not None:
-            mention_rates.append(m)
-
+    row = {
+        "config": config_key,
+        "index": index,
+        "query": query,
+        "relevant_ids": relevant_ids,
+        "retrieved_ids": retrieved_ids,
+        "answer": result["answer"],
+        "context_recall": recall_at_k(retrieved_ids, relevant_ids, K),
+        "context_precision": context_precision_at_k(retrieved_ids, relevant_ids, K),
         # Faithfulness chấm trên đúng context mà câu trả lời đã dùng.
-        context_text = build_context(result["sources"]) if result["sources"] else ""
-        f = faithfulness(result["answer"], context_text, call_llm)
-        if f is not None:
-            faiths.append(f)
+        "faithfulness": faithfulness(result["answer"], context_text, call_llm),
+        "answer_relevancy": answer_relevancy(result["answer"], query),
+        "mention_hit": mention_hit_rate(result["answer"], item.get("answer_should_mention", [])),
+        "citation": 1.0 if has_valid_citation(result["answer"]) else 0.0,
+        "latency_sec": latency,
+    }
+    if "final_query_used" in result:
+        row["final_query_used"] = result["final_query_used"]
+        row["rewritten"] = result["final_query_used"] != query
+        row["judge_verdicts"] = result.get("judge_verdicts", [])
+    return row
 
-        rel = answer_relevancy(result["answer"], query)
-        if rel is not None:
-            relevancies.append(rel)
 
-        if i % 10 == 0:
-            print(f"    [{name}] đã chạy {i}/{len(eval_set)}")
+def summarize(rows):
+    errors = [r for r in rows if "error" in r]
+    rows = [r for r in rows if "error" not in r]
 
-    def avg(values):
+    def avg(key):
+        values = [r[key] for r in rows if r.get(key) is not None]
         return sum(values) / len(values) if values else None
 
-    n = len(eval_set)
-    return {
-        "name": name,
-        "context_recall@k": avg(recalls),
-        "context_precision@k": avg(precisions),
-        "faithfulness": avg(faiths),
-        "answer_relevancy": avg(relevancies),
-        "mention_hit_rate": avg(mention_rates),
-        "citation_rate": citation_hits / n if n else None,
-        "avg_latency_sec": avg(latencies),
-    }
+    summary = {key: avg(key) for key in METRIC_KEYS}
+    summary["n"] = len(rows)
+    summary["n_errors"] = len(errors)
+    rewritten = [r["rewritten"] for r in rows if "rewritten" in r]
+    if rewritten:
+        summary["rewrite_rate"] = sum(rewritten) / len(rewritten)
+    return summary
+
+
+def fmt(value, pct=False):
+    if value is None:
+        return "N/A"
+    return f"{value * 100:.1f}%" if pct else f"{value:.3f}"
+
+
+def print_table(title, results, subset):
+    print(f"\n{title}")
+    header = (f"{'Cấu hình':<16} {'n':>4} {'Lỗi':>4} {'CtxRecall':>10} {'CtxPrec':>9} {'Faithful':>9} "
+              f"{'AnsRel':>8} {'Mention':>8} {'Citation':>9} {'Latency':>8} {'Rewrite':>8}")
+    print(header)
+    print("-" * len(header))
+    for r in results:
+        s = r[subset]
+        print(f"{r['name']:<16} {s['n']:>4} {s['n_errors']:>4} {fmt(s['context_recall']):>10} {fmt(s['context_precision']):>9} "
+              f"{fmt(s['faithfulness']):>9} {fmt(s['answer_relevancy']):>8} {fmt(s['mention_hit']):>8} "
+              f"{fmt(s['citation'], pct=True):>9} {fmt(s['latency_sec']):>8} "
+              f"{fmt(s.get('rewrite_rate'), pct=True) if 'rewrite_rate' in s else '-':>8}")
 
 
 def main():
-    eval_set = load_eval_set()
-    print(f"Chạy ablation RAG trên {len(eval_set)} câu hỏi (SAMPLE_SIZE={SAMPLE_SIZE}), k={K}")
-    print("Lưu ý: cần Ollama đang chạy -- mỗi câu: Naive 2 lượt LLM, Agentic 3 hoặc 5 lượt "
-          "(gồm 1 lượt chấm faithfulness).\n")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--sample", type=int, default=None, help="chỉ chạy N câu đầu")
+    parser.add_argument("--configs", nargs="+", choices=list(CONFIGS), default=list(CONFIGS))
+    parser.add_argument("--resume", action="store_true",
+                        help="giữ các câu đã chạy xong trong file chi tiết, chỉ chạy phần còn thiếu")
+    args = parser.parse_args()
 
-    configs = [("Naive RAG", lambda q, k: naive_answer(q, k=k))]
-    for name, label in [("cross_encoder", "Naive + MiniLM"), ("deberta", "Naive + DeBERTa")]:
-        if name in available_rerankers():
-            configs.append((label, lambda q, k, r=name: naive_answer(q, k=k, reranker=r)))
-        else:
-            print(f"Bỏ qua {label}: chưa có model")
-    configs.append(("Agentic RAG", lambda q, k: answer_agentic(q, k=k)))
+    eval_set = load_eval_set(args.sample)
+    config_keys = [c for c in args.configs
+                   if c != "naive_deberta" or "deberta" in available_rerankers()]
+    if len(config_keys) < len(args.configs):
+        print("Bỏ qua naive_deberta: chưa có models/deberta-10k-rank_net")
+
+    print(f"Ablation RAG: {len(eval_set)} câu, k={K}, LLM={LLM_MODEL}, cấu hình={config_keys}")
+    print("Mỗi câu: Naive 2 lượt LLM, Agentic 3 hoặc 5 lượt (gồm 1 lượt chấm faithfulness).\n")
+
+    done = {}   # (config, index) -> row đã chạy xong (không lỗi) từ lần chạy trước
+    if args.resume and os.path.exists(DETAILS_PATH):
+        with open(DETAILS_PATH, "r", encoding="utf-8") as f:
+            for line in f:
+                row = json.loads(line)
+                if "error" not in row:
+                    done[(row["config"], row["index"])] = row
+        print(f"Resume: đã có {len(done)} kết quả từ lần chạy trước\n")
+    with open(DETAILS_PATH, "w", encoding="utf-8") as f:
+        for row in done.values():
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
     results = []
-    for name, fn in configs:
+    for key in config_keys:
+        name, fn = CONFIGS[key]
         print(f"Đang chạy: {name}...")
-        results.append(run_ablation_config(name, fn, eval_set))
+        rows = []
+        for i, item in enumerate(eval_set):
+            if (key, i) in done:
+                rows.append(done[(key, i)])
+                continue
+            try:
+                row = evaluate_one(key, fn, i, item)
+            except Exception as e:   # call_llm đã tự thử lại; ghi lỗi rồi chạy tiếp câu sau
+                row = {"config": key, "index": i, "query": item["query"],
+                       "error": f"{type(e).__name__}: {e}"}
+                print(f"    [{name}] câu {i}: LỖI {row['error'][:120]}")
+            rows.append(row)
+            with open(DETAILS_PATH, "a", encoding="utf-8") as f:
+                f.write(json.dumps(row, ensure_ascii=False) + "\n")
+            if (i + 1) % 10 == 0:
+                print(f"    [{name}] {i + 1}/{len(eval_set)}")
+        results.append({
+            "name": name,
+            "config": key,
+            "all": summarize(rows),
+            "handwritten": summarize([r for r in rows if r["index"] < HANDWRITTEN]),
+        })
 
-    header = (f"{'Cấu hình':<16} {'Ctx Recall':<11} {'Ctx Precision':<14} {'Faithfulness':<13} "
-              f"{'Ans Relevancy':<14} {'Mention hit':<12} {'Citation':<10} {'Latency(s)':<10}")
-    print(f"\n{header}")
-    print("-" * len(header))
-    for r in results:
-        def fmt(key, pct=False):
-            v = r[key]
-            if v is None:
-                return "N/A"
-            return f"{v*100:.1f}%" if pct else f"{v:.3f}"
-        print(f"{r['name']:<16} {fmt('context_recall@k'):<11} {fmt('context_precision@k'):<14} "
-              f"{fmt('faithfulness'):<13} {fmt('answer_relevancy'):<14} {fmt('mention_hit_rate'):<12} "
-              f"{fmt('citation_rate', pct=True):<10} {r['avg_latency_sec']:.2f}")
+    print_table("Toàn bộ", results, "all")
+    print_table(f"{HANDWRITTEN} câu viết tay (nếu có trong mẫu)", results, "handwritten")
 
-    print("\nCách đọc bảng:")
-    print("- Context Recall/Precision đo tầng retrieval: 'Naive' và 'Naive + reranker' chỉ khác ở")
-    print("  bước rerank, nên chênh lệch 2 cột này là tác dụng của reranker lên context đưa cho LLM.")
-    print("- Naive vs Agentic cùng gọi search() ở vòng đầu; khác nhau khi Agentic tự viết lại query.")
-    print("- Faithfulness thấp -> LLM đang BỊA thông tin ngoài context -- lỗi tầng Generation.")
-    print("- Answer Relevancy thấp nhưng Faithfulness cao -> câu trả lời ĐÚNG (không bịa) nhưng")
-    print("  LẠC ĐỀ -- có thể do prompt chưa ép rõ 'phải trả lời thẳng vào câu hỏi'.")
-    print("- Mention hit rate thấp -> đối chiếu qrels (answer_should_mention) cho thấy LLM bỏ sót")
-    print("  chi tiết QUAN TRỌNG dù không bịa gì sai -- khác lỗi Faithfulness.")
-    print("- Latency của Agentic cao hơn vì gọi LLM nhiều lượt; latency của reranker cộng thêm")
-    print("  thời gian chấm 30 ứng viên (DeBERTa chậm hơn MiniLM trên CPU).")
+    output = {
+        "date": datetime.now().isoformat(timespec="seconds"),
+        "llm_model": LLM_MODEL,
+        "eval_set": RAG_EVAL_SET_PATH,
+        "num_queries": len(eval_set),
+        "k": K,
+        "results": results,
+    }
+    with open(RESULTS_PATH, "w", encoding="utf-8") as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+    print(f"\nĐã lưu {RESULTS_PATH} và {DETAILS_PATH}")
 
 
 if __name__ == "__main__":

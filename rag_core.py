@@ -5,14 +5,24 @@ Luồng: retrieve() -> build_context() -> build_prompt() -> call_llm().
 retrieve() gọi search() của A1; tuỳ chọn rerank bằng cross-encoder MiniLM (A1) hoặc DeBERTa distill (A2).
 Có 2 pipeline: answer() (Naive RAG) và answer_agentic() (tự đánh giá, viết lại query, search lại),
 kèm Memory hội thoại lưu trong RAM theo session_id.
-Yêu cầu: Ollama chạy ở localhost:11434 và đã `ollama pull llama3.1`.
+Yêu cầu: Ollama đang chạy và đã pull model (mặc định llama3.1 tại localhost:11434).
+Cấu hình trong file .env ở thư mục project (xem .env.example): OLLAMA_MODEL, OLLAMA_URL.
+Biến môi trường đặt sẵn trong terminal được ưu tiên hơn .env.
 """
+import os
+import time
+from pathlib import Path
+
 import requests
+from dotenv import load_dotenv
 
 from search_core import search
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-LLM_MODEL = "llama3.1"   # đổi nếu đã pull model khác trong Ollama
+load_dotenv(Path(__file__).with_name(".env"))   # không ghi đè biến môi trường đã có
+
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434/api/generate")
+LLM_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.1")
+LLM_TIMEOUT_SEC = 600   # model nhỏ chạy CPU có thể mất vài phút cho 1 câu trả lời
 
 RERANK_POOL = 30   # số ứng viên đưa vào rerank; cùng pool với step_ablation_rerank.py
 
@@ -77,15 +87,38 @@ Câu hỏi của người dùng: "{query}"
 Trả lời ngắn gọn bằng tiếng Việt, TRÍCH DẪN số thứ tự trong ngoặc vuông (ví dụ [1]) mỗi khi nhắc tới 1 sản phẩm cụ thể. Nếu câu hỏi hiện tại tham chiếu tới lượt hỏi trước (ví dụ "còn màu khác không", "cái đó giá bao nhiêu"), dùng lịch sử hội thoại ở trên để hiểu đúng ý khách đang hỏi về sản phẩm nào."""
 
 
+LLM_RETRIES = 3   # số lần thử khi lỗi tạm thời (mất kết nối, timeout, Ollama trả 5xx)
+
+
+def _ollama_error(response):
+    # Ollama trả lý do trong body, vd {"error": "model 'llama3.1' not found"}.
+    try:
+        detail = response.json().get("error", response.text)
+    except ValueError:
+        detail = response.text
+    return requests.HTTPError(f"Ollama trả {response.status_code}: {detail} (model: {LLM_MODEL})",
+                              response=response)
+
+
 def call_llm(prompt: str) -> str:
     """Gọi Ollama /api/generate (không streaming). Muốn đổi sang API khác chỉ cần sửa hàm này."""
-    response = requests.post(OLLAMA_URL, json={
-        "model": LLM_MODEL,
-        "prompt": prompt,
-        "stream": False
-    })
-    response.raise_for_status()
-    return response.json()["response"]
+    for attempt in range(1, LLM_RETRIES + 1):
+        try:
+            response = requests.post(OLLAMA_URL, json={
+                "model": LLM_MODEL,
+                "prompt": prompt,
+                "stream": False
+            }, timeout=LLM_TIMEOUT_SEC)
+        except (requests.ConnectionError, requests.Timeout):
+            if attempt == LLM_RETRIES:
+                raise
+        else:
+            if response.ok:
+                return response.json()["response"]
+            # Lỗi 4xx (vd sai tên model) thì thử lại cũng vô ích.
+            if response.status_code < 500 or attempt == LLM_RETRIES:
+                raise _ollama_error(response)
+        time.sleep(5 * attempt)
 
 
 # ---------------------------------------------------------------------------
@@ -175,12 +208,14 @@ def answer_agentic(query: str, k: int = 5, components=None, max_iters: int = 2,
 
     current_query = query
     results, context = [], ""
+    verdicts = []
 
     for attempt in range(max_iters):
         results = retrieve(current_query, k=k, components=components, reranker=reranker)
         context = build_context(results) if results else "(không có kết quả)"
 
         verdict = judge_sufficiency(query, context)   # luôn so với query gốc
+        verdicts.append(verdict)
         if verdict.upper().startswith("CÓ") or attempt == max_iters - 1:
             break
 
@@ -198,5 +233,6 @@ def answer_agentic(query: str, k: int = 5, components=None, max_iters: int = 2,
         "answer": llm_answer,
         "sources": results,
         "final_query_used": current_query,
+        "judge_verdicts": verdicts,
         "reranker": reranker,
     }

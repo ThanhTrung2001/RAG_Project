@@ -1,0 +1,107 @@
+{
+  "date": "2026-09-29T18:32:47",
+  "llm_model": "qwen2.5:3b",
+  "eval_set": "data/eval_set.jsonl",
+  "num_queries": 3,
+  "k": 5,
+  "results": [
+    {
+      "name": "Naive RAG",
+      "config": "naive",
+      "all": {
+        "context_recall": 1.0,
+        "context_precision": 1.0,
+        "faithfulness": 0.9333333333333332,
+        "answer_relevancy": 0.028049078459541004,
+        "mention_hit": 0.0,
+        "citation": 1.0,
+        "latency_sec": 7.1488503615061445,
+        "n": 3
+      },
+      "handwritten": {
+        "context_recall": 1.0,
+        "context_precision": 1.0,
+        "faithfulness": 0.9333333333333332,
+        "answer_relevancy": 0.028049078459541004,
+        "mention_hit": 0.0,
+        "citation": 1.0,
+        "latency_sec": 7.1488503615061445,
+        "n": 3
+      }
+    },
+    {
+      "name": "Naive + MiniLM",
+      "config": "naive_minilm",
+      "all": {
+        "context_recall": 1.0,
+        "context_precision": 1.0,
+        "faithfulness": 0.7999999999999999,
+        "answer_relevancy": 0.028049078459541004,
+        "mention_hit": 0.0,
+        "citation": 1.0,
+        "latency_sec": 5.173636436462402,
+        "n": 3
+      },
+      "handwritten": {
+        "context_recall": 1.0,
+        "context_precision": 1.0,
+        "faithfulness": 0.7999999999999999,
+        "answer_relevancy": 0.028049078459541004,
+        "mention_hit": 0.0,
+        "citation": 1.0,
+        "latency_sec": 5.173636436462402,
+        "n": 3
+      }
+    },
+    {
+      "name": "Naive + DeBERTa",
+      "config": "naive_deberta",
+      "all": {
+        "context_recall": 1.0,
+        "context_precision": 1.0,
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.028049078459541004,
+        "mention_hit": 0.0,
+        "citation": 1.0,
+        "latency_sec": 8.236539284388224,
+        "n": 3
+      },
+      "handwritten": {
+        "context_recall": 1.0,
+        "context_precision": 1.0,
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.028049078459541004,
+        "mention_hit": 0.0,
+        "citation": 1.0,
+        "latency_sec": 8.236539284388224,
+        "n": 3
+      }
+    },
+    {
+      "name": "Agentic RAG",
+      "config": "agentic",
+      "all": {
+        "context_recall": 1.0,
+        "context_precision": 1.0,
+        "faithfulness": 0.5333333333333333,
+        "answer_relevancy": 0.028049078459541004,
+        "mention_hit": 0.0,
+        "citation": 1.0,
+        "latency_sec": 15.540971676508585,
+        "n": 3,
+        "rewrite_rate": 1.0
+      },
+      "handwritten": {
+        "context_recall": 1.0,
+        "context_precision": 1.0,
+        "faithfulness": 0.5333333333333333,
+        "answer_relevancy": 0.028049078459541004,
+        "mention_hit": 0.0,
+        "citation": 1.0,
+        "latency_sec": 15.540971676508585,
+        "n": 3,
+        "rewrite_rate": 1.0
+      }
+    }
+  ]
+}

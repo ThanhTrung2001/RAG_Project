@@ -194,6 +194,24 @@ def search(query, query_type: str, k: int = 10, components=None, top_n: int = 50
     return results[:k]
 
 
+def get_product(doc_id: int, max_description_chars: int = 2000):
+    """Thông tin 1 sản phẩm trong catalog để hiển thị chi tiết; None nếu không có id này."""
+    row = _catalog.get(doc_id)
+    if row is None:
+        return None
+    # search_text = title + " " + description (step1), nên bỏ phần title ở đầu để lấy mô tả.
+    description = row["search_text"][len(row["caption"]):].strip()
+    return {
+        "id": doc_id,
+        "image_path": row["image_path"],
+        "caption": row["caption"],
+        "brand": row.get("brand", ""),
+        "category": row.get("category", ""),
+        "description": description[:max_description_chars],
+        "description_truncated": len(description) > max_description_chars,
+    }
+
+
 def available_components():
     """Tên các component đã đăng ký (frontend dùng để sinh checkbox)."""
     return list(COMPONENT_REGISTRY.keys())

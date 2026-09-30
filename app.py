@@ -15,8 +15,9 @@ from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 
-from search_core import search, available_components, available_rerankers
+from search_core import search, available_components, available_rerankers, get_product
 from rag_core import answer as rag_answer, answer_agentic as rag_answer_agentic, clear_history
+from rag_core import LLM_MODEL
 
 app = FastAPI(title="A1 Multimodal Search + A3 RAG API")
 
@@ -84,6 +85,15 @@ def search_text(
     }
 
 
+@app.get("/api/v1/products/{product_id}")
+def product_detail(product_id: int):
+    """Chi tiết 1 sản phẩm (tên, brand, category, mô tả) để hiển thị khi bấm vào sản phẩm."""
+    product = get_product(product_id)
+    if product is None:
+        raise HTTPException(404, f"Không có sản phẩm id={product_id}")
+    return product
+
+
 @app.post("/api/v1/search_by_image")
 async def search_by_image(
     file: UploadFile = File(...),
@@ -138,9 +148,13 @@ def ask(
         if agentic:
             return rag_answer_agentic(q, k=k, session_id=session_id, reranker=reranker)
         return rag_answer(q, k=k, session_id=session_id, reranker=reranker)
+    except requests.HTTPError as e:
+        # Ollama có chạy nhưng trả lỗi (thường là chưa pull đúng model).
+        raise HTTPException(503, f"{e}. Xem model đã có bằng `ollama list`; "
+                                 "đổi model bằng biến môi trường OLLAMA_MODEL.")
     except requests.RequestException as e:
-        raise HTTPException(503, f"Không gọi được LLM qua Ollama ({type(e).__name__}). "
-                                 "Kiểm tra Ollama đã chạy và đã pull model chưa.")
+        raise HTTPException(503, f"Không kết nối được Ollama ({type(e).__name__}) khi gọi model "
+                                 f"{LLM_MODEL}. Kiểm tra Ollama đã chạy chưa.")
 
 
 @app.post("/api/v1/reset_session")

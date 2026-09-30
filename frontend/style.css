@@ -35,6 +35,7 @@
 }
 
 * { box-sizing: border-box; }
+img { max-width: 100%; }   /* không ảnh nào tràn khỏi khung chứa */
 
 body {
   margin: 0;
@@ -178,7 +179,7 @@ select:disabled { opacity: .5; cursor: not-allowed; }
 @media (max-width: 900px) { .chat-layout { grid-template-columns: 1fr; } }
 
 .chat-card { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
-.chat-log { height: 460px; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: var(--surface-2); }
+.chat-log { height: 460px; overflow-y: auto; overflow-x: hidden; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: var(--surface-2); }
 .bubble { max-width: 85%; padding: 10px 14px; border-radius: 16px; white-space: pre-wrap; word-wrap: break-word; }
 .bubble.user { align-self: flex-end; background: var(--user-bubble); color: var(--user-text); border-bottom-right-radius: 4px; }
 .bubble.bot { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
@@ -197,3 +198,31 @@ select:disabled { opacity: .5; cursor: not-allowed; }
 .source-item .caption { font-size: 13.5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .source-item .score { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .source-item .num { font-weight: 700; color: var(--primary); margin-right: 4px; }
+
+/* ---------- Sản phẩm trong câu trả lời + khung chi tiết (A3) ---------- */
+.side-column { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+#detailCard.active { order: -1; }   /* đã chọn sản phẩm: hiện chi tiết trên danh sách nguồn */
+
+.cited-products { align-self: flex-start; max-width: 85%; min-width: 0; display: flex; flex-wrap: wrap; gap: 8px; margin-top: -2px; }
+.cited-card {
+  display: flex; align-items: center; gap: 8px; width: 230px; padding: 6px 8px;
+  font: inherit; text-align: left; color: var(--text); cursor: pointer;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.cited-card:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+.cited-card img { width: 44px; height: 44px; max-height: 44px; flex-shrink: 0; object-fit: contain; background: #fff; border-radius: 6px; }
+.cited-card .caption { font-size: 12.5px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cited-card .num { font-weight: 700; color: var(--primary); margin-right: 4px; }
+
+.source-item.clickable { cursor: pointer; transition: border-color .15s; }
+.source-item.clickable:hover { border-color: var(--primary); }
+.source-item.selected { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-soft); }
+
+.detail-image { width: 100%; height: 280px; max-height: 280px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 12px; }
+.detail-image img { width: 100%; height: 100%; max-height: 280px; object-fit: contain; }
+.detail-title { font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+.detail-title .num { color: var(--primary); }
+.detail-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.detail-meta .badge { border-radius: 10px; }   /* category dài xuống nhiều dòng */
+.detail-desc { font-size: 13.5px; white-space: pre-wrap; max-height: 260px; overflow-y: auto; padding-right: 4px; margin-bottom: 8px; color: var(--text); }

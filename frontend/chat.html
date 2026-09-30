@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A3 - Chatbot RAG</title>
-<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/style.css?v=3">
 </head>
 <body>
   <header class="topbar">
@@ -50,11 +50,18 @@
         </div>
       </section>
 
-      <section class="card">
-        <p class="section-title">Nguồn đưa vào context</p>
-        <div class="status" id="status" style="margin-top: 0;"></div>
-        <div class="source-list" id="sources"><div class="hint">Chưa có câu hỏi.</div></div>
-      </section>
+      <div class="side-column">
+        <section class="card">
+          <p class="section-title">Nguồn đưa vào context</p>
+          <div class="status" id="status" style="margin-top: 0;"></div>
+          <div class="source-list" id="sources"><div class="hint">Chưa có câu hỏi.</div></div>
+        </section>
+
+        <section class="card" id="detailCard">
+          <p class="section-title">Chi tiết sản phẩm</p>
+          <div id="productDetail"><div class="hint">Bấm vào một sản phẩm trong câu trả lời hoặc trong danh sách nguồn để xem chi tiết.</div></div>
+        </section>
+      </div>
     </div>
   </main>
 
@@ -135,9 +142,11 @@ function renderSources(data, agentic) {
   }
   data.sources.forEach((r, i) => {
     const item = document.createElement('div');
-    item.className = 'source-item';
+    item.className = 'source-item clickable';
+    item.dataset.productId = r.id;
+    item.onclick = () => showProductDetail(r, i + 1);
     item.innerHTML = `
-      <img loading="lazy" alt="">
+      <img loading="lazy" alt="" width="64" height="64">
       <div><div class="caption"><span class="num"></span><span class="text"></span></div><div class="score"></div></div>`;
     item.querySelector('img').src = `/images/${r.image_path.split('/').pop()}`;
     item.querySelector('.num').textContent = `[${i + 1}]`;
@@ -148,6 +157,88 @@ function renderSources(data, agentic) {
       : `rrf ${r.score}`;
     list.appendChild(item);
   });
+}
+
+// Các sản phẩm được LLM trích dẫn ([n]) trong câu trả lời, theo thứ tự xuất hiện, không trùng.
+function citedSources(answer, sources) {
+  const seen = new Set();
+  const cited = [];
+  for (const match of answer.matchAll(/\[(\d+)\]/g)) {
+    const n = Number(match[1]);
+    if (n >= 1 && n <= sources.length && !seen.has(n)) {
+      seen.add(n);
+      cited.push({ n, source: sources[n - 1] });
+    }
+  }
+  return cited;
+}
+
+// Thẻ nhỏ cho từng sản phẩm được trích dẫn, đặt ngay dưới câu trả lời của bot.
+function renderCitedProducts(afterElement, cited) {
+  if (!cited.length) return;
+  const row = document.createElement('div');
+  row.className = 'cited-products';
+  for (const { n, source } of cited) {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'cited-card';
+    card.innerHTML = '<img loading="lazy" alt="" width="44" height="44"><span class="caption"><span class="num"></span><span class="text"></span></span>';
+    card.querySelector('img').src = `/images/${source.image_path.split('/').pop()}`;
+    card.querySelector('.num').textContent = `[${n}]`;
+    card.querySelector('.text').textContent = source.caption;
+    card.title = source.caption;
+    card.onclick = () => showProductDetail(source, n);
+    row.appendChild(card);
+  }
+  afterElement.after(row);
+  const log = document.getElementById('chatLog');
+  log.scrollTop = log.scrollHeight;
+}
+
+// Hiển thị chi tiết 1 sản phẩm ở cột phải (dữ liệu lấy từ catalog qua /api/v1/products/{id}).
+async function showProductDetail(source, n) {
+  document.querySelectorAll('.source-item.selected').forEach(el => el.classList.remove('selected'));
+  const listItem = document.querySelector(`.source-item[data-product-id="${source.id}"]`);
+  if (listItem) listItem.classList.add('selected');
+
+  const panel = document.getElementById('productDetail');
+  panel.innerHTML = '<div class="hint">Đang tải...</div>';
+  document.getElementById('detailCard').classList.add('active');   // đưa khung chi tiết lên đầu cột
+  document.getElementById('detailCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  try {
+    const res = await fetch(`/api/v1/products/${source.id}`);
+    const p = await res.json();
+    if (!res.ok) throw new Error(p.detail || res.status);
+
+    panel.innerHTML = `
+      <div class="detail-image"><img alt=""></div>
+      <div class="detail-title"><span class="num"></span><span class="text"></span></div>
+      <div class="detail-meta"></div>
+      <div class="detail-desc"></div>
+      <div class="score"></div>`;
+    panel.querySelector('img').src = `/images/${p.image_path.split('/').pop()}`;
+    panel.querySelector('.num').textContent = n ? `[${n}] ` : '';
+    panel.querySelector('.text').textContent = p.caption;
+
+    const meta = panel.querySelector('.detail-meta');
+    if (p.brand) meta.appendChild(badge('Brand', p.brand));
+    if (p.category) meta.appendChild(badge('Category', p.category));
+    meta.appendChild(badge('ID', p.id));
+
+    panel.querySelector('.detail-desc').textContent = p.description
+      ? p.description + (p.description_truncated ? ' …' : '')
+      : 'Sản phẩm không có mô tả.';
+    panel.querySelector('.score').textContent = source.rerank_score !== undefined
+      ? `Điểm: rerank ${source.rerank_score} · rrf ${source.score}`
+      : `Điểm: rrf ${source.score}`;
+  } catch (err) {
+    panel.innerHTML = '';
+    const el = document.createElement('div');
+    el.className = 'hint error';
+    el.textContent = `Không tải được sản phẩm: ${err.message}`;
+    panel.appendChild(el);
+  }
 }
 
 async function ask() {
@@ -180,6 +271,7 @@ async function ask() {
       botBubble.appendChild(note);
     }
     renderSources(data, agentic);
+    renderCitedProducts(botBubble, citedSources(data.answer, data.sources || []));
   } catch (err) {
     botBubble.classList.remove('typing');
     botBubble.classList.add('error');
@@ -196,6 +288,9 @@ async function resetChat() {
     '<div class="bubble bot">Đã bắt đầu cuộc trò chuyện mới.</div>';
   document.getElementById('sources').innerHTML = '<div class="hint">Chưa có câu hỏi.</div>';
   document.getElementById('status').innerHTML = '';
+  document.getElementById('productDetail').innerHTML =
+    '<div class="hint">Bấm vào một sản phẩm trong câu trả lời hoặc trong danh sách nguồn để xem chi tiết.</div>';
+  document.getElementById('detailCard').classList.remove('active');
 }
 
 loadRerankers();

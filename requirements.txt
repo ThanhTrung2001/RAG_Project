@@ -11,3 +11,4 @@ datasets
 python-multipart
 requests
 sentencepiece
+python-dotenv

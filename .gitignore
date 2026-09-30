@@ -29,6 +29,7 @@ Thumbs.db
 # Env / secrets
 .env
 .env.*
+!.env.example
 
 # Data artifacts (large / generated)
 data/*.zip
