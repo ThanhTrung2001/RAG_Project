@@ -273,6 +273,7 @@ Thành phần (theo `step15_expand_eval_set.py`):
 | `GET /api/v1/search` | `q`, `k=10`, `components` (chuỗi phân cách bằng dấu phẩy, rỗng = tất cả), `rerank=false` | `{query, components_used, rerank, latency_ms, results}` |
 | `POST /api/v1/search_by_image` | file ảnh (multipart), `k=10`, `components` | như trên, `rerank` luôn false |
 | `GET /api/v1/rerankers` | — | `{rerankers: [...]}` |
+| `GET /api/v1/products/{id}` | — | `{id, image_path, caption, brand, category, description, description_truncated}`; mô tả lấy từ `search_text` bỏ phần tiêu đề, tối đa 2.000 ký tự; 404 nếu không có id |
 | `GET /api/v1/ask` | `q`, `k=5`, `agentic=false`, `session_id`, `reranker=none` | `{answer, sources, reranker}` (+ `final_query_used` nếu agentic). 400 nếu reranker không hợp lệ, 503 nếu không gọi được Ollama |
 | `POST /api/v1/reset_session` | `session_id` | `{status, session_id}` |
 | `GET /` | — | chuyển hướng tới `/search` |
@@ -384,7 +385,8 @@ python step14_eval_image_queries.py
 # A2 — cần models/deberta-10k-rank_net (tự bỏ qua dòng DeBERTa nếu không có)
 python step_ablation_rerank.py
 
-# A3 — cần Ollama: ollama pull llama3.1
+# A3 — cần Ollama: ollama pull llama3.1 (mặc định)
+# Dùng model khác, vd PowerShell: $env:OLLAMA_MODEL = "qwen2.5:3b"  (đặt trước khi chạy uvicorn hoặc step_ablation_rag.py)
 python step_ablation_rag.py
 
 # BPM
@@ -419,7 +421,6 @@ Các điểm dưới đây được phát hiện khi rà soát code và chưa đ
   - `all-MiniLM-L6-v2` là model tiếng Anh, nên Answer Relevancy giữa câu hỏi tiếng Anh và câu trả lời tiếng Việt kém tin cậy.
   - `rewrite_query` có thể sinh query tiếng Việt, bất lợi cho BM25/CLIP trên catalog tiếng Anh.
 - Faithfulness được chấm bởi **chính model** đã sinh câu trả lời (llama3.1), nên có thể thiên vị. Dòng output viết `NOT SUPPORTED` (có dấu cách) không được nhận, có thể làm điểm tăng.
-- `call_llm` không đặt timeout.
 - `_format_history` luôn thêm `...` kể cả khi câu trả lời ngắn hơn 150 ký tự.
 
 **BPM**

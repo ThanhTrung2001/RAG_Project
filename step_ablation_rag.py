@@ -23,16 +23,35 @@ import argparse
 import json
 import os
 import re
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
-from rag_core import LLM_MODEL
+import rag_core
+from rag_core import LLM_MODEL, OLLAMA_URLS
 from rag_core import answer as naive_answer
 from rag_core import answer_agentic, call_llm
 from rag_core import build_context
 from search_core import available_rerankers
 from metrics import recall_at_k
-from rag_metrics import context_precision_at_k, faithfulness, answer_relevancy
+from rag_metrics import context_precision_at_k, faithfulness
+from rag_metrics import answer_relevancy as _answer_relevancy
+
+# Khi chạy nhiều luồng (--workers), chỉ các lượt gọi LLM chạy song song. Tìm kiếm, rerank và
+# embedding dùng chung model trong tiến trình này nên được khoá để chạy lần lượt.
+_MODEL_LOCK = threading.Lock()
+
+
+def _locked(fn):
+    def wrapper(*args, **kwargs):
+        with _MODEL_LOCK:
+            return fn(*args, **kwargs)
+    return wrapper
+
+
+rag_core.retrieve = _locked(rag_core.retrieve)   # answer()/answer_agentic() tra retrieve lúc gọi
+answer_relevancy = _locked(_answer_relevancy)
 
 RAG_EVAL_SET_PATH = "data/eval_set.jsonl"
 RESULTS_PATH = "data/rag_ablation_results.json"
@@ -72,7 +91,7 @@ def mention_hit_rate(answer_text: str, must_mention: list) -> float:
     return hits / len(must_mention)
 
 
-def evaluate_one(config_key, answer_fn, index, item):
+def evaluate_one(config_key, answer_fn, index, item, with_faithfulness=True):
     """Chạy 1 câu hỏi với 1 cấu hình, trả dict chi tiết (gồm các metric)."""
     query, relevant_ids = item["query"], item["relevant_ids"]
 
@@ -93,7 +112,8 @@ def evaluate_one(config_key, answer_fn, index, item):
         "context_recall": recall_at_k(retrieved_ids, relevant_ids, K),
         "context_precision": context_precision_at_k(retrieved_ids, relevant_ids, K),
         # Faithfulness chấm trên đúng context mà câu trả lời đã dùng.
-        "faithfulness": faithfulness(result["answer"], context_text, call_llm),
+        "faithfulness": (faithfulness(result["answer"], context_text, call_llm)
+                         if with_faithfulness else None),
         "answer_relevancy": answer_relevancy(result["answer"], query),
         "mention_hit": mention_hit_rate(result["answer"], item.get("answer_should_mention", [])),
         "citation": 1.0 if has_valid_citation(result["answer"]) else 0.0,
@@ -149,6 +169,10 @@ def main():
     parser.add_argument("--configs", nargs="+", choices=list(CONFIGS), default=list(CONFIGS))
     parser.add_argument("--resume", action="store_true",
                         help="giữ các câu đã chạy xong trong file chi tiết, chỉ chạy phần còn thiếu")
+    parser.add_argument("--workers", type=int, default=1,
+                        help="số câu chạy song song; >1 làm cột Latency cao hơn thực tế (tranh GPU)")
+    parser.add_argument("--no-faithfulness", action="store_true",
+                        help="bỏ lượt chấm Faithfulness (giảm 1 lượt LLM mỗi câu)")
     args = parser.parse_args()
 
     eval_set = load_eval_set(args.sample)
@@ -157,8 +181,12 @@ def main():
     if len(config_keys) < len(args.configs):
         print("Bỏ qua naive_deberta: chưa có models/deberta-10k-rank_net")
 
+    with_faith = not args.no_faithfulness
     print(f"Ablation RAG: {len(eval_set)} câu, k={K}, LLM={LLM_MODEL}, cấu hình={config_keys}")
-    print("Mỗi câu: Naive 2 lượt LLM, Agentic 3 hoặc 5 lượt (gồm 1 lượt chấm faithfulness).\n")
+    print(f"Ollama: {OLLAMA_URLS}, workers={args.workers}, faithfulness={'có' if with_faith else 'không'}")
+    if args.workers > 1:
+        print("Lưu ý: chạy song song nên cột Latency gồm cả thời gian chờ GPU, cao hơn khi chạy 1 câu.")
+    print()
 
     done = {}   # (config, index) -> row đã chạy xong (không lỗi) từ lần chạy trước
     if args.resume and os.path.exists(DETAILS_PATH):
@@ -176,31 +204,42 @@ def main():
     for key in config_keys:
         name, fn = CONFIGS[key]
         print(f"Đang chạy: {name}...")
-        rows = []
-        for i, item in enumerate(eval_set):
-            if (key, i) in done:
-                rows.append(done[(key, i)])
-                continue
+        rows = [done[(key, i)] for i in range(len(eval_set)) if (key, i) in done]
+        pending = [(i, item) for i, item in enumerate(eval_set) if (key, i) not in done]
+        started = time.time()
+
+        def run_one(i, item, key=key, fn=fn):
             try:
-                row = evaluate_one(key, fn, i, item)
-            except Exception as e:   # call_llm đã tự thử lại; ghi lỗi rồi chạy tiếp câu sau
-                row = {"config": key, "index": i, "query": item["query"],
-                       "error": f"{type(e).__name__}: {e}"}
-                print(f"    [{name}] câu {i}: LỖI {row['error'][:120]}")
-            rows.append(row)
-            with open(DETAILS_PATH, "a", encoding="utf-8") as f:
-                f.write(json.dumps(row, ensure_ascii=False) + "\n")
-            if (i + 1) % 10 == 0:
-                print(f"    [{name}] {i + 1}/{len(eval_set)}")
+                return evaluate_one(key, fn, i, item, with_faithfulness=with_faith)
+            except Exception as e:   # call_llm đã tự thử lại; ghi lỗi rồi chạy tiếp câu khác
+                return {"config": key, "index": i, "query": item["query"],
+                        "error": f"{type(e).__name__}: {e}"}
+
+        with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
+            futures = [pool.submit(run_one, i, item) for i, item in pending]
+            for count, future in enumerate(as_completed(futures), start=1):
+                row = future.result()
+                if "error" in row:
+                    print(f"    [{name}] câu {row['index']}: LỖI {row['error'][:120]}")
+                rows.append(row)
+                with open(DETAILS_PATH, "a", encoding="utf-8") as f:   # chỉ luồng chính ghi file
+                    f.write(json.dumps(row, ensure_ascii=False) + "\n")
+                if count % 10 == 0 or count == len(pending):
+                    elapsed = time.time() - started
+                    print(f"    [{name}] {count}/{len(pending)} câu mới "
+                          f"({elapsed / count:.1f} s/câu, đã {elapsed / 60:.1f} phút)")
+
         results.append({
             "name": name,
             "config": key,
             "all": summarize(rows),
             "handwritten": summarize([r for r in rows if r["index"] < HANDWRITTEN]),
+            "template": summarize([r for r in rows if r["index"] >= HANDWRITTEN]),
         })
 
     print_table("Toàn bộ", results, "all")
     print_table(f"{HANDWRITTEN} câu viết tay (nếu có trong mẫu)", results, "handwritten")
+    print_table("Câu sinh từ mẫu (nếu có trong mẫu)", results, "template")
 
     output = {
         "date": datetime.now().isoformat(timespec="seconds"),
@@ -208,6 +247,9 @@ def main():
         "eval_set": RAG_EVAL_SET_PATH,
         "num_queries": len(eval_set),
         "k": K,
+        "workers": args.workers,
+        "faithfulness": with_faith,
+        "ollama_urls": OLLAMA_URLS,
         "results": results,
     }
     with open(RESULTS_PATH, "w", encoding="utf-8") as f:

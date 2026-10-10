@@ -9,7 +9,9 @@ Yêu cầu: Ollama đang chạy và đã pull model (mặc định llama3.1 tạ
 Cấu hình trong file .env ở thư mục project (xem .env.example): OLLAMA_MODEL, OLLAMA_URL.
 Biến môi trường đặt sẵn trong terminal được ưu tiên hơn .env.
 """
+import itertools
 import os
+import threading
 import time
 from pathlib import Path
 
@@ -21,6 +23,10 @@ from search_core import search
 load_dotenv(Path(__file__).with_name(".env"))   # không ghi đè biến môi trường đã có
 
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434/api/generate")
+# Có thể ghi nhiều địa chỉ, phân tách bằng dấu phẩy (vd mỗi GPU một Ollama); các lượt gọi chia vòng tròn.
+OLLAMA_URLS = [u.strip() for u in OLLAMA_URL.split(",") if u.strip()]
+_url_cycle = itertools.cycle(OLLAMA_URLS)
+_url_lock = threading.Lock()
 LLM_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.1")
 LLM_TIMEOUT_SEC = 600   # model nhỏ chạy CPU có thể mất vài phút cho 1 câu trả lời
 
@@ -103,8 +109,10 @@ def _ollama_error(response):
 def call_llm(prompt: str) -> str:
     """Gọi Ollama /api/generate (không streaming). Muốn đổi sang API khác chỉ cần sửa hàm này."""
     for attempt in range(1, LLM_RETRIES + 1):
+        with _url_lock:
+            url = next(_url_cycle)
         try:
-            response = requests.post(OLLAMA_URL, json={
+            response = requests.post(url, json={
                 "model": LLM_MODEL,
                 "prompt": prompt,
                 "stream": False
