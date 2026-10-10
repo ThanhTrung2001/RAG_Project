@@ -48,7 +48,7 @@ HANDWRITTEN_A3_QUERIES = [
      "answer_should_mention": ["Ergodyne", "Lanyard"]},
     {"query": "toggle style guitar capo", "relevant_ids": [1002],
      "answer_should_mention": ["Dunlop", "Capo"]},
-    {"query": "slide stopper accessory for a trombone", "relevant_ids": [1397],
+    {"query": "slide stopper accessory for a trumpet", "relevant_ids": [1397],
      "answer_should_mention": ["Yamaha", "Slide"]},
     {"query": "long track speed skates", "relevant_ids": [1493],
      "answer_should_mention": ["Zandstra", "Skate"]},

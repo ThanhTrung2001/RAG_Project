@@ -56,6 +56,10 @@
 > **Trạng thái số liệu (ngày 06/10/2026):**
 > - Tầng **Retrieval**: đã đo đủ trên 250 câu với hệ thống hiện tại (dense = SigLIP), ngày 02/10/2026.
 > - Tầng **Generation**: đã chạy đủ `step_ablation_rag.py` trên 250 câu × 4 cấu hình với `llama3.1` (Kaggle, 2 GPU T4), ngày 06/10/2026: 1000 lượt, 0 lỗi. Kết quả ở mục 7.2.
+>
+> **Cập nhật ngày 10/10/2026: ground truth đã được nâng từ "1 sản phẩm đúng / câu" (A1) lên qrels đa mức 0–3** (mục 3.2.1).
+> - Số liệu ở mục 7 **đo trên ground truth cũ** và sẽ được thay sau khi chạy lại trên Kaggle (`kaggle_run_retrieval_ablation.py`, `kaggle_run_rag_ablation.py`).
+> - Ước lượng mức thay đổi: sản phẩm đúng cũ vẫn giữ nhãn 3, chỉ 10/250 câu có thêm sản phẩm liên quan, và 3 câu được sửa lại nội dung. Vì vậy Context Recall/Precision có thể chỉ đổi nhẹ. Context nDCG@5 đa mức (mục 6.2) là metric mới, chưa có số.
 
 ---
 
@@ -91,7 +95,8 @@ Ví dụ một lượt hỏi thật (LLM `llama3.1`, chạy ngày 29/09/2026):
 2. **Memory theo phiên hội thoại**, giúp hiểu câu hỏi nối tiếp (ví dụ "còn màu khác không").
 3. **Ba lựa chọn rerank** trước khi đưa sản phẩm cho LLM: không rerank / cross-encoder MiniLM (A1) / DeBERTa distill (A2).
 4. **Grounding:** context đánh số, prompt ràng buộc, trả kèm nguồn thật, và giao diện cho bấm vào sản phẩm được trích dẫn để xem chi tiết.
-5. **Bộ đánh giá RAG tự viết, 7 metric:** đo riêng tầng Retrieval và tầng Generation, kèm script ablation lưu chi tiết từng câu.
+5. **Bộ đánh giá RAG tự viết, 8 metric:** đo riêng tầng Retrieval và tầng Generation, kèm script ablation lưu chi tiết từng câu.
+6. **Ground truth qrels đa mức (cải tiến so với A1):** A1 chỉ ghi 1 sản phẩm đúng cho mỗi câu, nhãn nhị phân. A3 gán nhãn 0–3 cho mọi sản phẩm trong pool ứng viên (5.064 cặp câu hỏi–sản phẩm), theo đúng cách xây qrels kiểu TREC (mục 3.2.1).
 
 ### 1.4 Yêu cầu của đề bài
 
@@ -155,16 +160,73 @@ Vì vậy cần **metric riêng cho từng tầng** (mục 6) và **khung chẩn
 | Sinh từ mẫu | 200 | 10 mẫu câu, điền 8 từ đầu của tên sản phẩm và brand của sản phẩm chọn ngẫu nhiên |
 
 Mỗi dòng có:
-- `relevant_ids`: đúng 1 sản phẩm đúng.
+- `qrels`: nhãn liên quan 0–3 cho từng sản phẩm trong pool ứng viên của câu đó (mục 3.2.1). **A3 thêm vào.**
+- `relevant_ids`: các sản phẩm có nhãn ≥ 2. Đây là tập *G* mà Context Recall/Precision dùng.
+- `target_ids`: sản phẩm đúng gốc của A1 (known item), luôn mang nhãn 3.
 - `answer_should_mention`: brand và 3 từ đầu của tên sản phẩm. Trường này **A3 thêm vào** để kiểm tra câu trả lời có thực sự nhắc đúng sản phẩm không.
 
-Ví dụ:
+Ví dụ (rút gọn `qrels`):
 ```json
-{"query": "something to keep pets from running out of drinking water automatically",
- "relevant_ids": [121], "answer_should_mention": ["STALTWO", "1.58 Gallon Automatic"]}
+{"query": "tool lanyard with a carabiner for working at height",
+ "target_ids": [827], "relevant_ids": [379, 827],
+ "qrels": {"379": 3, "827": 3, "271": 1, "757": 1, "851": 1, "1183": 1, "...": 0},
+ "answer_should_mention": ["Ergodyne", "Lanyard"]}
 ```
 
 **Hạn chế:** 200 câu sinh từ mẫu chứa nguyên văn một phần tên sản phẩm, nên dễ hơn câu thực tế. Kết quả vì vậy luôn được báo cáo riêng cho **50 câu viết tay**.
+
+#### 3.2.1 Cải tiến so với A1: ground truth dạng qrels đa mức
+
+**Vấn đề của ground truth A1.** Mỗi câu chỉ có đúng 1 sản phẩm đúng, nhãn nhị phân (known-item search). Hệ quả:
+- Recall@k chỉ còn là tỷ lệ "trúng hoặc trượt", và nDCG nhị phân gần như mang cùng thông tin với MRR.
+- Nếu catalog có một sản phẩm khác cũng thoả mãn câu hỏi, hệ thống trả về sản phẩm đó vẫn bị tính là sai.
+- nDCG "đa mức" của A1 không dùng nhãn thật. Nó **đoán mức 1 theo category** (cùng category với sản phẩm đúng thì được 1), trong khi hai sản phẩm cùng category chưa chắc liên quan tới câu hỏi.
+
+**Cách làm ở A3** (`step16_build_qrels.py`), theo quy trình xây qrels của TREC:
+1. **Pooling:** với mỗi câu, gộp top-10 của BM25, Dense (SigLIP) và Hybrid (RRF), cộng thêm sản phẩm đúng gốc. Trung bình 20,3 ứng viên/câu, tổng 5.064 cặp câu hỏi–sản phẩm (`data/qrels_pool.jsonl`).
+2. **Gán nhãn 0–3** cho từng cặp, **chỉ dựa trên tên, brand, category và mô tả của sản phẩm trong catalog**:
+
+| Nhãn | Ý nghĩa | Quy tắc |
+|---|---|---|
+| 3 | Đúng hoàn toàn | Đúng loại sản phẩm và thoả mọi ràng buộc trong câu (brand, model, kích thước, tính năng, tương thích) |
+| 2 | Liên quan tốt | Đúng loại sản phẩm, lệch nhẹ hoặc không kiểm chứng được một ràng buộc phụ |
+| 1 | Một phần | Phụ kiện, linh kiện, cùng nhóm sản phẩm, hoặc chỉ khớp một khía cạnh |
+| 0 | Không liên quan | — |
+
+   Hai quy tắc chặn trần: khác loại sản phẩm thì tối đa 1; vi phạm ràng buộc cứng (sai model, sai brand khi câu có nêu brand) thì tối đa 1.
+   Nhãn được LLM chấm theo từng lô 25 câu (`data/qrels_judgments/`), sau đó **rà soát thủ công** mọi nhãn 2–3 không phải sản phẩm đúng gốc. Có 6 nhãn 2 vi phạm quy tắc chặn trần bị hạ xuống 1, ví dụ "power rack" cho câu hỏi "smith machine", hay guiro LP306A cho câu hỏi nêu model LP305.
+3. **Đối chiếu sản phẩm đúng gốc với toàn văn catalog.** Có 3 câu mà truy vấn mâu thuẫn với chính sản phẩm đúng. Nhóm **sửa truy vấn cho khớp dữ liệu** thay vì ép nhãn 3 cho một sản phẩm không khớp, rồi chạy lại pooling và chấm lại 3 câu này:
+
+| Truy vấn cũ | Dữ liệu thật của sản phẩm đúng | Truy vấn mới |
+|---|---|---|
+| cornhole board set with eagle flag design | id 192 là bộ decal dán bảng (*Boards Wraps*) | cornhole board wraps with eagle flag design |
+| fast fold portable projection screen | id 1758 là tấm màn thay thế (*Replacement Surface*) | replacement screen surface for a fast fold projection screen |
+| slide stopper accessory for a trombone | mô tả id 1397: "*trumpet* slide stopper" | slide stopper accessory for a trumpet |
+
+4. Sản phẩm ngoài pool được coi là nhãn 0 (giả định chuẩn của pooling). Sản phẩm đúng gốc luôn giữ nhãn 3.
+
+**Kết quả:**
+
+| Tập câu | Số cặp đã chấm | Nhãn 3 | Nhãn 2 | Nhãn 1 | Nhãn 0 | Câu có > 1 sản phẩm liên quan (≥ 2) | Câu có sản phẩm nhãn 1 |
+|---|---|---|---|---|---|---|---|
+| 250 câu | 5.064 | 252 | 10 | 397 | 4.405 | 10 | 179 |
+| 50 viết tay | 1.017 | 52 | 6 | 114 | 845 | 6 | 42 |
+| 200 sinh từ mẫu | 4.047 | 200 | 4 | 283 | 3.560 | 4 | 137 |
+
+- **Phần lớn câu vẫn chỉ có 1 sản phẩm thực sự đúng.** Catalog gồm 2.000 sản phẩm trải trên rất nhiều ngành hàng, nên hiếm khi có hai sản phẩm cùng thoả một câu hỏi. Đây là đặc điểm của dữ liệu, không phải do chấm thiếu.
+- **Câu viết tay hưởng lợi nhiều hơn** (6/50 câu có thêm sản phẩm liên quan, so với 4/200). Câu viết tay diễn đạt theo nhu cầu, ví dụ "device that helps someone relearn to walk after an injury" có 4 sản phẩm liên quan, nên nhiều sản phẩm có thể thoả. Câu sinh từ mẫu chép tên sản phẩm, nên chỉ khớp đúng một sản phẩm.
+- **Nhãn 1 xuất hiện ở 179/250 câu.** Nhờ vậy nDCG đa mức phân biệt được giữa đưa vào context một phụ kiện liên quan và đưa vào một sản phẩm hoàn toàn lạc đề, điều mà nhãn nhị phân của A1 không làm được.
+
+**So sánh ground truth A1 và A3:**
+
+| | A1 | A3 |
+|---|---|---|
+| Số sản phẩm có nhãn / câu | 1 | 20,3 (pool) |
+| Thang nhãn | Nhị phân | 0–3 |
+| nDCG đa mức | Đoán từ category | Dùng nhãn đã gán |
+| Số câu có nhiều sản phẩm đúng | 0 | 10 |
+| Kiểm tra sản phẩm đúng với dữ liệu | Không | Có (sửa 3 câu) |
+| Code đo Recall/MRR | `metrics.py` | Giữ nguyên; chỉ `ndcg_at_k_graded` đọc thêm `qrels` |
 
 ### 3.3 Giới hạn thông tin trong context
 
@@ -221,7 +283,7 @@ flowchart LR
 | Lõi RAG | `rag_core.py` | `retrieve`, `build_context`, `build_prompt`, `call_llm`, `answer`, `answer_agentic`, Memory |
 | Tìm kiếm (A1) | `search_core.py` | `search()`, `rerank()` (MiniLM), `distilled_rerank()` (DeBERTa), `get_product()` |
 | Metric RAG | `rag_metrics.py` | Context Precision, Faithfulness, Answer Relevancy |
-| Thực nghiệm | `step_ablation_rag.py` | 4 cấu hình × 7 metric, lưu kết quả và chi tiết từng câu |
+| Thực nghiệm | `step_ablation_rag.py` | 4 cấu hình × 8 metric, lưu kết quả và chi tiết từng câu |
 | Cấu hình | `.env` (mẫu: `.env.example`) | `OLLAMA_MODEL`, `OLLAMA_URL` |
 
 ---
@@ -468,20 +530,21 @@ sequenceDiagram
 
 Script `step_ablation_rag.py` chạy từng cấu hình trên các câu của `data/eval_set.jsonl`:
 1. Với mỗi câu, gọi `answer()` hoặc `answer_agentic()` với `k = 5`, đo thời gian.
-2. Từ kết quả, tính 7 metric ở mục 6.2. Faithfulness gọi thêm 1 lượt LLM.
+2. Từ kết quả, tính 8 metric ở mục 6.2. Faithfulness gọi thêm 1 lượt LLM.
 3. Ghi **ngay** chi tiết câu đó vào `data/rag_ablation_details.jsonl`: câu hỏi, câu trả lời, id nguồn, từng metric, truy vấn đã viết lại, phán đoán của LLM.
    - Nếu một câu vẫn lỗi sau 3 lần thử lại, câu đó được ghi kèm lỗi và đếm vào cột "Lỗi", không bị loại âm thầm.
-   - Bị ngắt giữa chừng thì chạy lại với `--resume`.
+   - Bị ngắt giữa chừng thì chạy lại với `--resume`. Khi resume, script bỏ các kết quả đã chấm theo ground truth khác bản hiện tại (câu hỏi hoặc `relevant_ids` đã đổi, hoặc thiếu Context nDCG), để không trộn số liệu cũ và mới.
 4. Lấy trung bình theo cấu hình, cho **toàn bộ** và **50 câu viết tay**, rồi lưu vào `data/rag_ablation_results.json`.
 
 ### 6.2 Metric và cách tính
 
-Ký hiệu: với mỗi câu hỏi, *G* là tập id sản phẩm đúng (ở đây |G| = 1), *S = (s₁, ..., s₅)* là 5 nguồn đưa vào context theo thứ tự, *A* là câu trả lời của LLM. Mỗi metric tính cho từng câu, rồi **lấy trung bình** trên các câu (câu có giá trị `None` bị bỏ qua).
+Ký hiệu: với mỗi câu hỏi, *G* là tập id sản phẩm có nhãn ≥ 2 trong qrels (|G| = 1 ở 240/250 câu, tối đa 4; mục 3.2.1), *rel(d)* là nhãn 0–3 của sản phẩm *d*, *S = (s₁, ..., s₅)* là 5 nguồn đưa vào context theo thứ tự, *A* là câu trả lời của LLM. Mỗi metric tính cho từng câu, rồi **lấy trung bình** trên các câu (câu có giá trị `None` bị bỏ qua).
 
 | Tầng | Metric | Công thức | Ý nghĩa |
 |---|---|---|---|
 | Retrieval | Context Recall@5 | \|S ∩ G\| / \|G\| | Sản phẩm đúng có được đưa cho LLM không |
 | Retrieval | Context Precision@5 | (1/min(\|G\|, 5)) · Σ_{i: sᵢ∈G} (số id đúng trong i nguồn đầu) / i | Sản phẩm đúng có đứng cao không |
+| Retrieval | Context nDCG@5 đa mức (**mới**) | DCG/IDCG, DCG = Σᵢ rel(sᵢ) / log₂(i+1); IDCG = DCG của các nhãn trong qrels xếp giảm dần | Context có xếp đúng thứ tự mức độ liên quan không |
 | Generation | Faithfulness | (số claim SUPPORTED) / (tổng số claim) | Câu trả lời có bịa ngoài context không |
 | Generation | Answer Relevancy | cos(e(câu hỏi), e(A)) | Câu trả lời có đúng chủ đề câu hỏi không |
 | Generation | Mention hit | (số từ khoá trong `answer_should_mention` xuất hiện trong A) / (số từ khoá) | Câu trả lời có nhắc đúng sản phẩm không |
@@ -491,9 +554,14 @@ Ký hiệu: với mỗi câu hỏi, *G* là tập id sản phẩm đúng (ở đ
 
 Giải thích và ví dụ cho từng metric:
 
-**Context Recall@5** (`metrics.recall_at_k`, dùng lại của A1). Mỗi câu có đúng 1 sản phẩm đúng, nên giá trị là 1 nếu sản phẩm đúng nằm trong 5 nguồn, 0 nếu không. Trung bình trên các câu là **tỷ lệ câu mà LLM có được sản phẩm đúng để trả lời**.
+**Context Recall@5** (`metrics.recall_at_k`, dùng lại của A1). Ở 240/250 câu |G| = 1, nên giá trị là 1 nếu sản phẩm đúng nằm trong 5 nguồn, 0 nếu không. Ở 10 câu có nhiều sản phẩm liên quan, giá trị là tỷ lệ các sản phẩm đó có mặt trong 5 nguồn. Trung bình trên các câu xấp xỉ **tỷ lệ câu mà LLM có được sản phẩm đúng để trả lời**.
 
 **Context Precision@5** (`rag_metrics.context_precision_at_k`). Đây là Average Precision giới hạn trong top-5. Với |G| = 1, giá trị bằng **1/hạng** của sản phẩm đúng, hoặc 0 nếu nó không có trong top-5.
+
+**Context nDCG@5 đa mức** (`metrics.ndcg_at_k_graded`, đọc trường `qrels`; mới so với A1). Recall và Precision chỉ phân biệt "đúng" và "sai", còn metric này cho điểm theo nhãn 0–3 của từng nguồn.
+- *Ví dụ:* câu "tool lanyard with a carabiner" có hai sản phẩm nhãn 3 (379, 827) và vài sản phẩm nhãn 1. Context `[827, 379, ...]` đạt 1,0. Context `[827, 271 (nhãn 1), ...]` có Recall = 0,5 và bị nDCG trừ điểm ít hơn so với context `[827, sản phẩm nhãn 0, ...]`.
+- Với A3, metric này đo đúng điều LLM cần: các nguồn đứng đầu càng liên quan thì câu trả lời càng ít bị kéo lạc.
+- Ở A1, nDCG "đa mức" đoán mức 1 theo category. Bản mới dùng nhãn đã gán; câu nào không có `qrels` (tập truy vấn ảnh) vẫn quay về cách cũ.
 - *Ví dụ:* sản phẩm đúng ở `[3]` thì precision tại hạng 3 là 1/3, nên Context Precision@5 = 0,333. Nếu ở `[1]` thì bằng 1,0.
 - Recall không phân biệt hai trường hợp này. Precision thì có, và điều này quan trọng vì LLM thường ưu tiên trích dẫn `[1]`.
 
@@ -534,6 +602,8 @@ Giải thích và ví dụ cho từng metric:
 ---
 
 ## 7. Kết quả
+
+> **Lưu ý:** các bảng trong mục này đo trước ngày 10/10/2026, trên ground truth cũ của A1 (1 sản phẩm đúng / câu, 3 câu chưa sửa), nên chưa có cột Context nDCG@5. Sẽ cập nhật sau khi chạy lại với qrels (mục 3.2.1, Phụ lục A).
 
 ### 7.1 Tầng Retrieval (đã đo, không cần LLM)
 
@@ -726,6 +796,11 @@ flowchart TD
 - **Lệch ngôn ngữ:** câu hỏi và catalog tiếng Anh, câu trả lời tiếng Việt. Answer Relevancy dùng model embedding tiếng Anh. Mention hit so khớp chuỗi nên tên sản phẩm bị dịch sẽ không khớp.
 - Mention hit có mức trần 0,71–0,76 do brand không có trong context.
 - 200/250 câu sinh từ mẫu, dễ hơn thực tế.
+- **Qrels:**
+  - Nhãn do LLM chấm, người rà soát lại các nhãn 2–3 và các sản phẩm đúng bị nghi ngờ. Nhãn 0–1 chưa được rà toàn bộ, và chưa đo độ đồng thuận giữa người chấm (vd Cohen's kappa).
+  - Pool chỉ lấy top-10 của 3 cách tìm hiện có, nên sản phẩm liên quan mà cả 3 cách đều bỏ sót sẽ bị coi là nhãn 0. Đây là thiên lệch đã biết của phương pháp pooling.
+  - Nhãn chấm từ mô tả cắt ở 300 ký tự đầu. Những sản phẩm đúng bị nghi ngờ đã được đối chiếu với toàn văn, còn các ứng viên khác thì chưa.
+  - Tập truy vấn ảnh (`eval_set_image.jsonl`) chưa có qrels.
 
 **Hệ thống:**
 - `judge_sufficiency` chỉ nhận câu trả lời bắt đầu bằng "CÓ". Nếu LLM trả `"CÓ"` có ngoặc kép, in đậm hoặc "Yes", câu trả lời bị coi là "chưa đủ".
@@ -778,8 +853,8 @@ Theo thứ tự ưu tiên, dựa trên lỗi đo được ở mục 7.3:
 | Nâng cấp engineering/research | Có | Agentic RAG (5.7); rerank MiniLM/DeBERTa (5.2) |
 | Chứng minh nâng cấp bằng ablation | Có | Retrieval (7.1); Generation 250 câu × 4 cấu hình (7.2, 7.3). Kết quả: rerank giúp nhẹ, Agentic **không** cải thiện |
 | Chatbot nhiều lượt | Có | Memory (5.5) |
-| Đủ metric RAG | Có trong code | 7 metric (6.2) |
-| Ground truth ≥ 250 câu, dùng chung A1 | Có | `data/eval_set.jsonl` (3.2) |
+| Đủ metric RAG | Có trong code | 8 metric (6.2) |
+| Ground truth ≥ 250 câu, dùng chung A1 | Có, nâng lên qrels 0–3 | `data/eval_set.jsonl` (3.2, 3.2.1) |
 | Chẩn đoán Retrieval/Generation | Có | Mục 8, có ví dụ thật |
 | Đạo đức AI | Có | Mục 9 |
 
@@ -807,6 +882,15 @@ python step_ablation_rag.py --sample 50 --resume  # chạy tiếp nếu bị ng�
 python kaggle/make_kaggle_rag_bundle.py         # tạo dist/kaggle_rag_bundle.zip, upload làm Kaggle Dataset
 #    Notebook Kaggle (GPU T4 x2, Internet On): chạy kaggle/kaggle_run_rag_ablation.py
 #    Tải rag_ablation_output.zip ở tab Output, giải nén 2 file json vào data/
+#    Sau khi đổi ground truth: chạy trong session mới, KHÔNG dùng --resume với kết quả cũ
+
+# 6. Xây lại qrels (mục 3.2.1), chỉ khi đổi catalog hoặc eval set
+python step16_build_qrels.py pool    # tạo data/qrels_pool.jsonl
+#    chấm nhãn -> data/qrels_judgments/*.jsonl  ({"qid": ..., "grades": {"<id>": 0-3}})
+python step16_build_qrels.py merge   # ghi qrels + relevant_ids vào data/eval_set.jsonl
+
+# 7. Ablation retrieval A1 trên Kaggle (cùng bundle ở bước 5)
+#    !python kaggle_run_retrieval_ablation.py   -> retrieval_ablation_output.zip
 ```
 
 DeBERTa distill cần thư mục `models/deberta-10k-rank_net`. Tải từ mục "Download data and model" của github.com/sunnweiwei/RankGPT.

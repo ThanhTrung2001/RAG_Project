@@ -1,5 +1,7 @@
 """
-Đóng gói những file cần để chạy step_ablation_rag.py (A3) trên Kaggle thành 1 file zip.
+Đóng gói những file cần để chạy step_ablation_rag.py (A3) và các ablation retrieval A1
+(step8/9/10, step_ablation_rerank) trên Kaggle thành 1 file zip.
+Chạy lại script này mỗi khi đổi data/eval_set.jsonl hoặc code, rồi upload bản mới lên Kaggle.
 
 Chạy ở thư mục gốc project:
     python kaggle/make_kaggle_rag_bundle.py               # gồm DeBERTa (~670 MB)
@@ -11,7 +13,10 @@ import argparse
 import os
 import zipfile
 
-CODE_FILES = ["search_core.py", "rag_core.py", "rag_metrics.py", "metrics.py", "step_ablation_rag.py"]
+CODE_FILES = ["search_core.py", "rag_core.py", "rag_metrics.py", "metrics.py", "step_ablation_rag.py",
+              # ablation retrieval (A1), chạy bằng kaggle/kaggle_run_retrieval_ablation.py
+              "step8_run_ablation.py", "step9_ablation_index_fields.py", "step10_sweep_rrf.py",
+              "step_ablation_rerank.py"]
 DATA_FILES = ["data/catalog.jsonl", "data/dense.index", "data/bm25.pkl", "data/eval_set.jsonl"]
 DEBERTA_DIR = "models/deberta-10k-rank_net"
 OUT_PATH = "dist/kaggle_rag_bundle.zip"

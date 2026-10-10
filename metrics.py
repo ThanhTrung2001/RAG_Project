@@ -1,5 +1,5 @@
 """
-Metric đánh giá retrieval tự cài: Recall@k, nDCG@k (nhị phân và đa mức 0/1/2), MRR.
+Metric đánh giá retrieval tự cài: Recall@k, nDCG@k (nhị phân và đa mức theo qrels 0-3), MRR.
 
 evaluate_all() chạy một hàm search trên eval set -> dict metric trung bình + latency.
 Không chạy trực tiếp; được import bởi các script step*.
@@ -48,11 +48,27 @@ def mrr(retrieved_ids, relevant_ids):
     return 0.0
 
 
-def ndcg_at_k_graded(retrieved_ids, relevant_ids, k, catalog):
+def ndcg_at_k_graded(retrieved_ids, relevant_ids, k, catalog=None, qrels=None):
     """
-    nDCG@k đa mức: 2 = đúng id, 1 = cùng category với một id đúng, 0 = khác.
-    catalog: dict {id: row}, dùng để tra category lúc chấm.
+    nDCG@k đa mức.
+    - Có qrels ({id: grade 0-3}, xem step16_build_qrels.py): gain = grade đã gán nhãn,
+      id ngoài qrels = 0 (giả định pooling của TREC); IDCG = các grade thật xếp giảm dần.
+    - Không có qrels (vd eval_set_image.jsonl): fallback cũ, 2 = đúng id,
+      1 = cùng category với một id đúng, 0 = khác (catalog: dict {id: row} để tra category).
     """
+    if qrels:
+        grades = {int(doc_id): g for doc_id, g in qrels.items()}
+        dcg = sum(grades.get(doc_id, 0) / math.log2(i + 2)
+                  for i, doc_id in enumerate(retrieved_ids[:k]))
+        ideal = sorted(grades.values(), reverse=True)[:k]
+        idcg = sum(g / math.log2(i + 2) for i, g in enumerate(ideal))
+        if idcg == 0:
+            return None
+        return dcg / idcg
+
+    if catalog is None:
+        return None
+
     relevant_ids = set(relevant_ids)
     relevant_categories = {
         catalog[rid]["category"] for rid in relevant_ids if rid in catalog
@@ -83,8 +99,9 @@ def ndcg_at_k_graded(retrieved_ids, relevant_ids, k, catalog):
 def evaluate_all(search_fn, eval_set, k=10, catalog=None, **search_kwargs):
     """
     Chạy search_fn trên từng câu của eval_set, trả về trung bình Recall@k, nDCG@k, MRR,
-    nDCG@k đa mức (chỉ khi có catalog) và latency (ms: avg, p50, p95).
-    eval_set: list dict {"query", "query_type", "relevant_ids"}.
+    nDCG@k đa mức (khi câu có "qrels" hoặc truyền catalog) và latency (ms: avg, p50, p95).
+    eval_set: list dict {"query", "query_type", "relevant_ids", "qrels" (tuỳ chọn)}.
+    relevant_ids = các id có grade >= 2 trong qrels -> Recall/MRR/nDCG nhị phân dùng tập này.
     search_kwargs: truyền thẳng vào search_fn, vd components=["bm25"].
     """
     import time
@@ -109,8 +126,9 @@ def evaluate_all(search_fn, eval_set, k=10, catalog=None, **search_kwargs):
             ndcgs.append(n)
         if m is not None:
             mrrs.append(m)
-        if catalog is not None:
-            ng = ndcg_at_k_graded(retrieved_ids, item["relevant_ids"], k, catalog)
+        if catalog is not None or item.get("qrels"):
+            ng = ndcg_at_k_graded(retrieved_ids, item["relevant_ids"], k, catalog,
+                                  qrels=item.get("qrels"))
             if ng is not None:
                 ndcgs_graded.append(ng)
 

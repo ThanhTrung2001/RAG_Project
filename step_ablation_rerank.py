@@ -6,7 +6,7 @@ Ablation reranker trên catalog A1, cùng một pool ứng viên hybrid (BM25 + 
        mục 4 và 7; bỏ qua nếu chưa có models/deberta-10k-rank_net
 
 Metric: nDCG@1/5/10 (như paper), Recall@10, thời gian rerank trung bình mỗi câu.
-Dữ liệu: data/eval_set.jsonl (250 câu, mỗi câu 1 sản phẩm đúng).
+Dữ liệu: data/eval_set.jsonl (250 câu, qrels 0-3; relevant_ids = grade >= 2).
 
 CHẠY: python step_ablation_rerank.py
 Kết quả in ra màn hình và lưu vào data/rerank_ablation_results.json.

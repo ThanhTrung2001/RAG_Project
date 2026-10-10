@@ -1,7 +1,7 @@
 """
 Ablation embedding model trên Kaggle: CLIP ViT-B/32 vs CLIP ViT-L/14 vs SigLIP base, dense-only.
 
-Tự tải lại dataset (cùng seed=42 như step1 nên cùng id), chỉ cần upload data/eval_set.jsonl làm Kaggle Dataset
+Tự tải lại dataset (cùng seed=42 như step1 nên cùng id), chỉ cần upload data/eval_set.jsonl (bản có qrels, step16) làm Kaggle Dataset
 và sửa EVAL_SET_PATH. Bật GPU + Internet, rồi chạy
     !pip install -q datasets "transformers==4.57.1" sentencepiece faiss-cpu
     !python kaggle_ablation_embedding_models.py
@@ -35,7 +35,7 @@ MODELS = [
 ]
 
 
-# Metric (bản rút gọn của metrics.py, relevance nhị phân)
+# Metric (bản rút gọn của metrics.py): nhị phân trên relevant_ids (grade >= 2) + nDCG đa mức theo qrels 0-3
 
 def recall_at_k(retrieved_ids, relevant_ids, k):
     if not relevant_ids:
@@ -49,6 +49,17 @@ def ndcg_at_k(retrieved_ids, relevant_ids, k):
               for i, doc_id in enumerate(retrieved_ids[:k]))
     ideal_hits = min(len(relevant_ids), k)
     idcg = sum(1.0 / math.log2(i + 2) for i in range(ideal_hits))
+    return dcg / idcg if idcg > 0 else None
+
+
+def ndcg_at_k_graded(retrieved_ids, qrels, k):
+    """nDCG@k đa mức: gain = grade trong qrels (step16_build_qrels.py), id ngoài qrels = 0."""
+    if not qrels:
+        return None
+    grades = {int(doc_id): g for doc_id, g in qrels.items()}
+    dcg = sum(grades.get(doc_id, 0) / math.log2(i + 2) for i, doc_id in enumerate(retrieved_ids[:k]))
+    ideal = sorted(grades.values(), reverse=True)[:k]
+    idcg = sum(g / math.log2(i + 2) for i, g in enumerate(ideal))
     return dcg / idcg if idcg > 0 else None
 
 
@@ -150,7 +161,7 @@ def evaluate_model(model_cfg, catalog, eval_set, device):
     index.add(image_embs)
     ids = [r["id"] for r in catalog]
 
-    recalls, ndcgs, mrrs, latencies = [], [], [], []
+    recalls, ndcgs, mrrs, ndcgs_graded, latencies = [], [], [], [], []
     for item in eval_set:
         t0 = time.perf_counter()   # latency gồm encode query + FAISS search
         query_vec = encode_query_text(model, processor, item["query"], device, family=model_cfg["family"])
@@ -167,6 +178,9 @@ def evaluate_model(model_cfg, catalog, eval_set, device):
             ndcgs.append(n)
         if m is not None:
             mrrs.append(m)
+        ng = ndcg_at_k_graded(retrieved_ids, item.get("qrels"), K)
+        if ng is not None:
+            ndcgs_graded.append(ng)
 
     embedding_dim = int(image_embs.shape[1])   # lấy trước khi del image_embs
 
@@ -180,6 +194,7 @@ def evaluate_model(model_cfg, catalog, eval_set, device):
         "recall@k": sum(recalls) / len(recalls) if recalls else None,
         "ndcg@k": sum(ndcgs) / len(ndcgs) if ndcgs else None,
         "mrr": sum(mrrs) / len(mrrs) if mrrs else None,
+        "ndcg@k_graded": sum(ndcgs_graded) / len(ndcgs_graded) if ndcgs_graded else None,
         "latency_ms_avg": sum(latencies) / len(latencies) if latencies else None,
         "embedding_dim": embedding_dim,
     }
@@ -201,7 +216,7 @@ def main():
         results.append(evaluate_model(model_cfg, catalog, eval_set, device))
 
     print("\n\n================ BẢNG KẾT QUẢ (copy vào BAO_CAO_TONG_HOP.md mục 5.1) ================")
-    header = f"{'Model':<32} {'dim':<6} {'Recall@'+str(K):<10} {'nDCG@'+str(K):<10} {'MRR':<8} {'Latency_avg(ms)':<16}"
+    header = f"{'Model':<32} {'dim':<6} {'Recall@'+str(K):<10} {'nDCG@'+str(K):<10} {'MRR':<8} {'nDCG_gr':<8} {'Latency_avg(ms)':<16}"
     print(header)
     print("-" * len(header))
     for r in results:
@@ -209,7 +224,7 @@ def main():
             v = r[key]
             return format(v, spec) if v is not None else "N/A"
         print(f"{r['model']:<32} {r['embedding_dim']:<6} {fmt('recall@k'):<10} {fmt('ndcg@k'):<10} "
-              f"{fmt('mrr'):<8} {fmt('latency_ms_avg', '.1f'):<16}")
+              f"{fmt('mrr'):<8} {fmt('ndcg@k_graded'):<8} {fmt('latency_ms_avg', '.1f'):<16}")
 
     with open("embedding_model_ablation_results.json", "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)

@@ -70,7 +70,7 @@ def main():
               f"{fmt('latency_ms_avg', '.1f'):<12} {fmt('latency_ms_p95', '.1f'):<12}")
 
     print("\n-> Chênh lệch điểm số giữa 2 cấu hình = đóng góp của thành phần bị tắt.")
-    print("-> nDCG_gr = nDCG đa mức (đúng id=2, cùng category=1, khác=0) -- xem metrics.ndcg_at_k_graded")
+    print("-> nDCG_gr = nDCG đa mức theo qrels 0-3 (step16_build_qrels.py) -- xem metrics.ndcg_at_k_graded")
     print("-> MRR = hạng của kết quả đúng ĐẦU TIÊN, đảo ngược (1/hạng) -- xem metrics.mrr")
     print("-> Lat_avg/Lat_p95 = latency mỗi lần gọi search(), đo bằng time.perf_counter()")
     print("-> Copy bảng này vào báo cáo, kèm 2-3 ví dụ câu query sai cụ thể cho mỗi cấu hình")

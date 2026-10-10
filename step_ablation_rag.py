@@ -5,7 +5,8 @@ Ablation A3 trên data/eval_set.jsonl (dùng chung với A1). Các cấu hình:
   naive_deberta  Naive RAG + rerank DeBERTa distill (A2); bỏ qua nếu chưa có models/deberta-10k-rank_net
   agentic        Agentic RAG
 
-Metric: Context Recall@k, Context Precision@k, Faithfulness, Answer Relevancy,
+Ground truth: qrels 0-3 (step16_build_qrels.py); relevant_ids = id có grade >= 2.
+Metric: Context Recall@k, Context Precision@k, Context nDCG@k đa mức (theo qrels), Faithfulness, Answer Relevancy,
 mention hit rate (answer_should_mention), citation rate, latency; Agentic thêm tỷ lệ viết lại query.
 Mỗi câu: Naive 1 lượt LLM, Agentic 2 hoặc 4 lượt (max_iters=2), cộng 1 lượt chấm faithfulness.
 Model LLM lấy từ .env (OLLAMA_MODEL, xem rag_core.py).
@@ -34,7 +35,7 @@ from rag_core import answer as naive_answer
 from rag_core import answer_agentic, call_llm
 from rag_core import build_context
 from search_core import available_rerankers
-from metrics import recall_at_k
+from metrics import ndcg_at_k_graded, recall_at_k
 from rag_metrics import context_precision_at_k, faithfulness
 from rag_metrics import answer_relevancy as _answer_relevancy
 
@@ -67,7 +68,7 @@ CONFIGS = {
     "naive_deberta": ("Naive + DeBERTa", lambda q, k: naive_answer(q, k=k, reranker="deberta")),
     "agentic":       ("Agentic RAG",     lambda q, k: answer_agentic(q, k=k)),
 }
-METRIC_KEYS = ["context_recall", "context_precision", "faithfulness", "answer_relevancy",
+METRIC_KEYS = ["context_recall", "context_precision", "context_ndcg", "faithfulness", "answer_relevancy",
                "mention_hit", "citation", "latency_sec"]
 
 
@@ -111,6 +112,8 @@ def evaluate_one(config_key, answer_fn, index, item, with_faithfulness=True):
         "answer": result["answer"],
         "context_recall": recall_at_k(retrieved_ids, relevant_ids, K),
         "context_precision": context_precision_at_k(retrieved_ids, relevant_ids, K),
+        # Thứ hạng của context theo nhãn đa mức: sp grade 2 ở [1] vẫn được điểm, ít hơn grade 3.
+        "context_ndcg": ndcg_at_k_graded(retrieved_ids, relevant_ids, K, qrels=item.get("qrels")),
         # Faithfulness chấm trên đúng context mà câu trả lời đã dùng.
         "faithfulness": (faithfulness(result["answer"], context_text, call_llm)
                          if with_faithfulness else None),
@@ -151,13 +154,13 @@ def fmt(value, pct=False):
 
 def print_table(title, results, subset):
     print(f"\n{title}")
-    header = (f"{'Cấu hình':<16} {'n':>4} {'Lỗi':>4} {'CtxRecall':>10} {'CtxPrec':>9} {'Faithful':>9} "
+    header = (f"{'Cấu hình':<16} {'n':>4} {'Lỗi':>4} {'CtxRecall':>10} {'CtxPrec':>9} {'CtxNDCG':>8} {'Faithful':>9} "
               f"{'AnsRel':>8} {'Mention':>8} {'Citation':>9} {'Latency':>8} {'Rewrite':>8}")
     print(header)
     print("-" * len(header))
     for r in results:
         s = r[subset]
-        print(f"{r['name']:<16} {s['n']:>4} {s['n_errors']:>4} {fmt(s['context_recall']):>10} {fmt(s['context_precision']):>9} "
+        print(f"{r['name']:<16} {s['n']:>4} {s['n_errors']:>4} {fmt(s['context_recall']):>10} {fmt(s['context_precision']):>9} {fmt(s.get('context_ndcg')):>8} "
               f"{fmt(s['faithfulness']):>9} {fmt(s['answer_relevancy']):>8} {fmt(s['mention_hit']):>8} "
               f"{fmt(s['citation'], pct=True):>9} {fmt(s['latency_sec']):>8} "
               f"{fmt(s.get('rewrite_rate'), pct=True) if 'rewrite_rate' in s else '-':>8}")
@@ -195,7 +198,16 @@ def main():
                 row = json.loads(line)
                 if "error" not in row:
                     done[(row["config"], row["index"])] = row
-        print(f"Resume: đã có {len(done)} kết quả từ lần chạy trước\n")
+        # Bỏ kết quả chấm theo ground truth khác bản hiện tại (vd trước khi có qrels, hoặc câu đã sửa).
+        stale = [key for key, row in done.items()
+                 if row["index"] >= len(eval_set)
+                 or row["query"] != eval_set[row["index"]]["query"]
+                 or row["relevant_ids"] != eval_set[row["index"]]["relevant_ids"]
+                 or "context_ndcg" not in row]
+        for key in stale:
+            del done[key]
+        print(f"Resume: đã có {len(done)} kết quả từ lần chạy trước"
+              f" (bỏ {len(stale)} kết quả theo ground truth cũ)\n")
     with open(DETAILS_PATH, "w", encoding="utf-8") as f:
         for row in done.values():
             f.write(json.dumps(row, ensure_ascii=False) + "\n")

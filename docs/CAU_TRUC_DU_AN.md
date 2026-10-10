@@ -52,6 +52,7 @@ a1_multimodal_search/
 ├── step13_build_image_eval_set.py A1  tạo bộ truy vấn ảnh bằng crop/rotate/brightness
 ├── step14_eval_image_queries.py   A1  đánh giá bộ truy vấn ảnh
 ├── step15_expand_eval_set.py      A1+A3  mở rộng data/eval_set.jsonl lên 250 câu (chạy 1 lần)
+├── step16_build_qrels.py          A1+A3  nâng eval set lên qrels 0–3: pool ứng viên + merge nhãn
 ├── step_ablation_rerank.py        A2  ablation rerank: không rerank / MiniLM / DeBERTa distill
 ├── rag_core.py                    A3  Naive RAG, Agentic RAG, Memory
 ├── rag_metrics.py                 A3  Context Precision, Faithfulness, Answer Relevancy
@@ -60,7 +61,10 @@ a1_multimodal_search/
 ├── kaggle/
 │   ├── kaggle_build_A1_data.py            chạy step1–3 trên Kaggle (GPU) bằng CLIP B/32, xuất zip (bản gốc, không dùng nữa)
 │   ├── kaggle_build_A1_data_siglip.py     như trên nhưng bằng SigLIP -- ĐANG DÙNG cho data/ hiện tại
-│   └── kaggle_ablation_embedding_models.py so CLIP B/32, CLIP L/14, SigLIP (dense-only)
+│   ├── kaggle_ablation_embedding_models.py so CLIP B/32, CLIP L/14, SigLIP (dense-only)
+│   ├── make_kaggle_rag_bundle.py          đóng gói code + data (gồm eval set qrels) thành dist/kaggle_rag_bundle.zip
+│   ├── kaggle_run_rag_ablation.py         chạy step_ablation_rag.py (A3) trên Kaggle GPU
+│   └── kaggle_run_retrieval_ablation.py   chạy step8/9/10 + step_ablation_rerank trên Kaggle GPU
 ├── models/deberta-10k-rank_net/   A2  checkpoint tải từ repo RankGPT (không commit)
 ├── data/                          dữ liệu, index, eval set, kết quả thực nghiệm
 └── docs/                          báo cáo và tài liệu
@@ -163,7 +167,10 @@ Dataset gốc `Shopify/product-catalogue` có 48,3k dòng (train 38,6k, test 9,6
 
 ### 4.2 `data/eval_set.jsonl` (250 câu, dùng chung cho A1 và A3)
 
-Mỗi dòng: `{"query", "query_type": "text", "relevant_ids": [id], "answer_should_mention": [...]}`. Mỗi câu có đúng 1 sản phẩm đúng.
+Mỗi dòng: `{"query", "query_type": "text", "relevant_ids": [...], "target_ids": [id], "qrels": {"<id>": 0-3}, "answer_should_mention": [...]}`.
+- `qrels`: nhãn 0–3 cho pool ứng viên (top-10 BM25/Dense/Hybrid), tạo bằng `step16_build_qrels.py` (nhãn ở `data/qrels_judgments/`).
+- `relevant_ids` = id có nhãn ≥ 2 (240/250 câu chỉ có 1); `target_ids` = sản phẩm đúng gốc (known item, nhãn 3).
+- Bản trước khi có qrels: `data/eval_set_known_item_backup.jsonl`.
 
 Thành phần (theo `step15_expand_eval_set.py`):
 

@@ -132,7 +132,8 @@ Ba biện pháp có trong code:
 
 `data/eval_set.jsonl`, 250 câu, dùng chung với A1:
 - 30 câu A1 viết tay, 20 câu A3 viết tay, 200 câu sinh từ mẫu (chi tiết ở `BAO_CAO_TONG_HOP.md` mục 2.2).
-- Mỗi câu có `relevant_ids` (1 sản phẩm đúng) và `answer_should_mention` (brand và vài từ đầu của tên sản phẩm).
+- Mỗi câu có `qrels` (nhãn 0–3 cho khoảng 20 sản phẩm trong pool ứng viên, `step16_build_qrels.py`), `relevant_ids` (các sản phẩm nhãn ≥ 2; 240/250 câu chỉ có 1) và `answer_should_mention` (brand và vài từ đầu của tên sản phẩm).
+- **Cải tiến so với A1:** A1 chỉ có 1 sản phẩm đúng mỗi câu, nhãn nhị phân. A3 nâng lên qrels đa mức kiểu TREC: pooling top-10 BM25/Dense/Hybrid, gán nhãn 0–3 theo dữ liệu catalog, rà soát lại, và sửa 3 truy vấn mâu thuẫn với sản phẩm đúng. Chi tiết ở `BAO_CAO_A3_IS6303.md` mục 3.2.1.
 - Toàn bộ câu hỏi bằng tiếng Anh; câu trả lời của hệ thống bằng tiếng Việt.
 
 ### 5.2 Metric (`rag_metrics.py`, `step_ablation_rag.py`)
@@ -141,6 +142,7 @@ Ba biện pháp có trong code:
 |---|---|---|---|
 | Retrieval | Context Recall@5 | Sản phẩm đúng có trong 5 nguồn không (`recall_at_k` của A1) | — |
 | Retrieval | Context Precision@5 | Σ (hits/i tại mỗi hạng i đúng) / min(\|đúng\|, 5). Với 1 sản phẩm đúng thì bằng 1/hạng nếu nằm trong top-5 | — |
+| Retrieval | Context nDCG@5 đa mức (mới) | DCG/IDCG với gain = nhãn 0–3 trong `qrels` (`metrics.ndcg_at_k_graded`) | — |
 | Generation | Faithfulness | LLM tách câu trả lời thành các claim, gắn SUPPORTED hoặc NOT_SUPPORTED so với context; tỷ lệ SUPPORTED | 1 lượt LLM |
 | Generation | Answer Relevancy | cosine(embedding câu hỏi, embedding câu trả lời) bằng `all-MiniLM-L6-v2` | embedding model |
 | Generation | Mention hit rate | Tỷ lệ từ khoá `answer_should_mention` xuất hiện trong câu trả lời | — |
@@ -200,7 +202,7 @@ Mỗi cấu hình khác baseline đúng một thành phần. Tổng số lượt
 
 ### 6.2 Tầng Generation: chưa đo
 
-`step_ablation_rag.py` đã có đủ 4 cấu hình và 7 metric nhưng **chưa chạy**, vì máy thử không có Ollama. Báo cáo không đưa ra số liệu hay nhận định nào về Faithfulness, Answer Relevancy, citation rate, mention hit rate hay latency của các cấu hình RAG.
+`step_ablation_rag.py` đã có đủ 4 cấu hình và 8 metric nhưng **chưa chạy**, vì máy thử không có Ollama. Báo cáo không đưa ra số liệu hay nhận định nào về Faithfulness, Answer Relevancy, citation rate, mention hit rate hay latency của các cấu hình RAG.
 
 Cách chạy khi có Ollama: đặt `SAMPLE_SIZE = 20` trong `step_ablation_rag.py` để chạy thử, sau đó đặt `None` để chạy đủ 250 câu, rồi điền bảng:
 
@@ -279,7 +281,7 @@ A3 gồm hai tầng. Khi câu trả lời sai, phải xác định tầng gây l
 | Nâng cấp | Có | Agentic RAG (mục 3.3); rerank MiniLM hoặc DeBERTa (mục 2, 3.2) |
 | Chứng minh nâng cấp bằng ablation | **Một phần** | Tầng Retrieval đã đo cho cả 3 lựa chọn reranker (mục 6.1); tầng Generation chưa chạy (mục 6.2) |
 | Dạng chatbot, nhiều lượt | Có | Memory theo session, mục 3.4–3.5 |
-| Đủ metric RAG | Có trong code | 7 metric, mục 5.2; chưa có số cho tầng Generation |
+| Đủ metric RAG | Có trong code | 8 metric, mục 5.2; chưa có số cho tầng Generation |
 | Ground truth ≥ 250 câu, dùng chung A1 | Có | `data/eval_set.jsonl`; hạn chế ở mục 9 |
 | Chẩn đoán Retrieval và Generation | Có khung, có ví dụ Retrieval | Mục 7 |
 | G3.2 đạo đức AI | Có | Mục 8 |

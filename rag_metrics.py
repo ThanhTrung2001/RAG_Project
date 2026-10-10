@@ -4,7 +4,7 @@ Metric đánh giá RAG tự viết, theo ý tưởng RAGAS (đơn giản hoá, k
 - context_precision_at_k: công thức thuần, dạng Average Precision trong top-k.
 - faithfulness: LLM làm giám khảo, tỷ lệ claim trong câu trả lời được context hỗ trợ.
 - answer_relevancy: cosine(embedding câu hỏi, embedding câu trả lời), model all-MiniLM-L6-v2.
-Context recall dùng lại recall_at_k của metrics.py.
+Context recall dùng lại recall_at_k của metrics.py; context nDCG đa mức dùng ndcg_at_k_graded (qrels 0-3).
 """
 import re
 
