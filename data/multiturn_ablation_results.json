@@ -1,0 +1,136 @@
+{
+  "date": "2026-10-12T15:28:59",
+  "llm_model": "llama3.1",
+  "eval_set": "data/eval_set.jsonl",
+  "num_queries": 250,
+  "k": 5,
+  "followups": [
+    "show me more options like that",
+    "do you have any others similar to that?",
+    "what else do you have like this one?",
+    "any alternatives to that?"
+  ],
+  "n_errors": 0,
+  "summary": {
+    "followup": {
+      "all": {
+        "n": 250,
+        "raw": {
+          "context_recall": 0.004,
+          "context_precision": 0.002,
+          "context_ndcg": 0.0025237190142858297,
+          "top1_hit": 0.0
+        },
+        "concat": {
+          "context_recall": 0.986,
+          "context_precision": 0.9338666666666666,
+          "context_ndcg": 0.8632627592883344,
+          "top1_hit": 0.904
+        },
+        "rewrite": {
+          "context_recall": 0.868,
+          "context_precision": 0.7794,
+          "context_ndcg": 0.7450429568433671,
+          "top1_hit": 0.724
+        },
+        "oracle": {
+          "context_recall": 0.983,
+          "context_precision": 0.9419333333333333,
+          "context_ndcg": 0.8776502789106158,
+          "top1_hit": 0.916
+        },
+        "rewrite_vietnamese_rate": 0.0,
+        "rewrite_latency_sec": 0.9592042779922485
+      },
+      "handwritten": {
+        "n": 50,
+        "raw": {
+          "context_recall": 0.0,
+          "context_precision": 0.0,
+          "context_ndcg": 0.0,
+          "top1_hit": 0.0
+        },
+        "concat": {
+          "context_recall": 0.98,
+          "context_precision": 0.884,
+          "context_ndcg": 0.8199041225740228,
+          "top1_hit": 0.82
+        },
+        "rewrite": {
+          "context_recall": 0.96,
+          "context_precision": 0.8773333333333333,
+          "context_ndcg": 0.8077196401887181,
+          "top1_hit": 0.84
+        },
+        "oracle": {
+          "context_recall": 0.945,
+          "context_precision": 0.8766666666666667,
+          "context_ndcg": 0.8195215181943541,
+          "top1_hit": 0.82
+        },
+        "rewrite_vietnamese_rate": 0.0,
+        "rewrite_latency_sec": 1.0902927684783936
+      }
+    },
+    "switch": {
+      "all": {
+        "n": 250,
+        "raw": {
+          "context_recall": 0.983,
+          "context_precision": 0.9419333333333333,
+          "context_ndcg": 0.8776502789106158,
+          "top1_hit": 0.916
+        },
+        "concat": {
+          "context_recall": 0.856,
+          "context_precision": 0.5774,
+          "context_ndcg": 0.5659690636473924,
+          "top1_hit": 0.396
+        },
+        "rewrite": {
+          "context_recall": 0.938,
+          "context_precision": 0.8986666666666666,
+          "context_ndcg": 0.838652643143173,
+          "top1_hit": 0.872
+        },
+        "oracle": {
+          "context_recall": 0.983,
+          "context_precision": 0.9419333333333333,
+          "context_ndcg": 0.8776502789106158,
+          "top1_hit": 0.916
+        },
+        "rewrite_vietnamese_rate": 0.004,
+        "rewrite_latency_sec": 0.9832361621856689
+      },
+      "handwritten": {
+        "n": 50,
+        "raw": {
+          "context_recall": 0.945,
+          "context_precision": 0.8766666666666667,
+          "context_ndcg": 0.8195215181943541,
+          "top1_hit": 0.82
+        },
+        "concat": {
+          "context_recall": 0.89,
+          "context_precision": 0.5788333333333333,
+          "context_ndcg": 0.5764782425479749,
+          "top1_hit": 0.34
+        },
+        "rewrite": {
+          "context_recall": 0.94,
+          "context_precision": 0.8766666666666667,
+          "context_ndcg": 0.8111620145781339,
+          "top1_hit": 0.82
+        },
+        "oracle": {
+          "context_recall": 0.945,
+          "context_precision": 0.8766666666666667,
+          "context_ndcg": 0.8195215181943541,
+          "top1_hit": 0.82
+        },
+        "rewrite_vietnamese_rate": 0.0,
+        "rewrite_latency_sec": 0.8362943983078003
+      }
+    }
+  }
+}

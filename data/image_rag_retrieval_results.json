@@ -1,0 +1,1838 @@
+{
+  "k": 5,
+  "eval_set": "data/eval_set_image.jsonl",
+  "summary": {
+    "all": {
+      "n": 100,
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.5190267395973206
+    },
+    "by_transform": {
+      "brightness": {
+        "n": 33,
+        "context_recall": 1.0,
+        "context_precision": 1.0,
+        "top1_hit": 1.0,
+        "latency_sec": 0.47873348900766083
+      },
+      "crop": {
+        "n": 34,
+        "context_recall": 1.0,
+        "context_precision": 1.0,
+        "top1_hit": 1.0,
+        "latency_sec": 0.5456850318347707
+      },
+      "rotate": {
+        "n": 33,
+        "context_recall": 1.0,
+        "context_precision": 1.0,
+        "top1_hit": 1.0,
+        "latency_sec": 0.5318538709120317
+      }
+    }
+  },
+  "rows": [
+    {
+      "query_image": "data/query_images\\000076_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        76
+      ],
+      "retrieved_ids": [
+        76,
+        449,
+        575,
+        1709,
+        1350
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 2.2430522441864014
+    },
+    {
+      "query_image": "data/query_images\\000098_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        98
+      ],
+      "retrieved_ids": [
+        98,
+        375,
+        1381,
+        81,
+        445
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.383089542388916
+    },
+    {
+      "query_image": "data/query_images\\000121_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        121
+      ],
+      "retrieved_ids": [
+        121,
+        1077,
+        1670,
+        953,
+        911
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3958299160003662
+    },
+    {
+      "query_image": "data/query_images\\000143_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        143
+      ],
+      "retrieved_ids": [
+        143,
+        1055,
+        963,
+        776,
+        157
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.679480791091919
+    },
+    {
+      "query_image": "data/query_images\\000176_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        176
+      ],
+      "retrieved_ids": [
+        176,
+        827,
+        1368,
+        1532,
+        1183
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.6324179172515869
+    },
+    {
+      "query_image": "data/query_images\\000192_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        192
+      ],
+      "retrieved_ids": [
+        192,
+        1028,
+        24,
+        1607,
+        391
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.502220869064331
+    },
+    {
+      "query_image": "data/query_images\\000241_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        241
+      ],
+      "retrieved_ids": [
+        241,
+        1304,
+        1994,
+        557,
+        776
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.5054638385772705
+    },
+    {
+      "query_image": "data/query_images\\000272_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        272
+      ],
+      "retrieved_ids": [
+        272,
+        1336,
+        347,
+        566,
+        807
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.6635029315948486
+    },
+    {
+      "query_image": "data/query_images\\000308_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        308
+      ],
+      "retrieved_ids": [
+        308,
+        1718,
+        1751,
+        244,
+        1705
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.44492006301879883
+    },
+    {
+      "query_image": "data/query_images\\000370_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        370
+      ],
+      "retrieved_ids": [
+        370,
+        1856,
+        112,
+        33,
+        810
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.45614123344421387
+    },
+    {
+      "query_image": "data/query_images\\000439_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        439
+      ],
+      "retrieved_ids": [
+        439,
+        1718,
+        658,
+        1405,
+        1098
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.52628493309021
+    },
+    {
+      "query_image": "data/query_images\\000631_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        631
+      ],
+      "retrieved_ids": [
+        631,
+        1798,
+        953,
+        260,
+        375
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4592897891998291
+    },
+    {
+      "query_image": "data/query_images\\000663_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        663
+      ],
+      "retrieved_ids": [
+        663,
+        392,
+        1055,
+        394,
+        33
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3644828796386719
+    },
+    {
+      "query_image": "data/query_images\\000748_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        748
+      ],
+      "retrieved_ids": [
+        748,
+        1216,
+        1356,
+        333,
+        91
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4520862102508545
+    },
+    {
+      "query_image": "data/query_images\\000808_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        808
+      ],
+      "retrieved_ids": [
+        808,
+        811,
+        244,
+        1697,
+        275
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.44309282302856445
+    },
+    {
+      "query_image": "data/query_images\\000812_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        812
+      ],
+      "retrieved_ids": [
+        812,
+        1335,
+        1644,
+        1705,
+        1906
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.5342762470245361
+    },
+    {
+      "query_image": "data/query_images\\000856_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        856
+      ],
+      "retrieved_ids": [
+        856,
+        1651,
+        713,
+        601,
+        831
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.44082021713256836
+    },
+    {
+      "query_image": "data/query_images\\000858_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        858
+      ],
+      "retrieved_ids": [
+        858,
+        1271,
+        174,
+        1579,
+        566
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4287118911743164
+    },
+    {
+      "query_image": "data/query_images\\000888_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        888
+      ],
+      "retrieved_ids": [
+        888,
+        897,
+        1816,
+        68,
+        656
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.618415355682373
+    },
+    {
+      "query_image": "data/query_images\\001107_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1107
+      ],
+      "retrieved_ids": [
+        1107,
+        351,
+        868,
+        903,
+        969
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.5567045211791992
+    },
+    {
+      "query_image": "data/query_images\\001128_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        1128
+      ],
+      "retrieved_ids": [
+        1128,
+        443,
+        1516,
+        579,
+        3
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4637477397918701
+    },
+    {
+      "query_image": "data/query_images\\001147_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        1147
+      ],
+      "retrieved_ids": [
+        1147,
+        1138,
+        339,
+        223,
+        244
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.43871021270751953
+    },
+    {
+      "query_image": "data/query_images\\001158_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1158
+      ],
+      "retrieved_ids": [
+        1158,
+        551,
+        695,
+        1568,
+        1284
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.376939058303833
+    },
+    {
+      "query_image": "data/query_images\\001181_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        1181
+      ],
+      "retrieved_ids": [
+        1181,
+        962,
+        1269,
+        1742,
+        1671
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3785676956176758
+    },
+    {
+      "query_image": "data/query_images\\001191_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        1191
+      ],
+      "retrieved_ids": [
+        1191,
+        1241,
+        639,
+        438,
+        1738
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.6703598499298096
+    },
+    {
+      "query_image": "data/query_images\\001284_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1284
+      ],
+      "retrieved_ids": [
+        1284,
+        118,
+        43,
+        1610,
+        1561
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 1.0599112510681152
+    },
+    {
+      "query_image": "data/query_images\\001396_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        1396
+      ],
+      "retrieved_ids": [
+        1396,
+        807,
+        859,
+        1951,
+        862
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.8990108966827393
+    },
+    {
+      "query_image": "data/query_images\\001681_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        1681
+      ],
+      "retrieved_ids": [
+        1681,
+        1899,
+        568,
+        392,
+        1017
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 1.109001636505127
+    },
+    {
+      "query_image": "data/query_images\\001758_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1758
+      ],
+      "retrieved_ids": [
+        1758,
+        1138,
+        1161,
+        1355,
+        1127
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 1.2994093894958496
+    },
+    {
+      "query_image": "data/query_images\\001999_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        1999
+      ],
+      "retrieved_ids": [
+        1999,
+        693,
+        1487,
+        1406,
+        977
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.6168088912963867
+    },
+    {
+      "query_image": "data/query_images\\000443_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        443
+      ],
+      "retrieved_ids": [
+        443,
+        347,
+        1336,
+        697,
+        1918
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.5559515953063965
+    },
+    {
+      "query_image": "data/query_images\\000508_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        508
+      ],
+      "retrieved_ids": [
+        508,
+        1751,
+        1984,
+        687,
+        1242
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.5631883144378662
+    },
+    {
+      "query_image": "data/query_images\\000514_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        514
+      ],
+      "retrieved_ids": [
+        514,
+        1651,
+        235,
+        258,
+        190
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4957399368286133
+    },
+    {
+      "query_image": "data/query_images\\000779_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        779
+      ],
+      "retrieved_ids": [
+        779,
+        1812,
+        939,
+        1436,
+        504
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4288620948791504
+    },
+    {
+      "query_image": "data/query_images\\001227_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1227
+      ],
+      "retrieved_ids": [
+        1227,
+        1756,
+        1982,
+        1705,
+        812
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4673137664794922
+    },
+    {
+      "query_image": "data/query_images\\001401_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        1401
+      ],
+      "retrieved_ids": [
+        1401,
+        1634,
+        1354,
+        825,
+        304
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.6138343811035156
+    },
+    {
+      "query_image": "data/query_images\\001434_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        1434
+      ],
+      "retrieved_ids": [
+        1434,
+        333,
+        215,
+        1843,
+        1206
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.5601480007171631
+    },
+    {
+      "query_image": "data/query_images\\001623_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1623
+      ],
+      "retrieved_ids": [
+        1623,
+        1125,
+        1232,
+        1313,
+        1709
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.49166417121887207
+    },
+    {
+      "query_image": "data/query_images\\001764_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        1764
+      ],
+      "retrieved_ids": [
+        1764,
+        823,
+        163,
+        1987,
+        1502
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.6162824630737305
+    },
+    {
+      "query_image": "data/query_images\\001847_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        1847
+      ],
+      "retrieved_ids": [
+        1847,
+        1457,
+        1381,
+        615,
+        1982
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.47584104537963867
+    },
+    {
+      "query_image": "data/query_images\\001921_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1921
+      ],
+      "retrieved_ids": [
+        1921,
+        1585,
+        1320,
+        1111,
+        1340
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.7566912174224854
+    },
+    {
+      "query_image": "data/query_images\\000366_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        366
+      ],
+      "retrieved_ids": [
+        366,
+        34,
+        61,
+        325,
+        1679
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.5091125965118408
+    },
+    {
+      "query_image": "data/query_images\\000794_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        794
+      ],
+      "retrieved_ids": [
+        794,
+        110,
+        945,
+        1059,
+        1099
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4375729560852051
+    },
+    {
+      "query_image": "data/query_images\\000827_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        827
+      ],
+      "retrieved_ids": [
+        827,
+        379,
+        1183,
+        1394,
+        1368
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3706183433532715
+    },
+    {
+      "query_image": "data/query_images\\001002_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        1002
+      ],
+      "retrieved_ids": [
+        1002,
+        304,
+        394,
+        1707,
+        1840
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.5510532855987549
+    },
+    {
+      "query_image": "data/query_images\\001397_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        1397
+      ],
+      "retrieved_ids": [
+        1397,
+        1095,
+        1299,
+        840,
+        825
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3686220645904541
+    },
+    {
+      "query_image": "data/query_images\\001493_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1493
+      ],
+      "retrieved_ids": [
+        1493,
+        1578,
+        392,
+        1882,
+        1206
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3942294120788574
+    },
+    {
+      "query_image": "data/query_images\\001614_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        1614
+      ],
+      "retrieved_ids": [
+        1614,
+        1336,
+        272,
+        1804,
+        1038
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3622415065765381
+    },
+    {
+      "query_image": "data/query_images\\001479_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        1479
+      ],
+      "retrieved_ids": [
+        1479,
+        1407,
+        553,
+        1294,
+        1602
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.39423084259033203
+    },
+    {
+      "query_image": "data/query_images\\001344_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1344
+      ],
+      "retrieved_ids": [
+        1344,
+        21,
+        681,
+        775,
+        1213
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4037210941314697
+    },
+    {
+      "query_image": "data/query_images\\000234_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        234
+      ],
+      "retrieved_ids": [
+        234,
+        541,
+        1454,
+        768,
+        1687
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.410839319229126
+    },
+    {
+      "query_image": "data/query_images\\000051_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        51
+      ],
+      "retrieved_ids": [
+        51,
+        1372,
+        667,
+        366,
+        1584
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.40888547897338867
+    },
+    {
+      "query_image": "data/query_images\\001559_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1559
+      ],
+      "retrieved_ids": [
+        1559,
+        1354,
+        586,
+        1671,
+        984
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4185643196105957
+    },
+    {
+      "query_image": "data/query_images\\000578_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        578
+      ],
+      "retrieved_ids": [
+        578,
+        678,
+        1358,
+        1318,
+        160
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3243527412414551
+    },
+    {
+      "query_image": "data/query_images\\000516_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        516
+      ],
+      "retrieved_ids": [
+        516,
+        234,
+        464,
+        768,
+        113
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3723764419555664
+    },
+    {
+      "query_image": "data/query_images\\000470_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        470
+      ],
+      "retrieved_ids": [
+        470,
+        1399,
+        471,
+        1065,
+        786
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4712045192718506
+    },
+    {
+      "query_image": "data/query_images\\000293_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        293
+      ],
+      "retrieved_ids": [
+        293,
+        751,
+        131,
+        1303,
+        26
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3583498001098633
+    },
+    {
+      "query_image": "data/query_images\\001549_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        1549
+      ],
+      "retrieved_ids": [
+        1549,
+        1821,
+        1350,
+        1980,
+        1109
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.39020824432373047
+    },
+    {
+      "query_image": "data/query_images\\000215_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        215
+      ],
+      "retrieved_ids": [
+        215,
+        476,
+        787,
+        679,
+        1787
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.9260821342468262
+    },
+    {
+      "query_image": "data/query_images\\001423_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        1423
+      ],
+      "retrieved_ids": [
+        1423,
+        8,
+        237,
+        1505,
+        55
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.6204266548156738
+    },
+    {
+      "query_image": "data/query_images\\001557_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        1557
+      ],
+      "retrieved_ids": [
+        1557,
+        1418,
+        1023,
+        1644,
+        81
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.6430952548980713
+    },
+    {
+      "query_image": "data/query_images\\001874_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1874
+      ],
+      "retrieved_ids": [
+        1874,
+        1160,
+        44,
+        1837,
+        1609
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.41762804985046387
+    },
+    {
+      "query_image": "data/query_images\\001145_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        1145
+      ],
+      "retrieved_ids": [
+        1145,
+        151,
+        42,
+        830,
+        1516
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4061596393585205
+    },
+    {
+      "query_image": "data/query_images\\000183_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        183
+      ],
+      "retrieved_ids": [
+        183,
+        1582,
+        337,
+        490,
+        997
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.37050414085388184
+    },
+    {
+      "query_image": "data/query_images\\001243_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1243
+      ],
+      "retrieved_ids": [
+        1243,
+        798,
+        1511,
+        249,
+        18
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.46322035789489746
+    },
+    {
+      "query_image": "data/query_images\\000890_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        890
+      ],
+      "retrieved_ids": [
+        890,
+        1951,
+        862,
+        902,
+        859
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.391695499420166
+    },
+    {
+      "query_image": "data/query_images\\000065_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        65
+      ],
+      "retrieved_ids": [
+        65,
+        394,
+        67,
+        731,
+        437
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.38661909103393555
+    },
+    {
+      "query_image": "data/query_images\\000061_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        61
+      ],
+      "retrieved_ids": [
+        61,
+        822,
+        1478,
+        366,
+        1037
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.46933412551879883
+    },
+    {
+      "query_image": "data/query_images\\000197_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        197
+      ],
+      "retrieved_ids": [
+        197,
+        225,
+        280,
+        712,
+        831
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4317817687988281
+    },
+    {
+      "query_image": "data/query_images\\000460_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        460
+      ],
+      "retrieved_ids": [
+        460,
+        1684,
+        491,
+        737,
+        453
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3581113815307617
+    },
+    {
+      "query_image": "data/query_images\\000489_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        489
+      ],
+      "retrieved_ids": [
+        489,
+        14,
+        1354,
+        1649,
+        1306
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.41422176361083984
+    },
+    {
+      "query_image": "data/query_images\\001061_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        1061
+      ],
+      "retrieved_ids": [
+        1061,
+        415,
+        1737,
+        8,
+        1848
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.5025269985198975
+    },
+    {
+      "query_image": "data/query_images\\001266_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        1266
+      ],
+      "retrieved_ids": [
+        1266,
+        945,
+        1568,
+        1425,
+        1283
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3655529022216797
+    },
+    {
+      "query_image": "data/query_images\\000054_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        54
+      ],
+      "retrieved_ids": [
+        54,
+        1791,
+        1822,
+        1692,
+        1429
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.40940117835998535
+    },
+    {
+      "query_image": "data/query_images\\001180_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        1180
+      ],
+      "retrieved_ids": [
+        1180,
+        1499,
+        1166,
+        1777,
+        448
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.41144609451293945
+    },
+    {
+      "query_image": "data/query_images\\000418_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        418
+      ],
+      "retrieved_ids": [
+        418,
+        1270,
+        1473,
+        1824,
+        1525
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.48352909088134766
+    },
+    {
+      "query_image": "data/query_images\\001507_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1507
+      ],
+      "retrieved_ids": [
+        1507,
+        259,
+        1258,
+        1962,
+        1138
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.49097561836242676
+    },
+    {
+      "query_image": "data/query_images\\001365_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        1365
+      ],
+      "retrieved_ids": [
+        1365,
+        938,
+        34,
+        366,
+        731
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3874642848968506
+    },
+    {
+      "query_image": "data/query_images\\001475_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        1475
+      ],
+      "retrieved_ids": [
+        1475,
+        1137,
+        744,
+        1241,
+        1047
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4589254856109619
+    },
+    {
+      "query_image": "data/query_images\\000884_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        884
+      ],
+      "retrieved_ids": [
+        884,
+        1435,
+        1782,
+        1840,
+        1368
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.7144155502319336
+    },
+    {
+      "query_image": "data/query_images\\000464_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        464
+      ],
+      "retrieved_ids": [
+        464,
+        1089,
+        1791,
+        1822,
+        597
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4448363780975342
+    },
+    {
+      "query_image": "data/query_images\\000945_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        945
+      ],
+      "retrieved_ids": [
+        945,
+        1355,
+        993,
+        332,
+        1911
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4217402935028076
+    },
+    {
+      "query_image": "data/query_images\\001240_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1240
+      ],
+      "retrieved_ids": [
+        1240,
+        668,
+        1757,
+        1220,
+        1656
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.41901421546936035
+    },
+    {
+      "query_image": "data/query_images\\000584_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        584
+      ],
+      "retrieved_ids": [
+        584,
+        718,
+        811,
+        366,
+        667
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3611869812011719
+    },
+    {
+      "query_image": "data/query_images\\001701_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        1701
+      ],
+      "retrieved_ids": [
+        1701,
+        1428,
+        440,
+        1281,
+        1777
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.36101269721984863
+    },
+    {
+      "query_image": "data/query_images\\001826_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1826
+      ],
+      "retrieved_ids": [
+        1826,
+        799,
+        520,
+        749,
+        990
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.35754966735839844
+    },
+    {
+      "query_image": "data/query_images\\000013_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        13
+      ],
+      "retrieved_ids": [
+        13,
+        1759,
+        40,
+        1420,
+        1848
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4999258518218994
+    },
+    {
+      "query_image": "data/query_images\\001595_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        1595
+      ],
+      "retrieved_ids": [
+        1595,
+        366,
+        1055,
+        963,
+        1037
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.552687406539917
+    },
+    {
+      "query_image": "data/query_images\\001694_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        1694
+      ],
+      "retrieved_ids": [
+        1694,
+        1013,
+        1391,
+        42,
+        719
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.47867274284362793
+    },
+    {
+      "query_image": "data/query_images\\000335_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        335
+      ],
+      "retrieved_ids": [
+        335,
+        504,
+        1787,
+        1466,
+        116
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.581477165222168
+    },
+    {
+      "query_image": "data/query_images\\001468_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        1468
+      ],
+      "retrieved_ids": [
+        1468,
+        453,
+        678,
+        394,
+        1354
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.41040635108947754
+    },
+    {
+      "query_image": "data/query_images\\000891_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        891
+      ],
+      "retrieved_ids": [
+        891,
+        1456,
+        1212,
+        1864,
+        710
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3733196258544922
+    },
+    {
+      "query_image": "data/query_images\\000713_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        713
+      ],
+      "retrieved_ids": [
+        713,
+        868,
+        1651,
+        783,
+        135
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4247112274169922
+    },
+    {
+      "query_image": "data/query_images\\000327_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        327
+      ],
+      "retrieved_ids": [
+        327,
+        1354,
+        1604,
+        633,
+        825
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.7138669490814209
+    },
+    {
+      "query_image": "data/query_images\\000453_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        453
+      ],
+      "retrieved_ids": [
+        453,
+        1468,
+        1387,
+        678,
+        737
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4745311737060547
+    },
+    {
+      "query_image": "data/query_images\\001604_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        1604
+      ],
+      "retrieved_ids": [
+        1604,
+        1969,
+        327,
+        998,
+        1490
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.4869723320007324
+    },
+    {
+      "query_image": "data/query_images\\000706_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        706
+      ],
+      "retrieved_ids": [
+        706,
+        1716,
+        1056,
+        1372,
+        410
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.3830726146697998
+    },
+    {
+      "query_image": "data/query_images\\000195_rotate.jpg",
+      "transform": "rotate",
+      "relevant_ids": [
+        195
+      ],
+      "retrieved_ids": [
+        195,
+        1507,
+        1258,
+        98,
+        579
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.41445040702819824
+    },
+    {
+      "query_image": "data/query_images\\000798_brightness.jpg",
+      "transform": "brightness",
+      "relevant_ids": [
+        798
+      ],
+      "retrieved_ids": [
+        798,
+        1511,
+        1243,
+        249,
+        767
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.5735876560211182
+    },
+    {
+      "query_image": "data/query_images\\000204_crop.jpg",
+      "transform": "crop",
+      "relevant_ids": [
+        204
+      ],
+      "retrieved_ids": [
+        204,
+        275,
+        201,
+        1291,
+        89
+      ],
+      "context_recall": 1.0,
+      "context_precision": 1.0,
+      "top1_hit": 1.0,
+      "latency_sec": 0.6320843696594238
+    }
+  ]
+}

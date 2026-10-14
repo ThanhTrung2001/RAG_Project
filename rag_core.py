@@ -4,7 +4,10 @@ A3 - Tầng RAG: dùng lại search_core.search() của A1 rồi nhờ LLM viế
 Luồng: retrieve() -> build_context() -> build_prompt() -> call_llm().
 retrieve() gọi search() của A1; tuỳ chọn rerank bằng cross-encoder MiniLM (A1) hoặc DeBERTa distill (A2).
 Có 2 pipeline: answer() (Naive RAG) và answer_agentic() (tự đánh giá, viết lại query, search lại),
-kèm Memory hội thoại lưu trong RAM theo session_id.
+kèm Memory hội thoại lưu trong RAM theo session_id. Memory dùng ở 2 chỗ: viết lại câu hỏi nối tiếp
+thành câu độc lập trước khi search (contextualize_query) và chèn lịch sử vào prompt trả lời.
+Hỏi bằng ảnh: answer()/answer_agentic() nhận thêm image (PIL.Image). Ảnh chỉ dùng để TÌM sản phẩm
+(SigLIP, nhánh dense của A1); LLM vẫn chỉ đọc chữ và trả lời dựa trên danh sách sản phẩm tìm được.
 Yêu cầu: Ollama đang chạy và đã pull model (mặc định llama3.1 tại localhost:11434).
 Cấu hình trong file .env ở thư mục project (xem .env.example): OLLAMA_MODEL, OLLAMA_URL.
 Biến môi trường đặt sẵn trong terminal được ưu tiên hơn .env.
@@ -18,7 +21,7 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
-from search_core import search
+from search_core import rrf_fusion, search
 
 load_dotenv(Path(__file__).with_name(".env"))   # không ghi đè biến môi trường đã có
 
@@ -31,6 +34,9 @@ LLM_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.1")
 LLM_TIMEOUT_SEC = 600   # model nhỏ chạy CPU có thể mất vài phút cho 1 câu trả lời
 
 RERANK_POOL = 30   # số ứng viên đưa vào rerank; cùng pool với step_ablation_rerank.py
+IMAGE_POOL = 50    # số ứng viên mỗi nhánh (ảnh, chữ) trước khi gộp RRF khi hỏi bằng ảnh + chữ
+# Câu hỏi thay thế khi người dùng chỉ gửi ảnh, không gõ chữ (dùng cho prompt và tự đánh giá).
+IMAGE_ONLY_QUERY = "Find products similar to the photo I sent"
 
 
 # ---------------------------------------------------------------------------
@@ -45,10 +51,14 @@ def get_history(session_id: str):
     return _SESSION_STORE.get(session_id, [])
 
 
-def append_history(session_id: str, query: str, answer_text: str):
-    """Thêm 1 lượt hỏi-đáp, bỏ lượt cũ nhất nếu vượt MAX_HISTORY_TURNS."""
+HISTORY_PRODUCTS = 3   # số sản phẩm đầu của mỗi lượt được nhớ, để lượt sau hiểu "cái đó", "cái thứ 2"
+
+
+def append_history(session_id: str, query: str, answer_text: str, sources=None):
+    """Thêm 1 lượt hỏi-đáp (kèm tên vài sản phẩm đã tìm được), bỏ lượt cũ nhất nếu vượt MAX_HISTORY_TURNS."""
     history = _SESSION_STORE.setdefault(session_id, [])
-    history.append({"query": query, "answer": answer_text})
+    products = [r["caption"] for r in (sources or [])[:HISTORY_PRODUCTS]]
+    history.append({"query": query, "answer": answer_text, "products": products})
     if len(history) > MAX_HISTORY_TURNS:
         del history[0]
 
@@ -61,10 +71,50 @@ def _format_history(history):
     """Lịch sử dạng text để chèn vào prompt (mỗi câu trả lời cắt 150 ký tự)."""
     if not history:
         return ""
-    lines = ["Lịch sử hội thoại trước đó (để hiểu ngữ cảnh câu hỏi hiện tại):"]
+    lines = ["Conversation so far (to understand the current message):"]
     for turn in history:
-        lines.append(f'- Khách hỏi: "{turn["query"]}" -> Đã trả lời: "{turn["answer"][:150]}..."')
+        lines.append(f'- Customer: "{turn["query"]}" -> Assistant: "{turn["answer"][:150]}..."')
+        if turn.get("products"):
+            lines.append("  Suggested products: " + "; ".join(p[:80] for p in turn["products"]))
     return "\n".join(lines) + "\n"
+
+
+# Chữ cái chỉ có trong tiếng Việt (không gồm các chữ có dấu chung với tiếng Pháp/Tây Ban Nha...).
+_VIETNAMESE_CHARS = set("ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ")
+
+
+def _has_vietnamese(text: str) -> bool:
+    return any(c in _VIETNAMESE_CHARS for c in text.lower())
+
+
+def contextualize_query(query: str, history) -> str:
+    """
+    Viết lại câu hỏi nối tiếp thành câu tìm kiếm độc lập (tiếng Anh) dựa trên lịch sử, vd
+    "black leather jacket" rồi "any other color?" -> "leather jacket" (bỏ thuộc tính cũ, giữ loại sản phẩm).
+    Không có lịch sử hoặc query rỗng thì giữ nguyên (không tốn thêm lượt gọi LLM).
+    """
+    if not history or not query:
+        return query
+    prompt = f"""{_format_history(history)}
+New customer message: "{query}"
+
+Rewrite the new message as ONE standalone product-search query, written in English as short keywords.
+Rules:
+- If the message refers to an earlier product ("that one", "other colors", "cheaper"...), take the product type from "Suggested products" of the latest turn.
+- If it asks for a different color, size or brand, DROP the old value and keep only the product type.
+- If it is a completely new topic, keep its meaning and ignore the history.
+- Keep brand and product names exactly as written.
+Examples:
+- Suggested: "Men's Black Leather Biker Jacket" | message: "any other color?" -> leather biker jacket
+- Suggested: "Nike Air Zoom Pegasus 39 Running Shoes" | message: "something cheaper?" -> running shoes
+- Suggested: "Stainless Steel Water Bottle 1L" | message: "do you sell camping tents?" -> camping tent
+Return ONLY the query: no explanation, no quotes."""
+    rewritten = call_llm(prompt).strip().strip('"').strip()
+    # Chặn lỗi đã gặp: LLM dịch truy vấn sang tiếng Việt, BM25 không khớp catalog -> tìm ra sản phẩm rác.
+    history_text = " ".join(p for turn in history for p in turn.get("products", []))
+    if _has_vietnamese(rewritten) and not _has_vietnamese(query + " " + history_text):
+        return query
+    return rewritten or query
 
 
 # ---------------------------------------------------------------------------
@@ -79,18 +129,23 @@ def build_context(results):
     return "\n".join(lines)
 
 
-def build_prompt(query, context, history=None):
+def build_prompt(query, context, history=None, has_image=False):
     """Prompt ràng buộc: chỉ dùng context, trích dẫn [n], nói rõ nếu không tìm thấy."""
     history_block = _format_history(history) if history else ""
+    if has_image:
+        # LLM không xem được ảnh: báo rằng danh sách được tìm theo ảnh để nó không đòi mô tả thêm.
+        history_block += ("The customer attached a product photo. You CANNOT see the photo; the product "
+                          "list below was retrieved by visual similarity to it (most similar first).\n")
 
-    return f"""Bạn là trợ lý tư vấn sản phẩm. CHỈ được dùng thông tin trong danh sách sản phẩm dưới đây để trả lời. KHÔNG được bịa thêm chi tiết (giá, tính năng...) không có trong danh sách. Nếu danh sách không có sản phẩm phù hợp, hãy nói rõ là không tìm thấy thay vì đoán.
+    # Không đặt câu hỏi mẫu kiểu "any other color?" ở cuối prompt: llama3.1 từng chép nguyên câu đó ra trả lời.
+    return f"""You are a product assistant. Use ONLY the information in the product list below. Do NOT invent details (price, features, colors...) that are not in the list. If no product in the list fits the request, say clearly that you could not find one instead of guessing.
 {history_block}
-Danh sách sản phẩm tìm được:
+Product list:
 {context}
 
-Câu hỏi của người dùng: "{query}"
+Customer message: "{query}"
 
-Trả lời ngắn gọn bằng tiếng Việt, TRÍCH DẪN số thứ tự trong ngoặc vuông (ví dụ [1]) mỗi khi nhắc tới 1 sản phẩm cụ thể. Nếu câu hỏi hiện tại tham chiếu tới lượt hỏi trước (ví dụ "còn màu khác không", "cái đó giá bao nhiêu"), dùng lịch sử hội thoại ở trên để hiểu đúng ý khách đang hỏi về sản phẩm nào."""
+Reply briefly in English. CITE the list number in square brackets (e.g. [1]) every time you mention a specific product. If the message refers to an earlier turn, use the conversation history above to work out which product it is about; if the list has no product of that type, say you could not find other options. Answer the customer directly: never repeat their message back or ask them a question."""
 
 
 LLM_RETRIES = 3   # số lần thử khi lỗi tạm thời (mất kết nối, timeout, Ollama trả 5xx)
@@ -133,15 +188,48 @@ def call_llm(prompt: str) -> str:
 # Retrieval: search() của A1, tuỳ chọn rerank trước khi đưa vào context
 # ---------------------------------------------------------------------------
 
-def retrieve(query: str, k: int, components=None, reranker: str = None):
+def retrieve(query: str, k: int, components=None, reranker: str = None, image=None):
     """
     reranker=None: search() mặc định của A1 (BM25 + Dense + RRF), lấy k kết quả.
     reranker="cross_encoder" | "deberta": lấy RERANK_POOL ứng viên, xếp lại, giữ k kết quả đầu.
+    image (PIL.Image, tuỳ chọn): xem _retrieve_with_image() (bỏ qua reranker); None thì giữ nguyên luồng chữ.
     """
+    if image is not None:
+        return _retrieve_with_image(query, image, k, components)
     if reranker is None:
         return search(query, query_type="text", k=k, components=components)
     return search(query, query_type="text", k=k, components=components,
                   top_n=RERANK_POOL, reranker=reranker, rerank_pool=RERANK_POOL)
+
+
+def _retrieve_with_image(query: str, image, k: int, components=None):
+    """
+    Chỉ có ảnh: search() ảnh của A1 (dense SigLIP; BM25 tự bỏ qua query ảnh). Không rerank vì
+    reranker chấm cặp (chữ, caption).
+    Ảnh + chữ: lấy IMAGE_POOL ứng viên từ search ảnh và search chữ (BM25 + dense), gộp bằng RRF như A1.
+    Không rerank: reranker chỉ đọc (chữ, caption) nên bỏ mất tín hiệu ảnh -- thử 3 ảnh trong
+    eval_set_image.jsonl kèm câu ngắn, bật cross-encoder đều đẩy sản phẩm đúng xuống
+    (vd 000098_rotate.jpg + "red case": hạng 1 -> 3). answer()/answer_agentic() tự tắt reranker khi có ảnh.
+    """
+    query = (query or "").strip()
+    if not query:
+        return search(image, query_type="image", k=k, components=components)
+
+    image_results = search(image, query_type="image", k=IMAGE_POOL, components=components,
+                           top_n=IMAGE_POOL)
+    text_results = search(query, query_type="text", k=IMAGE_POOL, components=components,
+                          top_n=IMAGE_POOL)
+    rows = {r["id"]: r for r in image_results + text_results}
+    fused = rrf_fusion([(r["id"], r["score"]) for r in image_results],
+                       [(r["id"], r["score"]) for r in text_results])
+    return [{**rows[doc_id], "score": round(float(score), 4)} for doc_id, score in fused[:k]]
+
+
+def _history_query(query: str, image) -> str:
+    """Câu hỏi ghi vào Memory; đánh dấu lượt có ảnh để lượt sau biết khách đã gửi ảnh."""
+    if image is None:
+        return query
+    return f"[image] {query}".strip() if query else f"[image] {IMAGE_ONLY_QUERY}"
 
 
 # ---------------------------------------------------------------------------
@@ -149,32 +237,39 @@ def retrieve(query: str, k: int, components=None, reranker: str = None):
 # ---------------------------------------------------------------------------
 
 def answer(query: str, k: int = 5, components=None, session_id: str = None,
-           reranker: str = None):
+           reranker: str = None, image=None):
     """
     Search 1 lần -> gọi LLM 1 lần (0 lần nếu search rỗng).
     session_id: bật Memory (đọc và ghi lịch sử); None = mỗi câu độc lập.
     reranker:   None, "cross_encoder" hoặc "deberta" (xem retrieve()).
-    Trả về {"answer", "sources", "reranker"}; sources là kết quả search để hiển thị kèm.
+    image:      PIL.Image tuỳ chọn; query có thể rỗng khi chỉ hỏi bằng ảnh. Có ảnh thì không rerank.
+    Có lịch sử thì search bằng câu đã viết lại theo ngữ cảnh (contextualize_query, +1 lượt gọi LLM).
+    Trả về {"answer", "sources", "reranker", "search_query"}; sources là kết quả search để hiển thị kèm.
     """
     history = get_history(session_id) if session_id else []
+    if image is not None:
+        reranker = None   # xem _retrieve_with_image()
 
-    results = retrieve(query, k=k, components=components, reranker=reranker)
+    search_query = contextualize_query(query, history)
+    results = retrieve(search_query, k=k, components=components, reranker=reranker, image=image)
 
     if not results:
         # Không gọi LLM với context rỗng để tránh bịa.
-        fallback = "Không tìm thấy sản phẩm nào phù hợp với câu hỏi này."
+        fallback = "Sorry, I could not find any product matching this question."
         if session_id:
-            append_history(session_id, query, fallback)
-        return {"answer": fallback, "sources": [], "reranker": reranker}
+            append_history(session_id, _history_query(query, image), fallback)
+        return {"answer": fallback, "sources": [], "reranker": reranker, "search_query": search_query}
 
     context = build_context(results)
-    prompt = build_prompt(query, context, history=history)
+    prompt_query = query if query or image is None else IMAGE_ONLY_QUERY
+    prompt = build_prompt(prompt_query, context, history=history, has_image=image is not None)
     llm_answer = call_llm(prompt)
 
     if session_id:
-        append_history(session_id, query, llm_answer)
+        append_history(session_id, _history_query(query, image), llm_answer, results)
 
-    return {"answer": llm_answer, "sources": results, "reranker": reranker}
+    return {"answer": llm_answer, "sources": results, "reranker": reranker,
+            "search_query": search_query}
 
 
 # ---------------------------------------------------------------------------
@@ -182,64 +277,75 @@ def answer(query: str, k: int = 5, components=None, session_id: str = None,
 # ---------------------------------------------------------------------------
 
 def judge_sufficiency(query: str, context: str) -> str:
-    """LLM trả "CÓ" hoặc "KHÔNG: <lý do>"."""
-    prompt = f"""Câu hỏi: "{query}"
-Danh sách sản phẩm tìm được:
+    """LLM trả "YES" hoặc "NO: <lý do>"."""
+    prompt = f"""Question: "{query}"
+Retrieved product list:
 {context}
 
-Danh sách trên có đủ thông tin để trả lời câu hỏi không?
-Trả lời CHỈ theo đúng 1 trong 2 dạng:
-"CÓ"
-hoặc
-"KHÔNG: <lý do ngắn gọn>" """
+Does the list above contain enough information to answer the question?
+Reply with EXACTLY one of these two forms:
+YES
+or
+NO: <short reason>"""
     return call_llm(prompt).strip()
 
 
 def rewrite_query(original_query: str, reason: str) -> str:
     """LLM viết lại query cụ thể hơn dựa trên lý do còn thiếu."""
-    prompt = f"""Người dùng hỏi: "{original_query}"
-Kết quả tìm kiếm hiện tại KHÔNG đủ vì: {reason}
-Hãy viết lại thành 1 câu truy vấn NGẮN GỌN, dùng từ khoá cụ thể hơn để tìm kiếm tốt hơn.
-CHỈ trả về câu truy vấn mới, không giải thích gì thêm."""
-    return call_llm(prompt).strip()
+    prompt = f"""The customer asked: "{original_query}"
+The current search results are NOT enough because: {reason}
+Rewrite it as ONE SHORT English search query with more specific keywords to get better results.
+Return ONLY the new query: no explanation, no quotes."""
+    # Bỏ ngoặc kép LLM hay thêm vào: BM25 tách theo khoảng trắng nên '"wheelbarrow' không khớp 'wheelbarrow'.
+    return call_llm(prompt).strip().strip('"').strip()
 
 
 def answer_agentic(query: str, k: int = 5, components=None, max_iters: int = 2,
-                   session_id: str = None, reranker: str = None):
+                   session_id: str = None, reranker: str = None, image=None):
     """
     Lặp tối đa max_iters lần: search -> judge -> (chưa đủ) rewrite. Sau đó 1 lượt trả lời.
     Với max_iters=2: 2 lượt gọi LLM nếu đủ ngay, 4 lượt nếu phải search lại.
     reranker áp dụng cho mọi lượt search (xem retrieve()).
+    image: PIL.Image tuỳ chọn, dùng ở mọi lượt search (lượt sau gộp ảnh với query đã viết lại).
     Trả về thêm "final_query_used" (query cuối dùng để search).
     """
     history = get_history(session_id) if session_id else []
+    has_image = image is not None
+    if has_image:
+        reranker = None   # xem _retrieve_with_image()
+    # Câu nối tiếp được viết lại theo lịch sử trước khi search và judge (xem contextualize_query()).
+    search_query = contextualize_query(query, history)
+    judge_query = search_query if search_query or not has_image else IMAGE_ONLY_QUERY
+    answer_query = query if query or not has_image else IMAGE_ONLY_QUERY
 
-    current_query = query
+    current_query = search_query
     results, context = [], ""
     verdicts = []
 
     for attempt in range(max_iters):
-        results = retrieve(current_query, k=k, components=components, reranker=reranker)
-        context = build_context(results) if results else "(không có kết quả)"
+        results = retrieve(current_query, k=k, components=components, reranker=reranker,
+                           image=image)
+        context = build_context(results) if results else "(no results)"
 
-        verdict = judge_sufficiency(query, context)   # luôn so với query gốc
+        verdict = judge_sufficiency(judge_query, context)   # luôn so với query gốc
         verdicts.append(verdict)
-        if verdict.upper().startswith("CÓ") or attempt == max_iters - 1:
+        if verdict.strip('"').upper().startswith("YES") or attempt == max_iters - 1:
             break
 
         reason = verdict.split(":", 1)[-1].strip() if ":" in verdict else verdict
-        current_query = rewrite_query(current_query, reason)
+        current_query = rewrite_query(current_query or judge_query, reason)
 
-    # Câu trả lời cuối dựa trên query gốc của người dùng, không phải query đã viết lại.
-    prompt = build_prompt(query, context, history=history)
+    # Câu trả lời cuối dựa trên query gốc của người dùng (kèm lịch sử), không phải query đã viết lại.
+    prompt = build_prompt(answer_query, context, history=history, has_image=has_image)
     llm_answer = call_llm(prompt)
 
     if session_id:
-        append_history(session_id, query, llm_answer)
+        append_history(session_id, _history_query(query, image), llm_answer, results)
 
     return {
         "answer": llm_answer,
         "sources": results,
+        "search_query": search_query,
         "final_query_used": current_query,
         "judge_verdicts": verdicts,
         "reranker": reranker,

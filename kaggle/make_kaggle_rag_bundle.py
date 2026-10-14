@@ -16,8 +16,17 @@ import zipfile
 CODE_FILES = ["search_core.py", "rag_core.py", "rag_metrics.py", "metrics.py", "step_ablation_rag.py",
               # ablation retrieval (A1), chạy bằng kaggle/kaggle_run_retrieval_ablation.py
               "step8_run_ablation.py", "step9_ablation_index_fields.py", "step10_sweep_rrf.py",
-              "step_ablation_rerank.py"]
-DATA_FILES = ["data/catalog.jsonl", "data/dense.index", "data/bm25.pkl", "data/eval_set.jsonl"]
+              "step_ablation_rerank.py",
+              # hỏi bằng ảnh (A3), chạy bằng kaggle_run_rag_ablation.py --with-image
+              "step18_ablation_image_rag.py",
+              # Memory khi tìm kiếm (A3), chạy bằng kaggle_run_rag_ablation.py --with-multiturn
+              "step19_ablation_multiturn.py"]
+DATA_FILES = ["data/catalog.jsonl", "data/dense.index", "data/bm25.pkl", "data/eval_set.jsonl",
+              "data/eval_set_image.jsonl"]
+IMAGE_DIR = "data/query_images"   # 100 ảnh truy vấn của step18 (~vài MB)
+# Kết quả đã chạy: đóng gói để Kaggle chạy --resume, chỉ tính phần còn thiếu (vd cấu hình mới).
+RESUME_FILES = ["data/rag_ablation_details.jsonl", "data/image_rag_ablation_details.jsonl",
+                "data/multiturn_ablation_details.jsonl"]
 DEBERTA_DIR = "models/deberta-10k-rank_net"
 OUT_PATH = "dist/kaggle_rag_bundle.zip"
 ROOT_IN_ZIP = "a1_rag"   # mọi file nằm trong thư mục này để script Kaggle dễ tìm
@@ -29,6 +38,8 @@ def main():
     args = parser.parse_args()
 
     files = CODE_FILES + DATA_FILES
+    files += sorted(f"{IMAGE_DIR}/{n}" for n in os.listdir(IMAGE_DIR))
+    files += [f for f in RESUME_FILES if os.path.isfile(f)]
     if not args.no_deberta:
         if not os.path.isdir(DEBERTA_DIR):
             raise SystemExit(f"Không thấy {DEBERTA_DIR}; dùng --no-deberta hoặc tải checkpoint trước")

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A3 - Chatbot RAG</title>
-<link rel="stylesheet" href="/static/style.css?v=3">
+<link rel="stylesheet" href="/static/style.css?v=4">
 </head>
 <body>
   <header class="topbar">
@@ -19,7 +19,7 @@
 
   <main>
     <h1>Trợ lý tư vấn sản phẩm</h1>
-    <p class="subtitle">Tìm sản phẩm bằng hệ search của A1, rồi LLM (Ollama) trả lời có trích dẫn nguồn [n].</p>
+    <p class="subtitle">Tìm sản phẩm bằng hệ search của A1 (chữ hoặc ảnh), rồi LLM (Ollama) trả lời có trích dẫn nguồn [n].</p>
 
     <section class="card settings">
       <label class="switch">
@@ -42,8 +42,16 @@
         <div class="chat-log" id="chatLog">
           <div class="bubble bot">Xin chào! Hãy mô tả sản phẩm bạn cần tìm.</div>
         </div>
+        <div class="attach-preview" id="attachPreview" hidden>
+          <img id="attachImg" alt="Ảnh đính kèm" width="48" height="48">
+          <span class="attach-name" id="attachName"></span>
+          <button type="button" class="attach-remove" onclick="clearAttachment()" aria-label="Bỏ ảnh">×</button>
+        </div>
         <div class="chat-input">
-          <input type="text" id="question" placeholder="Ví dụ: waterproof hiking boots for winter"
+          <input type="file" id="imageFile" accept="image/*" hidden onchange="onPickImage(this)">
+          <button class="btn secondary" type="button" onclick="document.getElementById('imageFile').click()"
+                  title="Đính kèm ảnh sản phẩm">Ảnh</button>
+          <input type="text" id="question" placeholder="Ví dụ: waterproof hiking boots for winter (có thể kèm ảnh)"
                  onkeydown="if (event.key === 'Enter') ask()">
           <button class="btn" id="btnSend" onclick="ask()">Gửi</button>
           <button class="btn secondary" onclick="resetChat()">Mới</button>
@@ -126,13 +134,14 @@ function badge(label, value, on = false) {
   return el;
 }
 
-function renderSources(data, agentic) {
+function renderSources(data, agentic, withImage = false) {
   const status = document.getElementById('status');
   status.innerHTML = '';
   status.append(
     badge('Rerank', data.reranker ? (RERANKER_LABELS[data.reranker] || data.reranker) : 'tắt', !!data.reranker),
     badge('Chế độ', agentic ? 'Agentic' : 'Naive', agentic),
   );
+  if (withImage) status.append(badge('Truy vấn', data.query_mode === 'image' ? 'ảnh' : 'ảnh + chữ', true));
 
   const list = document.getElementById('sources');
   list.innerHTML = '';
@@ -241,24 +250,65 @@ async function showProductDetail(source, n) {
   }
 }
 
+// Ảnh đính kèm cho lượt hỏi tiếp theo (null = hỏi bằng chữ như cũ).
+let attachedImage = null;
+
+function onPickImage(input) {
+  const file = input.files[0];
+  input.value = '';   // chọn lại cùng file vẫn kích hoạt onchange
+  if (!file) return;
+  attachedImage = file;
+  document.getElementById('attachImg').src = URL.createObjectURL(file);
+  document.getElementById('attachName').textContent = file.name;
+  document.getElementById('attachPreview').hidden = false;
+  document.getElementById('question').focus();
+}
+
+function clearAttachment() {
+  attachedImage = null;
+  document.getElementById('attachPreview').hidden = true;
+}
+
 async function ask() {
   const input = document.getElementById('question');
   const q = input.value.trim();
-  if (!q) return;
+  const image = attachedImage;
+  if (!q && !image) return;
   input.value = '';
+  clearAttachment();
 
   const agentic = document.getElementById('agentic').checked;
-  appendBubble('user', q);
+  const userBubble = appendBubble('user', q);
+  if (image) {
+    const thumb = document.createElement('img');
+    thumb.className = 'bubble-image';
+    thumb.alt = image.name;
+    thumb.src = URL.createObjectURL(image);
+    userBubble.prepend(thumb);
+  }
   const botBubble = appendBubble('bot', 'Đang tìm và soạn câu trả lời...', 'typing');
   document.getElementById('btnSend').disabled = true;
 
   try {
-    const params = new URLSearchParams({
-      q, k: 5, agentic,
-      reranker: selectedReranker(),
-      session_id: SESSION_ID,
-    });
-    const res = await fetch(`/api/v1/ask?${params}`);
+    let res;
+    if (image) {
+      // Ảnh dùng để tìm sản phẩm (SigLIP); LLM chỉ đọc danh sách sản phẩm tìm được.
+      const form = new FormData();
+      form.append('file', image);
+      form.append('q', q);
+      form.append('k', 5);
+      form.append('agentic', agentic);
+      form.append('reranker', selectedReranker());
+      form.append('session_id', SESSION_ID);
+      res = await fetch('/api/v1/ask_image', { method: 'POST', body: form });
+    } else {
+      const params = new URLSearchParams({
+        q, k: 5, agentic,
+        reranker: selectedReranker(),
+        session_id: SESSION_ID,
+      });
+      res = await fetch(`/api/v1/ask?${params}`);
+    }
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || res.status);
 
@@ -270,7 +320,7 @@ async function ask() {
       note.textContent = `Đã tự viết lại câu hỏi để search: "${data.final_query_used}"`;
       botBubble.appendChild(note);
     }
-    renderSources(data, agentic);
+    renderSources(data, agentic, !!image);
     renderCitedProducts(botBubble, citedSources(data.answer, data.sources || []));
   } catch (err) {
     botBubble.classList.remove('typing');

@@ -53,13 +53,7 @@
 - Phụ lục B. Nguyên văn các prompt
 - Tài liệu tham khảo
 
-> **Trạng thái số liệu (ngày 06/10/2026):**
-> - Tầng **Retrieval**: đã đo đủ trên 250 câu với hệ thống hiện tại (dense = SigLIP), ngày 02/10/2026.
-> - Tầng **Generation**: đã chạy đủ `step_ablation_rag.py` trên 250 câu × 4 cấu hình với `llama3.1` (Kaggle, 2 GPU T4), ngày 06/10/2026: 1000 lượt, 0 lỗi. Kết quả ở mục 7.2.
->
-> **Cập nhật ngày 10/10/2026: ground truth đã được nâng từ "1 sản phẩm đúng / câu" (A1) lên qrels đa mức 0–3** (mục 3.2.1).
-> - Số liệu ở mục 7 **đo trên ground truth cũ** và sẽ được thay sau khi chạy lại trên Kaggle (`kaggle_run_retrieval_ablation.py`, `kaggle_run_rag_ablation.py`).
-> - Ước lượng mức thay đổi: sản phẩm đúng cũ vẫn giữ nhãn 3, chỉ 10/250 câu có thêm sản phẩm liên quan, và 3 câu được sửa lại nội dung. Vì vậy Context Recall/Precision có thể chỉ đổi nhẹ. Context nDCG@5 đa mức (mục 6.2) là metric mới, chưa có số.
+> **Trạng thái số liệu (ngày 13/10/2026):** mọi kết quả ở mục 7 lấy từ lần chạy cuối, ngày 12/10/2026, với code hiện tại (prompt tiếng Anh, ground truth qrels): `step_ablation_rag.py` 250 câu × 6 cấu hình, `step18_ablation_image_rag.py` 100 ảnh × 3 cấu hình, `step19_ablation_multiturn.py` 500 hội thoại. LLM `llama3.1`, Kaggle 2 GPU T4, 0 lỗi.
 
 ---
 
@@ -72,10 +66,10 @@ A1 xây hệ tìm kiếm ngữ nghĩa: người dùng nhập câu chữ hoặc �
 - LLM viết **câu trả lời tự nhiên có trích dẫn nguồn** `[n]`.
 - Hệ thống nhớ được các lượt hỏi trước trong cùng cuộc trò chuyện (**Memory**).
 
-Ví dụ một lượt hỏi thật (LLM `llama3.1`, chạy ngày 29/09/2026):
+Ví dụ một lượt hỏi thật (LLM `llama3.1`, cấu hình Naive, lần chạy ngày 12/10/2026):
 
 > **Người dùng:** *something to keep pets from running out of drinking water automatically*
-> **Chatbot:** *Để tránh tình trạng pets hết nước uống tự động, bạn có thể sử dụng [1] 1.58 Gallon Automatic Dog Water Bowl Dispenser. Sản phẩm này có khả năng tự cấp nước cho pets một cách liên tục.*
+> **Chatbot:** *I think the [1] 1.58 Gallon Automatic Dog Water Bowl Dispenser would be a good option to keep pets from running out of drinking water automatically.*
 > **Nguồn [1]** là sản phẩm thật trong catalog, hiển thị kèm ảnh để người dùng đối chiếu.
 
 ### 1.2 Quan hệ với A1 và A2
@@ -92,11 +86,12 @@ Ví dụ một lượt hỏi thật (LLM `llama3.1`, chạy ngày 29/09/2026):
 1. **Hai luồng RAG** dùng chung tầng Retrieval và Memory, khác nhau ở cách tầng Generation ra quyết định:
    - **Naive RAG** (baseline): tìm một lần, trả lời một lần.
    - **Agentic RAG** (nâng cấp): LLM tự đánh giá kết quả tìm kiếm, có thể viết lại câu truy vấn và tìm lại.
-2. **Memory theo phiên hội thoại**, giúp hiểu câu hỏi nối tiếp (ví dụ "còn màu khác không").
+2. **Memory theo phiên hội thoại**, dùng ở cả tầng Retrieval (viết lại câu hỏi nối tiếp thành câu tìm kiếm độc lập) và tầng Generation, giúp hiểu câu hỏi nối tiếp (ví dụ "any other color?"). Có ablation riêng trên 500 hội thoại (mục 7.5).
 3. **Ba lựa chọn rerank** trước khi đưa sản phẩm cho LLM: không rerank / cross-encoder MiniLM (A1) / DeBERTa distill (A2).
 4. **Grounding:** context đánh số, prompt ràng buộc, trả kèm nguồn thật, và giao diện cho bấm vào sản phẩm được trích dẫn để xem chi tiết.
 5. **Bộ đánh giá RAG tự viết, 8 metric:** đo riêng tầng Retrieval và tầng Generation, kèm script ablation lưu chi tiết từng câu.
-6. **Ground truth qrels đa mức (cải tiến so với A1):** A1 chỉ ghi 1 sản phẩm đúng cho mỗi câu, nhãn nhị phân. A3 gán nhãn 0–3 cho mọi sản phẩm trong pool ứng viên (5.064 cặp câu hỏi–sản phẩm), theo đúng cách xây qrels kiểu TREC (mục 3.2.1).
+6. **Hỏi bằng ảnh (cải tiến so với A1 và bản A3 đầu tiên):** chatbot nhận ảnh sản phẩm, có thể kèm câu chữ. Ảnh được tìm bằng nhánh SigLIP của A1, rồi LLM trả lời trên các sản phẩm tìm được (mục 5.1.1).
+7. **Ground truth qrels đa mức (cải tiến so với A1):** A1 chỉ ghi 1 sản phẩm đúng cho mỗi câu, nhãn nhị phân. A3 gán nhãn 0–3 cho mọi sản phẩm trong pool ứng viên (5.064 cặp câu hỏi–sản phẩm), theo đúng cách xây qrels kiểu TREC (mục 3.2.1).
 
 ### 1.4 Yêu cầu của đề bài
 
@@ -173,7 +168,7 @@ Ví dụ (rút gọn `qrels`):
  "answer_should_mention": ["Ergodyne", "Lanyard"]}
 ```
 
-**Hạn chế:** 200 câu sinh từ mẫu chứa nguyên văn một phần tên sản phẩm, nên dễ hơn câu thực tế. Kết quả vì vậy luôn được báo cáo riêng cho **50 câu viết tay**.
+**Hạn chế:** 200 câu sinh từ mẫu chứa nguyên văn một phần tên sản phẩm, nên dễ hơn câu thực tế. Mục 7 báo cáo trên toàn bộ 250 câu; script vẫn lưu riêng kết quả của 50 câu viết tay trong `data/rag_ablation_results.json`.
 
 #### 3.2.1 Cải tiến so với A1: ground truth dạng qrels đa mức
 
@@ -283,7 +278,9 @@ flowchart LR
 | Lõi RAG | `rag_core.py` | `retrieve`, `build_context`, `build_prompt`, `call_llm`, `answer`, `answer_agentic`, Memory |
 | Tìm kiếm (A1) | `search_core.py` | `search()`, `rerank()` (MiniLM), `distilled_rerank()` (DeBERTa), `get_product()` |
 | Metric RAG | `rag_metrics.py` | Context Precision, Faithfulness, Answer Relevancy |
-| Thực nghiệm | `step_ablation_rag.py` | 4 cấu hình × 8 metric, lưu kết quả và chi tiết từng câu |
+| Thực nghiệm | `step_ablation_rag.py` | 6 cấu hình × 8 metric, lưu kết quả và chi tiết từng câu |
+| Thực nghiệm | `step17_eval_image_rag_retrieval.py`, `step18_ablation_image_rag.py` | Hỏi bằng ảnh: tầng Retrieval; cả hai tầng (chỉ chữ / chỉ ảnh / ảnh + chữ) |
+| Thực nghiệm | `step19_ablation_multiturn.py` | Memory khi tìm kiếm: 500 hội thoại hai lượt × 4 cách tìm |
 | Cấu hình | `.env` (mẫu: `.env.example`) | `OLLAMA_MODEL`, `OLLAMA_URL` |
 
 ---
@@ -307,6 +304,22 @@ flowchart LR
    - Có rerank: lấy **30 ứng viên** đầu sau RRF (`top_n = 30` mỗi nhánh), chuyển sang bước 5.2.
 
 Kết quả là danh sách 5 sản phẩm `{id, image_path, caption, score}`, gọi là **sources**.
+
+#### 5.1.1 Hỏi bằng ảnh: `retrieve(query, k, image=...)`
+
+A1 là hệ tìm kiếm đa phương thức, nhưng bản A3 đầu tiên chỉ nhận câu chữ. Bản hiện tại cho người dùng gửi kèm **một ảnh sản phẩm**, có thể kèm câu chữ hoặc không:
+
+| Đầu vào | Cách tìm | Rerank |
+|---|---|---|
+| Chỉ chữ | Như mục 5.1, không đổi | Theo lựa chọn |
+| Chỉ ảnh | `search(image, query_type="image")` của A1: SigLIP mã hoá ảnh, FAISS tìm ảnh sản phẩm gần nhất (BM25 tự bỏ qua) | Không |
+| Ảnh + chữ | Lấy 50 ứng viên từ tìm theo ảnh và 50 ứng viên từ tìm theo chữ (BM25 + Dense), gộp bằng **RRF** như A1 | Không |
+
+- **LLM vẫn chỉ đọc chữ.** `llama3.1` không xem được ảnh, nên ảnh chỉ dùng ở tầng Retrieval. Prompt thêm một dòng báo rằng người dùng có gửi ảnh và danh sách sản phẩm được tìm theo độ giống với ảnh, để LLM không đòi mô tả thêm. Nếu người dùng không gõ chữ, câu hỏi đưa vào prompt là "Find products similar to the photo I sent". Grounding (mục 4 và 5.3) giữ nguyên.
+- **Không rerank khi có ảnh.** Reranker chấm cặp (câu chữ, tên sản phẩm), nên bỏ mất tín hiệu từ ảnh. Thử 3 ảnh trong `eval_set_image.jsonl`, mỗi ảnh kèm một câu ngắn: bật cross-encoder đều đẩy sản phẩm đúng xuống. Ví dụ ảnh vỏ máy tính bảng xoay nghiêng kèm câu "red case": sản phẩm đúng từ hạng 1 tụt xuống hạng 3, vì cross-encoder chỉ thấy chữ "red case". A1 cũng không rerank truy vấn ảnh vì cùng lý do.
+- **Agentic** dùng ảnh ở mọi lượt tìm. Từ lượt thứ hai, ảnh được gộp với câu truy vấn đã viết lại.
+- **Memory** ghi lượt có ảnh dưới dạng `[image] <câu hỏi>`, để lượt sau biết khách đã gửi ảnh.
+- **Đường đi của câu hỏi chữ không đổi** khi thêm ảnh: kết quả tìm và rerank được kiểm tra trùng khớp với bản trước khi thêm ảnh.
 
 ### 5.2 Rerank (tuỳ chọn, mặc định tắt)
 
@@ -336,10 +349,12 @@ Reranker **không gọi LLM** và áp dụng **như nhau** cho cả Naive lẫn 
 
 | Phần | Nội dung | Mục đích |
 |---|---|---|
-| Luật grounding | "CHỈ được dùng thông tin trong danh sách... KHÔNG được bịa thêm chi tiết (giá, tính năng...)... Nếu không có sản phẩm phù hợp, hãy nói rõ là không tìm thấy thay vì đoán." | Giảm bịa thông tin |
+| Luật grounding | "Use ONLY the information in the product list below. Do NOT invent details (price, features, colors...)... If no product in the list fits the request, say clearly that you could not find one instead of guessing." | Giảm bịa thông tin |
 | Lịch sử hội thoại | Tối đa 3 lượt gần nhất (mục 5.5); trống nếu không có | Hiểu câu hỏi nối tiếp |
 | Context | Danh sách `[1]..[5]` ở trên | Nguồn thông tin duy nhất được phép dùng |
-| Yêu cầu trả lời | "Trả lời ngắn gọn bằng tiếng Việt, TRÍCH DẪN số thứ tự trong ngoặc vuông (ví dụ [1])..." | Định dạng câu trả lời, buộc trích dẫn |
+| Yêu cầu trả lời | "Reply briefly in English. CITE the list number in square brackets (e.g. [1])... never repeat their message back or ask them a question." | Định dạng câu trả lời, buộc trích dẫn, không hỏi ngược khách |
+
+**Ngôn ngữ prompt:** mọi prompt gửi LLM viết bằng tiếng Anh, và chatbot trả lời bằng tiếng Anh, cùng ngôn ngữ với câu hỏi và phần lớn catalog. Bản đầu tiên dùng prompt tiếng Việt; khi thử giao diện, LLM dịch câu tìm kiếm sang tiếng Việt nên BM25 không khớp catalog, và chép lại câu ví dụ trong prompt thành câu trả lời, tức là hỏi ngược lại người dùng.
 
 Nguyên văn prompt ở Phụ lục B.
 
@@ -355,18 +370,19 @@ Nguyên văn prompt ở Phụ lục B.
 | Thử lại | Tối đa 3 lần (chờ 5 s, 10 s) khi mất kết nối, timeout, lỗi 5xx | Lỗi 4xx (ví dụ sai tên model) báo ngay, không thử lại |
 | Lỗi trả cho giao diện | HTTP 503, kèm lý do Ollama trả về | Ví dụ: *"Ollama trả 404: model 'llama3.1' not found"* |
 
-**Chọn model là một quyết định có số liệu** (mục 7.2). Với cùng prompt, `qwen2.5:3b` (3B) chỉ trả về chuỗi `"[1]"`, còn `llama3.1` (8B) trả lời thành câu đầy đủ. Hệ thống vì vậy dùng `llama3.1`.
+**Chọn model:** chạy thử 3 câu đầu của eval set trước khi chạy đủ. Với cùng prompt, `qwen2.5:3b` (3B) chỉ trả về chuỗi `"[1]"`, còn `llama3.1` (8B) trả lời thành câu đầy đủ. Hệ thống vì vậy dùng `llama3.1`.
 
 ### 5.5 Memory
 
-**Mục đích:** cho chatbot hiểu câu hỏi nối tiếp, ví dụ người dùng hỏi "black jacket", rồi hỏi tiếp "còn cái nào rẻ hơn không".
+**Mục đích:** cho chatbot hiểu câu hỏi nối tiếp, ví dụ người dùng hỏi "black leather jacket", rồi hỏi tiếp "any other color?".
 
 **Cấu trúc dữ liệu** (`rag_core._SESSION_STORE`): một dict trong RAM của server.
 ```python
 {
   "session-p57iqj4jb4s": [
-      {"query": "finding for me a black jacket", "answer": "Tôi tìm thấy ... [1] Michael Kors ..."},
-      {"query": "...", "answer": "..."}
+      {"query": "black leather jacket", "answer": "We have a few options available: [1] Michael Kors ...",
+       "products": ["Michael Kors Men's Perforated Faux-Leather Moto Jacket XL Black", "...", "..."]},
+      {"query": "...", "answer": "...", "products": [...]}
   ],
   "session-xyz...": [...]
 }
@@ -375,13 +391,20 @@ Nguyên văn prompt ở Phụ lục B.
 **Vòng đời một phiên:**
 1. Mở trang `/chat`: trình duyệt sinh `session_id` ngẫu nhiên và gửi kèm **mọi** câu hỏi.
 2. **Đọc** (`get_history`): mỗi câu hỏi lấy danh sách lượt cũ của phiên.
-3. **Chèn vào prompt** (`_format_history`): mỗi lượt thành một dòng, câu trả lời cũ **cắt còn 150 ký tự**:
+3. **Viết lại câu hỏi theo ngữ cảnh** (`contextualize_query`): nếu phiên đã có lịch sử, LLM gộp câu hỏi mới với lịch sử thành **một câu tìm kiếm độc lập, dạng từ khoá tiếng Anh**, trước khi tìm kiếm. Lượt đầu (chưa có lịch sử) bỏ qua bước này, không tốn thêm lượt gọi LLM. Câu đã viết lại được trả về trong trường `search_query`.
+   - Prompt có 3 ví dụ mẫu và các luật: lấy loại sản phẩm từ "Suggested products" của lượt gần nhất; hỏi màu/cỡ/hãng khác thì **bỏ giá trị cũ, giữ loại sản phẩm**; chủ đề khác hẳn thì bỏ qua lịch sử; giữ nguyên tên hãng và tên sản phẩm.
+   - Ví dụ thật (`llama3.1`, ngày 12/10/2026): "black leather jacket" rồi "is any other color?" → tìm bằng *"leather jacket"*; 4/5 nguồn là áo khoác, và chatbot trả lời *"Unfortunately, I could not find any other color options for the black leather jacket."*
+   - **Chốt chặn:** nếu câu viết lại có chữ tiếng Việt trong khi câu hỏi và tên sản phẩm trong lịch sử đều không có, dùng lại câu gốc.
+   - Hiệu quả đo ở mục 7.5.
+4. **Chèn vào prompt trả lời** (`_format_history`): mỗi lượt thành một dòng, câu trả lời cũ **cắt còn 150 ký tự**, kèm tên **3 sản phẩm đầu** đã gợi ý (để hiểu "cái đó", "cái thứ hai"):
    ```
-   Lịch sử hội thoại trước đó (để hiểu ngữ cảnh câu hỏi hiện tại):
-   - Khách hỏi: "finding for me a black jacket" -> Đã trả lời: "Tôi tìm thấy một số sản phẩm đen. Bạn có thể tham khảo [1] Michael Kors Men's Perforated Faux-Leather Moto Jacket XL Black hoặc [2] 3120-2129 . Pivo..."
+   Conversation so far (to understand the current message):
+   - Customer: "black leather jacket" -> Assistant: "We have a few options available: [1] Michael Kors Men's Perforated Faux-Leather Moto Jacket XL Black...."
+     Suggested products: Michael Kors Men's Perforated Faux-Leather Moto Jacket XL Black; ...
    ```
-4. **Ghi** (`append_history`): sau khi có câu trả lời, thêm lượt mới vào cuối. Nếu quá **3 lượt**, xoá lượt cũ nhất (cửa sổ trượt).
-5. **Xoá:** nút "Mới" gọi `POST /api/v1/reset_session`, xoá lịch sử và đổi sang `session_id` mới.
+   Câu hỏi trong prompt trả lời vẫn là **câu gốc** của người dùng; câu viết lại chỉ dùng để tìm kiếm.
+5. **Ghi** (`append_history`): sau khi có câu trả lời, thêm lượt mới (câu hỏi, câu trả lời, sản phẩm đầu) vào cuối. Nếu quá **3 lượt**, xoá lượt cũ nhất (cửa sổ trượt).
+6. **Xoá:** nút "Mới" gọi `POST /api/v1/reset_session`, xoá lịch sử và đổi sang `session_id` mới.
 
 ```mermaid
 sequenceDiagram
@@ -404,7 +427,9 @@ sequenceDiagram
     B->>A: GET /api/v1/ask?q=Q2&session_id=S
     A->>R: answer(Q2, session_id=S)
     R->>M: get_history(S) -> [(Q1, A1)]
-    R->>R: build_prompt có thêm "Lịch sử hội thoại..."
+    R->>L: contextualize_query(Q2, lịch sử)
+    L-->>R: câu tìm kiếm độc lập Q2'
+    R->>R: retrieve(Q2') + build_prompt(Q2, có "Conversation so far...")
     R->>L: call_llm(prompt)
     L-->>R: câu trả lời A2
     R->>M: append_history(S, Q2, A2)  (giữ tối đa 3 lượt)
@@ -415,8 +440,11 @@ sequenceDiagram
 ```
 
 **Giới hạn của cách cài đặt này** (nêu rõ, không giấu):
-- **Lịch sử chỉ được đưa vào prompt sinh câu trả lời, không dùng khi tìm kiếm.** Câu "còn cái nào rẻ hơn không" được tìm kiếm **nguyên văn**, nên kết quả tìm kiếm của lượt 2 không liên quan tới áo khoác. LLM chỉ "nhớ" qua phần lịch sử trong prompt.
-- **LLM có thể kéo lịch sử vào sai chỗ.** Ví dụ thật khi thử giao diện (`llama3.1`): người dùng hỏi "waterproof hiking boots for winter", rồi hỏi tiếp "portable outdoor storage shed with zipper doors". Câu trả lời thứ hai mở đầu bằng *"Tôi nghĩ bạn đang hỏi về một loại bốt đi bộ chống nước..."*, dù câu mới hỏi chuyện khác hẳn.
+- **Viết lại câu hỏi tốn thêm 1 lượt gọi LLM** cho mỗi câu nối tiếp (từ lượt 2 trở đi), và phụ thuộc chất lượng LLM: viết lại sai thì tìm kiếm sai.
+- **Ảnh không được nhớ khi tìm kiếm.** Lịch sử chỉ ghi `[image] <câu hỏi>`, không giữ ảnh. Nếu lượt trước gửi ảnh và lượt sau hỏi "is it available in red?", câu viết lại chỉ dựa vào tên sản phẩm đã gợi ý.
+- **Viết lại câu hỏi làm mất tên sản phẩm không phải tiếng Anh.** Luật "viết bằng tiếng Anh" khiến LLM dịch caption tiếng Romania, Hà Lan, Na Uy... thành tên loại sản phẩm tiếng Anh, nên BM25 không khớp được (mục 7.5).
+- **Các bộ câu hỏi ở mục 7.2–7.4 là câu đơn** (không `session_id`), nên không đi qua bước viết lại. Bước này được đo riêng ở mục 7.5.
+- **LLM có thể kéo lịch sử vào sai chỗ.** Khi người dùng đổi chủ đề, câu viết lại kém câu nguyên văn ở 12/250 hội thoại (mục 7.5).
 - **Lưu trong RAM:** mất khi khởi động lại server; không dùng chung được nếu chạy nhiều server. Production cần Redis hoặc cơ sở dữ liệu.
 - **Cửa sổ ngắn:** chỉ 3 lượt, mỗi câu trả lời cũ 150 ký tự. Đủ cho câu nối tiếp gần, không đủ cho hội thoại dài.
 
@@ -425,28 +453,30 @@ sequenceDiagram
 ```mermaid
 flowchart TD
     Q([Câu hỏi + session_id + reranker]) --> H["Memory: get_history<br/>(tối đa 3 lượt)"]
-    H --> R["Retrieval: retrieve(q, k=5, reranker)<br/>BM25 + SigLIP + RRF (+ rerank)"]
+    H --> CQ["contextualize_query(q, lịch sử)<br/>(chỉ khi có lịch sử — 1 lượt LLM)"]
+    CQ --> R["Retrieval: retrieve(q', k=5, reranker)<br/>BM25 + SigLIP + RRF (+ rerank)"]
     R --> E{"Có kết quả?"}
-    E -- Không --> FB["Trả câu cố định<br/>'Không tìm thấy sản phẩm...'<br/>(không gọi LLM)"]
+    E -- Không --> FB["Trả câu cố định<br/>'Sorry, I could not find any product...'<br/>(không gọi LLM)"]
     E -- Có --> C["build_context: [1]..[5]"]
     C --> P["build_prompt: luật + lịch sử + context"]
     P --> L["call_llm — 1 lượt"]
     L --> S["Memory: append_history"]
     FB --> S
-    S --> O([Trả về answer + sources + reranker])
+    S --> O([Trả về answer + sources + reranker + search_query])
 ```
 
-Đặc điểm: **tuyến tính**, tìm kiếm đúng một lần, gọi LLM tối đa một lần. Naive RAG không bao giờ tìm lại, dù kết quả tìm kiếm tốt hay xấu.
+Đặc điểm: **tuyến tính**, tìm kiếm đúng một lần, gọi LLM tối đa một lần để trả lời (cộng 1 lượt viết lại nếu là câu nối tiếp). Naive RAG không bao giờ tìm lại, dù kết quả tìm kiếm tốt hay xấu.
 
 ### 5.7 Luồng Agentic RAG (nâng cấp): `answer_agentic(max_iters=2)`
 
 ```mermaid
 flowchart TD
     Q([Câu hỏi gốc Q]) --> H["Memory: get_history"]
-    H --> I["query = Q, vòng = 1"]
+    H --> CQ["Q' = contextualize_query(Q, lịch sử)<br/>(chỉ khi có lịch sử — 1 lượt LLM)"]
+    CQ --> I["query = Q', vòng = 1"]
     I --> R["Retrieval: retrieve(query, k=5, reranker)"]
-    R --> J["judge_sufficiency(Q GỐC, context)<br/>LLM: 'CÓ' hoặc 'KHÔNG: lý do' — 1 lượt"]
-    J --> D{"Bắt đầu bằng 'CÓ'<br/>hoặc đã là vòng cuối?"}
+    R --> J["judge_sufficiency(Q', context)<br/>LLM: 'YES' hoặc 'NO: lý do' — 1 lượt"]
+    J --> D{"Bắt đầu bằng 'YES'<br/>hoặc đã là vòng cuối?"}
     D -- Không --> W["rewrite_query(query, lý do)<br/>LLM viết lại truy vấn — 1 lượt"]
     W --> N["query = truy vấn mới, vòng = 2"]
     N --> R
@@ -457,9 +487,10 @@ flowchart TD
 ```
 
 Các quy tắc:
-- **Đánh giá luôn so với câu hỏi gốc,** không so với truy vấn đã viết lại, để không "trôi" khỏi ý người dùng.
+- **Đánh giá luôn so với câu hỏi gốc** (đã gộp ngữ cảnh hội thoại thành Q' nếu là câu nối tiếp), không so với truy vấn do `rewrite_query` viết lại, để không "trôi" khỏi ý người dùng.
 - **Câu trả lời cuối dùng câu hỏi gốc,** nhưng dùng context của lần tìm kiếm cuối.
 - **`max_iters = 2`** là giới hạn cứng để không lặp vô hạn.
+- **Truy vấn viết lại được làm sạch:** bỏ ngoặc kép ở hai đầu, vì BM25 tách từ theo khoảng trắng nên `"wheelbarrow` không khớp `wheelbarrow`.
 - **Trả thêm `final_query_used`** (giao diện hiện nếu khác câu hỏi gốc) và **`judge_verdicts`** (các phán đoán của LLM, dùng khi phân tích lỗi).
 
 **Số lượt gọi LLM mỗi câu hỏi:**
@@ -469,6 +500,7 @@ Các quy tắc:
 | Kết quả tìm kiếm rỗng | 0 | 2 (Agentic chưa có kiểm tra này) |
 | LLM đánh giá "đủ" ngay vòng 1 | 1 | 2 |
 | LLM đánh giá "chưa đủ" | — | 4 (đánh giá, viết lại, đánh giá, trả lời) |
+| Câu nối tiếp (có lịch sử) | +1 | +1 (`contextualize_query`) |
 
 **So sánh hai luồng:**
 
@@ -477,7 +509,7 @@ Các quy tắc:
 | Số lần tìm kiếm | 1 | 1–2 |
 | Tự đánh giá kết quả | Không | Có (`judge_sufficiency`) |
 | Tự viết lại truy vấn | Không | Có (`rewrite_query`), khi chưa đủ |
-| Lượt gọi LLM | 1 | 2–4 |
+| Lượt gọi LLM | 1 (+1 nếu câu nối tiếp) | 2–4 (+1 nếu câu nối tiếp) |
 | Memory, Grounding, Reranker | Dùng chung | Dùng chung |
 
 ### 5.8 API và giao diện
@@ -486,7 +518,8 @@ Các quy tắc:
 
 | Endpoint | Tham số | Trả về |
 |---|---|---|
-| `GET /api/v1/ask` | `q`, `k=5`, `agentic=false`, `reranker=none\|cross_encoder\|deberta`, `session_id` | `{answer, sources, reranker}`, Agentic thêm `final_query_used`, `judge_verdicts`. 400 nếu reranker không hợp lệ; 503 nếu không gọi được Ollama |
+| `GET /api/v1/ask` | `q`, `k=5`, `agentic=false`, `reranker=none\|cross_encoder\|deberta`, `session_id` | `{answer, sources, reranker, search_query}`, Agentic thêm `final_query_used`, `judge_verdicts`. 400 nếu reranker không hợp lệ; 503 nếu không gọi được Ollama |
+| `POST /api/v1/ask_image` | multipart: `file` (ảnh), `q` (có thể rỗng), `k=5`, `agentic`, `reranker`, `session_id` | Như `/ask`, thêm `query_mode` = `image` hoặc `image+text`; `reranker` luôn là `null` (mục 5.1.1). 400 nếu file không phải ảnh |
 | `GET /api/v1/rerankers` | — | Reranker dùng được (`deberta` chỉ có khi đã tải checkpoint) |
 | `GET /api/v1/products/{id}` | — | Tên, brand, category, mô tả (tối đa 2.000 ký tự) của một sản phẩm trong catalog |
 | `POST /api/v1/reset_session` | `session_id` | Xoá Memory của phiên |
@@ -495,6 +528,7 @@ Các quy tắc:
 **Giao diện `/chat`:**
 - **Công tắc "Rerank trước khi đưa vào context":** chỉ khi bật mới chọn được MiniLM hoặc DeBERTa.
 - **Công tắc "Agentic".**
+- **Nút "Ảnh"** đính kèm một ảnh sản phẩm cho lượt hỏi tiếp theo, có ô xem trước và nút bỏ ảnh. Ảnh hiện trong bong bóng chat của người dùng; badge "Truy vấn: ảnh / ảnh + chữ" hiện ở cột nguồn.
 - **Khung chat nhiều lượt.** Dưới mỗi câu trả lời có **thẻ sản phẩm** cho từng nguồn được LLM trích dẫn `[n]`.
 - **Cột phải:** danh sách 5 nguồn đã đưa vào context (ảnh, `[n]`, điểm RRF và điểm rerank), và **khung chi tiết sản phẩm** hiện khi bấm vào một thẻ hoặc một nguồn.
 
@@ -571,16 +605,16 @@ Giải thích và ví dụ cho từng metric:
 3. Faithfulness = số SUPPORTED / tổng số claim đọc được.
    - Trả `None` (không phải 0) nếu không đọc được claim nào, vì "không chấm được" khác với "sai hết".
 - *Ví dụ:* câu trả lời được tách thành 5 claim, giám khảo đánh 4 SUPPORTED thì Faithfulness = 0,8.
-- **Giới hạn:** giám khảo là **chính model sinh câu trả lời**, nên có thể thiên vị. Mục 7.2 và 7.3c cho thấy điểm này dao động mạnh.
+- **Giới hạn:** giám khảo là **chính model sinh câu trả lời**, nên có thể thiên vị. Ở mục 7.2, 32–47/250 câu mỗi cấu hình không chấm được (None).
 - **Khi nào ra None:** câu trả lời hoặc context rỗng, hoặc giám khảo không in được dòng nào đúng dạng `CLAIM: ... | SUPPORTED/NOT_SUPPORTED`. Giá trị trung bình chỉ tính trên các câu có điểm (bỏ None).
 
 **Answer Relevancy** (`rag_metrics.answer_relevancy`): đơn giản hoá so với RAGAS. RAGAS gốc sinh các câu hỏi giả định từ câu trả lời rồi so với câu hỏi gốc; bản này **so thẳng** embedding câu hỏi và câu trả lời bằng `sentence-transformers/all-MiniLM-L6-v2` (đã chuẩn hoá, nên tích vô hướng = cosine), cho ra giá trị trong [−1, 1].
-- *Ví dụ thật:* câu trả lời `"[1]"` của `qwen2.5:3b` được khoảng 0,01–0,08; câu trả lời đầy đủ của `llama3.1` được 0,39–0,69.
-- **Giới hạn:** model embedding là model tiếng Anh, trong khi câu hỏi là tiếng Anh và câu trả lời là tiếng Việt. Nên chỉ dùng để **so sánh giữa các cấu hình**, không đọc như giá trị tuyệt đối.
+- *Ví dụ thật:* câu trả lời rỗng nội dung `"[1]"` được khoảng 0,01–0,08; câu trả lời đầy đủ của `llama3.1` được khoảng 0,8 (mục 7.2).
+- **Giới hạn:** model embedding chỉ hiểu tiếng Anh, nên metric này chỉ dùng được vì câu hỏi và câu trả lời đều bằng tiếng Anh. Nó chỉ đo câu trả lời có cùng chủ đề với câu hỏi, không đo câu trả lời có đúng sản phẩm hay không.
 
 **Mention hit:** so khớp chuỗi, không phân biệt hoa thường.
 - *Ví dụ thật:* câu hỏi "pets drinking water", `answer_should_mention = ["STALTWO", "1.58 Gallon Automatic"]`. Câu trả lời của `llama3.1` có "1.58 Gallon Automatic" nhưng không có "STALTWO", nên Mention hit = 1/2 = 0,5.
-- Brand "STALTWO" **không có trong context** (mục 3.3), nên 0,5 đã là mức cao nhất có thể với câu này. Phải so với mức trần 0,708 (250 câu) hoặc 0,760 (50 câu viết tay), không so với 1.
+- Brand "STALTWO" **không có trong context** (mục 3.3), nên 0,5 đã là mức cao nhất có thể với câu này. Phải so với mức trần 0,708 (250 câu), không so với 1.
 
 **Citation rate:** chỉ kiểm tra **định dạng**, tức câu trả lời có `[n]` hay không. Nó không kiểm tra `[n]` có trỏ đúng sản phẩm.
 - *Ví dụ:* câu trả lời `"[1]"` của `qwen2.5:3b` vẫn đạt Citation = 1, dù không có nội dung. Vì vậy Citation rate phải đọc cùng Mention hit và Answer Relevancy.
@@ -595,143 +629,219 @@ Giải thích và ví dụ cho từng metric:
 | Naive + MiniLM | Rerank cross-encoder MiniLM trên 30 ứng viên | Tác dụng của reranker A1 |
 | Naive + DeBERTa | Rerank DeBERTa distill trên 30 ứng viên | Tác dụng của kỹ thuật lấy từ paper A2 |
 | Agentic RAG | Thêm tự đánh giá và viết lại truy vấn | Tác dụng của vòng lặp agentic |
+| Agentic + MiniLM | Agentic, mọi lượt tìm đều rerank bằng MiniLM | Tương tác giữa rerank và Agentic |
+| Agentic + DeBERTa | Agentic, mọi lượt tìm đều rerank bằng DeBERTa | Tương tác giữa rerank và Agentic |
 
-- Mỗi cấu hình khác baseline **đúng một thành phần**, cùng model LLM, cùng prompt, cùng bộ câu hỏi.
+- 4 cấu hình đầu, mỗi cấu hình khác baseline **đúng một thành phần**, cùng model LLM, cùng prompt, cùng bộ câu hỏi.
+- Ngoài 6 cấu hình trên còn hai ablation riêng: hỏi bằng ảnh (chỉ chữ / chỉ ảnh / ảnh + chữ, mục 7.4) và Memory khi tìm kiếm (4 cách tìm ở lượt hỏi nối tiếp, mục 7.5).
+- 2 cấu hình cuối hoàn thiện bảng 2 × 3: {Naive, Agentic} × {không rerank, MiniLM, DeBERTa}. Chúng trả lời câu hỏi: Agentic kém là do context đầu vào chưa tốt (rerank sẽ sửa được), hay do chính phần ra quyết định (rerank không sửa được)?
 - **Số lượt gọi LLM:** Naive 2 lượt mỗi câu (1 trả lời + 1 chấm Faithfulness); Agentic 3 hoặc 5 lượt.
 
 ---
 
 ## 7. Kết quả
 
-> **Lưu ý:** các bảng trong mục này đo trước ngày 10/10/2026, trên ground truth cũ của A1 (1 sản phẩm đúng / câu, 3 câu chưa sửa), nên chưa có cột Context nDCG@5. Sẽ cập nhật sau khi chạy lại với qrels (mục 3.2.1, Phụ lục A).
+> **Điều kiện chung:** LLM `llama3.1` (8B) qua Ollama, prompt tiếng Anh (Phụ lục B), `k = 5`, ground truth qrels (mục 3.2.1), 250 câu của `data/eval_set.jsonl`. Chạy trên Kaggle với 2 GPU T4 (mỗi GPU một `ollama serve`, mỗi server xử lý 2 yêu cầu cùng lúc, `--workers 4`), ngày 12/10/2026, 0 lỗi.
 
-### 7.1 Tầng Retrieval (đã đo, không cần LLM)
+### 7.1 Tầng Retrieval (không cần LLM)
 
-Đo bằng chính hàm `rag_core.retrieve(q, k=5, reranker)` mà chatbot dùng, với dense = SigLIP (index hiện tại), ngày 02/10/2026.
-- "Không rerank" gọi `search(k=5)` mặc định: mỗi nhánh top-50, RRF, lấy 5.
+Số liệu lấy từ các nguồn mà chatbot thực sự đưa cho LLM trong lần chạy ở mục 7.2. Các nguồn này được tạo bởi hàm `rag_core.retrieve(q, k=5, reranker)`, với dense = SigLIP.
+- "Không rerank" gọi `search(k=5)` mặc định: mỗi nhánh top-50, gộp RRF, lấy 5.
 - "MiniLM" và "DeBERTa" lấy 30 ứng viên sau RRF (mỗi nhánh top-30), xếp lại, giữ 5.
-- Thời gian là của cả bước `retrieve()` trên CPU, chưa gồm thời gian LLM.
+- *G* = sản phẩm có nhãn ≥ 2 trong qrels. "Đúng ở [1]" nghĩa là nguồn `[1]` thuộc *G*. "Không có trong 5 nguồn" nghĩa là không nguồn nào thuộc *G*.
+- Cột thời gian là của riêng bước `retrieve()`, đo trên CPU.
 
-| Reranker | Tập câu | Context Recall@5 | Context Precision@5 | Sản phẩm đúng ở [1] | Không có trong 5 nguồn | Thời gian / câu |
+| Reranker | Ctx Recall@5 | Ctx Precision@5 | Ctx nDCG@5 | Đúng ở [1] | Không có trong 5 nguồn | Thời gian / câu |
 |---|---|---|---|---|---|---|
-| Không rerank | 250 | 0.984 | 0.939 | 227/250 (90.8%) | 4 | 0.08 s |
-| Cross-encoder MiniLM (A1) | 250 | 0.984 | **0.981** | **245/250 (98.0%)** | 4 | 0.29 s |
-| DeBERTa distill (A2) | 250 | **0.988** | 0.979 | 243/250 (97.2%) | **3** | 3.16 s |
-| Không rerank | 50 viết tay | **0.940** | 0.851 | 39/50 (78%) | **3** | 0.07 s |
-| Cross-encoder MiniLM (A1) | 50 viết tay | 0.920 | **0.905** | **45/50 (90%)** | 4 | 0.24 s |
-| DeBERTa distill (A2) | 50 viết tay | **0.940** | 0.895 | 43/50 (86%) | **3** | 3.24 s |
+| Không rerank | **0.983** | 0.942 | 0.878 | 229/250 (91.6%) | **3** | 0.08 s |
+| Cross-encoder MiniLM (A1) | 0.979 | 0.974 | 0.895 | **245/250 (98.0%)** | **3** | 0.29 s |
+| DeBERTa distill (A2) | 0.981 | **0.975** | **0.902** | 244/250 (97.6%) | **3** | 3.16 s |
 
 **Nhận xét:**
-- **Không rerank, SigLIP đã đưa được sản phẩm đúng vào 5 nguồn ở 94% câu viết tay** (3/50 câu không có). Với 3 câu đó, LLM không thể trả lời đúng; lỗi nằm ở Retrieval.
-- **Rerank chủ yếu cải thiện thứ hạng, không cải thiện độ phủ.** Trên 50 câu viết tay:
-  - Tỷ lệ sản phẩm đúng ở `[1]` tăng từ 78% lên 90% (MiniLM) hoặc 86% (DeBERTa); Context Precision@5 tăng từ 0.851 lên 0.905 hoặc 0.895.
-  - Context Recall@5 thì **không tăng**: DeBERTa giữ nguyên 0.940, còn MiniLM **giảm** xuống 0.920 (thêm 1 câu mất sản phẩm đúng). Nguyên nhân có thể là pool rerank nhỏ hơn (mỗi nhánh top-30, so với top-50 khi không rerank), hoặc reranker đẩy sản phẩm đúng ra khỏi top-5. Chưa tách riêng hai nguyên nhân này.
-- **MiniLM và DeBERTa chênh nhau 1–2 câu** trên 50 câu viết tay, chưa đủ để nói reranker nào tốt hơn. DeBERTa chậm hơn khoảng 11–13 lần trên CPU.
-- **So với lúc dùng CLIP** (đo ngày 25/09, trước khi A1 đổi sang SigLIP), không rerank trên 50 câu viết tay:
-  - Context Recall@5: 0.840 lên 0.940.
-  - Sản phẩm đúng ở `[1]`: 58% lên 78%.
-  - Việc đổi embedding ở A1 cải thiện trực tiếp chất lượng context đưa cho LLM ở A3.
+- **Retrieval đã đưa được sản phẩm liên quan vào 5 nguồn ở 247/250 câu,** cả khi không rerank. 3 câu trượt khi không rerank: *"round basket for serving bread"*, *"long track speed skates"* và *"price of sp1 reed valve rebuild kit"*. Với các câu này, LLM không thể trả lời đúng; lỗi nằm ở Retrieval.
+- **Rerank cải thiện thứ hạng, không cải thiện độ phủ.**
+  - Tỷ lệ đúng ở `[1]` tăng từ 91.6% lên 98.0% (MiniLM) và 97.6% (DeBERTa). Context Precision@5 tăng từ 0.942 lên 0.974–0.975, Context nDCG@5 từ 0.878 lên 0.895–0.902.
+  - Số câu trượt vẫn là 3. Rerank cứu được câu *"sp1 reed valve"* nhưng lại làm mất câu *"inflatable towable tube for boating"*. Nguyên nhân có thể là pool rerank nhỏ hơn (top-30 so với top-50), hoặc reranker đẩy sản phẩm đúng ra khỏi top-5; chưa tách riêng hai nguyên nhân này.
+- **MiniLM và DeBERTa gần như bằng nhau:** chênh 1 câu ở tỷ lệ đúng ở `[1]`, DeBERTa nhỉnh hơn ở nDCG (0.902 so với 0.895), nhưng chậm hơn khoảng 11 lần trên CPU.
 
 ### 7.2 Tầng Generation
 
-**Điều kiện chạy:** `step_ablation_rag.py`, 250 câu × 4 cấu hình, LLM `llama3.1` (8B) qua Ollama, `k = 5`, có chấm Faithfulness. Chạy trên Kaggle với 2 GPU T4 (mỗi GPU một `ollama serve`, mỗi server xử lý 2 yêu cầu cùng lúc, `--workers 4`). Kết quả: 1000 lượt, **0 lỗi**, không trùng lặp. File: `data/rag_ablation_results.json`, `data/rag_ablation_details.jsonl`.
+`step_ablation_rag.py`, 250 câu × 6 cấu hình, có chấm Faithfulness. 3 cấu hình Naive và 3 cấu hình Agentic chạy ở 2 session Kaggle song song với cùng code và dữ liệu; hai file chi tiết được ghép lại rồi tính bảng tổng hợp (không gọi lại LLM). File: `data/rag_ablation_results.json`, `data/rag_ablation_details.jsonl`.
 
-> **Lưu ý về Latency:** 4 câu được xử lý song song trên 2 GPU, nên mỗi lượt gọi LLM có thể phải chờ lượt khác trên cùng GPU. Latency trong bảng dùng để **so sánh giữa các cấu hình** trong cùng lần chạy, không phải thời gian một người dùng đơn lẻ sẽ chờ. Tham khảo: trên CPU máy local, một câu trả lời `llama3.1` mất khoảng 14–16 s.
+**Bảng 7.2: 250 câu**
 
-**Bảng 7.2a: 250 câu**
-
-| Cấu hình | Ctx Recall@5 | Ctx Precision@5 | Faithfulness | Answer Relevancy | Mention hit | Citation | Latency (s) | Rewrite |
+| Cấu hình | Ctx Recall@5 | Ctx Precision@5 | Ctx nDCG@5 | Faithfulness | Answer Relevancy | Mention hit | Citation | Rewrite |
 |---|---|---|---|---|---|---|---|---|
-| Naive RAG | 0.984 | 0.939 | 0.701 | 0.571 | 0.656 | 0.708 | 6.2 | — |
-| Naive + MiniLM | 0.984 | **0.981** | **0.711** | **0.580** | **0.676** | 0.736 | 6.0 | — |
-| Naive + DeBERTa | **0.988** | 0.979 | 0.688 | 0.571 | 0.666 | **0.756** | **5.4** | — |
-| Agentic RAG | 0.924 | 0.863 | 0.692 | 0.572 | 0.636 | 0.688 | 11.4 | 0.516 |
+| Naive RAG (baseline) | **0.983** | 0.942 | 0.878 | 0.799 | 0.796 | 0.660 | 0.836 | — |
+| Naive + MiniLM | 0.979 | 0.974 | 0.895 | 0.791 | **0.804** | **0.668** | 0.872 | — |
+| Naive + DeBERTa | 0.981 | **0.975** | **0.902** | 0.791 | 0.799 | 0.652 | 0.844 | — |
+| Agentic RAG | 0.968 | 0.926 | 0.865 | 0.818 | 0.792 | 0.648 | 0.828 | 0.220 |
+| Agentic + MiniLM | 0.978 | 0.973 | 0.892 | **0.824** | 0.798 | **0.668** | **0.880** | 0.144 |
+| Agentic + DeBERTa | 0.977 | 0.965 | 0.894 | 0.772 | 0.803 | 0.664 | 0.864 | 0.216 |
 
-**Bảng 7.2b: 50 câu viết tay**
-
-| Cấu hình | Ctx Recall@5 | Ctx Precision@5 | Faithfulness | Answer Relevancy | Mention hit | Citation | Latency (s) | Rewrite |
-|---|---|---|---|---|---|---|---|---|
-| Naive RAG | **0.940** | 0.851 | 0.685 | **0.553** | 0.660 | **0.840** | **3.9** | — |
-| Naive + MiniLM | 0.920 | **0.905** | **0.707** | 0.499 | 0.640 | 0.820 | 8.8 | — |
-| Naive + DeBERTa | **0.940** | 0.895 | 0.655 | 0.492 | **0.680** | **0.840** | 5.8 | — |
-| Agentic RAG | 0.900 | 0.805 | 0.695 | 0.471 | 0.570 | 0.780 | 7.2 | 0.600 |
-
-**Bảng 7.2c: 200 câu sinh từ mẫu**
-
-| Cấu hình | Ctx Recall@5 | Ctx Precision@5 | Faithfulness | Answer Relevancy | Mention hit | Citation | Latency (s) | Rewrite |
-|---|---|---|---|---|---|---|---|---|
-| Naive RAG | 0.995 | 0.961 | 0.706 | 0.576 | 0.655 | 0.675 | 6.8 | — |
-| Naive + MiniLM | **1.000** | **1.000** | **0.712** | **0.600** | **0.685** | 0.715 | 5.3 | — |
-| Naive + DeBERTa | **1.000** | **1.000** | 0.696 | 0.590 | 0.662 | **0.735** | 5.3 | — |
-| Agentic RAG | 0.930 | 0.878 | 0.691 | 0.597 | 0.652 | 0.665 | 12.5 | 0.495 |
-
-- Mức trần của Mention hit (mục 3.3): 0.708 trên 250 câu, 0.760 trên 50 câu viết tay.
-- Số câu Faithfulness = None (giám khảo không in đúng định dạng claim, mục 6.2): Naive 60, MiniLM 58, DeBERTa 43, Agentic 49 trên 250. Trung bình Faithfulness chỉ tính trên các câu còn lại, nên các cấu hình được tính trên tập câu hơi khác nhau.
-- Ctx Recall/Precision của ba cấu hình Naive trùng với mục 7.1 (cùng hàm `retrieve()`), xác nhận Retrieval trong lần chạy này giống lần đo riêng.
+- Mức trần của Mention hit (mục 3.3): 0.708.
+- Số câu có Faithfulness = None (giám khảo không in đúng định dạng claim, mục 6.2): Naive 35, Naive + MiniLM 37, Naive + DeBERTa 42, Agentic 47, Agentic + MiniLM 32, Agentic + DeBERTa 47. Trung bình Faithfulness chỉ tính trên các câu còn lại.
+- **Không báo cáo Latency.** 4 câu chạy song song trên 2 GPU nên mỗi lượt gọi LLM phải chờ lượt khác, và trung bình đo được không hợp lý (vd Naive + DeBERTa nhanh hơn Naive). Chỉ đọc được xu hướng: Agentic gọi LLM nhiều hơn (2–4 lượt so với 1) nên chậm hơn Naive khoảng 2–3 lần. Tham khảo: trên CPU máy local, một câu trả lời `llama3.1` mất khoảng 14–16 s.
+- **Cách đọc:** mỗi cấu hình chạy 1 lần, LLM sinh câu trả lời ngẫu nhiên, nên chênh lệch dưới khoảng 3 điểm giữa các cấu hình ở các metric Generation chưa đủ để coi là khác biệt thật.
 
 **Nhận xét:**
 
-1. **Agentic RAG kém hơn Naive ở hầu hết metric và chậm gần gấp đôi.** Trên 250 câu, Context Recall@5 giảm từ 0.984 xuống 0.924, Mention hit từ 0.656 xuống 0.636, Citation từ 0.708 xuống 0.688. Nguyên nhân phân tích ở mục 7.3. Như vậy **nâng cấp Agentic, với thiết kế hiện tại, không cải thiện hệ thống**; đây là kết quả âm và được báo cáo đúng như vậy.
-2. **Rerank cải thiện Retrieval rõ, Generation chỉ nhích nhẹ.** Trên 250 câu, MiniLM tăng Context Precision@5 từ 0.939 lên 0.981, Mention hit từ 0.656 lên 0.676 (+2 điểm phần trăm), Citation từ 0.708 lên 0.736. DeBERTa tăng Citation lên 0.756 nhưng Faithfulness giảm nhẹ (0.701 xuống 0.688).
-3. **Trên 50 câu viết tay, rerank không thắng rõ ràng.** MiniLM tăng Precision nhưng Recall giảm (0.940 xuống 0.920), Mention hit giảm (0.660 xuống 0.640) và Answer Relevancy giảm. DeBERTa có Mention hit cao nhất (0.680) nhưng Faithfulness và Answer Relevancy thấp hơn Naive. Chênh lệch 1–2 câu trên 50 câu không đủ để kết luận reranker nào tốt hơn.
-4. **Lợi ích của rerank chủ yếu nằm ở 200 câu sinh từ mẫu** (Recall/Precision lên 1.000). Đây là phần câu dễ hơn thực tế (mục 3.2), nên không nên khái quát mức cải thiện này cho câu hỏi thật.
-5. **Khoảng cách lớn nhất nằm ở Generation, không ở Retrieval.** Context Recall@5 của Naive là 0.984, nhưng Mention hit chỉ 0.656 (mức trần 0.708) và 29% câu trả lời không có trích dẫn `[n]`. Chi tiết ở mục 7.3.
+1. **Rerank cải thiện tầng Retrieval rõ, nhưng không đo được cải thiện ở tầng Generation.**
+   - Precision@5 tăng 3,2–3,3 điểm, nDCG@5 tăng 1,7–2,4 điểm (mục 7.1).
+   - Mention hit: 0.660 (Naive), 0.668 (MiniLM), 0.652 (DeBERTa). Faithfulness thấp hơn Naive 0,8 điểm. Chỉ Citation của MiniLM cao hơn Naive 3,6 điểm (0.872 so với 0.836), vừa chạm ngưỡng.
+   - Lý do: Naive đã có sản phẩm đúng ở `[1]` trong 91.6% câu, nên việc đẩy thêm 6 điểm phần trăm lên `[1]` không đổi được nhiều câu trả lời.
+2. **Agentic RAG không cải thiện so với Naive.**
+   - Retrieval thấp hơn nhẹ: Recall 0.968 so với 0.983 (4 câu mất sản phẩm đúng, không câu nào được cứu, mục 7.3a), nDCG 0.865 so với 0.878.
+   - Generation chênh dưới ngưỡng: Faithfulness 0.818 so với 0.799, Mention hit 0.648 so với 0.660, Citation 0.828 so với 0.836.
+   - Agentic tốn thêm 1–3 lượt gọi LLM mỗi câu. Với bộ câu hỏi này, vòng lặp tự đánh giá **không mang lại lợi ích đo được**.
+3. **Bảng 2 × 3: rerank xoá gần hết thiệt hại Retrieval của Agentic.** Context Recall@5:
 
-### 7.3 Phân tích lỗi trên kết quả chạy đủ
+   | | Không rerank | MiniLM | DeBERTa |
+   |---|---|---|---|
+   | Naive | **0.983** | 0.979 | 0.981 |
+   | Agentic | 0.968 | 0.978 | 0.977 |
+   | Chênh lệch Agentic − Naive | −0.015 | −0.001 | −0.004 |
 
-Các con số dưới đây đếm trực tiếp từ `data/rag_ablation_details.jsonl`.
+   - Với rerank, Agentic gần như bằng Naive cùng reranker. Lý do ở mục 7.3c: rerank làm bước tự đánh giá ít kết luận "chưa đủ" hơn, và lượt tìm thứ hai ít làm mất sản phẩm đúng hơn.
+   - Agentic + MiniLM có Faithfulness (0.824), Mention hit (0.668) và Citation (0.880) cao nhất bảng, nhưng so với Naive + MiniLM chỉ chênh 3,3 / 0 / 0,8 điểm, nên chưa đủ để kết luận đây là cấu hình tốt nhất.
+4. **Điểm nghẽn nằm ở Generation, không ở Retrieval.** Context Recall@5 của Naive là 0.983, nhưng Mention hit chỉ 0.660 (mức trần 0.708), và 41/250 câu trả lời (16%) không có trích dẫn `[n]`. Mục 7.3b chỉ ra phần lớn khoảng cách này đến từ câu hỏi về giá.
+5. **Answer Relevancy gần như bằng nhau ở mọi cấu hình (0.792–0.804),** nên metric này không phân biệt được các cấu hình trên bộ câu hỏi này.
 
-**(a) Vì sao Agentic kém hơn Naive**
+### 7.3 Phân tích lỗi
+
+Các con số dưới đây đếm trực tiếp từ `data/rag_ablation_details.jsonl`. "Có sản phẩm đúng" nghĩa là ít nhất một nguồn thuộc *G*.
+
+**(a) Agentic RAG: tự đánh giá và viết lại truy vấn**
 
 | Hiện tượng | Số đo |
 |---|---|
-| `judge_sufficiency` vòng 1 trả "KHÔNG" | 127/250 câu |
-| Trong đó, sản phẩm đúng **đã có** trong 5 nguồn (theo Naive cùng câu) | 123 câu |
-| Số câu bị viết lại truy vấn (Rewrite rate) | 129/250 |
-| Truy vấn viết lại bị bọc trong ngoặc kép, vd `"wheelbarrow replacement handle"` | 109/129 |
-| Truy vấn viết lại có chữ tiếng Việt | 31/129 |
-| Ctx Recall@5 trên 129 câu bị viết lại: trước (Naive) → sau (Agentic) | 0.969 → 0.853 |
-| Ctx Recall@5 trên 121 câu không bị viết lại | 1.000 |
-| Câu Naive có sản phẩm đúng nhưng Agentic làm mất | 17 |
-| Câu Naive không có nhưng Agentic tìm được | 2 |
+| `judge_sufficiency` vòng 1 trả "NO" (= Rewrite rate) | 55/250 câu (22%) |
+| Trong đó, sản phẩm đúng **đã có** trong 5 nguồn (theo Naive cùng câu) | 52 câu |
+| Trong đó, sản phẩm đúng **đã ở `[1]`** | 47 câu (trên 229 câu có đúng ở `[1]`) |
+| Truy vấn viết lại có ngoặc kép / có chữ tiếng Việt | 0 / 0 |
+| Ctx Recall@5 trên 55 câu bị viết lại: trước (Naive) → sau (Agentic) | 0.932 → 0.864 |
+| Ctx Recall@5 trên 195 câu không bị viết lại | 0.997 |
+| Câu Naive có sản phẩm đúng nhưng Agentic làm mất | 4 |
+| Câu Naive không có nhưng Agentic tìm được | 0 |
 
-Chuỗi lỗi:
-1. **Giám khảo đánh giá sai:** gần một nửa số câu bị đánh "chưa đủ" dù sản phẩm đúng đã có trong context (123 câu). Lý do có thể là context chỉ có tên sản phẩm (mục 3.3), nên LLM cho rằng "thiếu thông tin" để trả lời đầy đủ.
-2. **Truy vấn viết lại kém hơn truy vấn gốc:** LLM giữ ngoặc kép từ prompt (`"..."`), nên BM25 (tách từ bằng khoảng trắng) nhận token `"wheelbarrow` thay vì `wheelbarrow` và không khớp từ nào ở đầu/cuối truy vấn. Một phần truy vấn bị viết sang tiếng Việt, bất lợi khi tìm trên catalog tiếng Anh. Trong 17 câu bị mất sản phẩm đúng, 14 câu có ngoặc kép và 9 câu có tiếng Việt.
-3. **Không có cơ chế quay về kết quả cũ:** Agentic luôn dùng kết quả của lượt tìm cuối, kể cả khi lượt đầu tốt hơn. Vì vậy mỗi lần viết lại sai làm mất hẳn sản phẩm đúng (17 câu), trong khi chỉ cứu được 2 câu.
+1. **Giám khảo đánh giá quá chặt:** 52/55 câu bị đánh "NO" đã có sản phẩm đúng trong context, 47 câu đã có ở `[1]`. Lý do LLM đưa ra thường là tên sản phẩm "không khớp chính xác" với câu hỏi, vd *"NO: The product description does not exactly match the description in the question."* Context chỉ có tên sản phẩm (mục 3.3), nên câu hỏi mô tả nhu cầu hiếm khi khớp từng chữ.
+2. **Viết lại làm mất tên riêng.** Bốn câu bị mất sản phẩm đúng:
+   - *"Valkenpower verrijdbare werkbank 2x 7 laden kast..."* (tiếng Hà Lan) → *"Portable workshop with 2x 7-bay cabinet and tool wall"*: LLM dịch sang tiếng Anh, BM25 không còn khớp caption tiếng Hà Lan.
+   - *"igus - 1 ft. long, igumid g, snap"* → *"igus igumid g 1 foot long plastic rod"*: thêm từ đoán ("plastic rod"), đổi "ft." thành "foot".
+   - *"Pets Qatar chihiros stand for nova"* → *"Pets Nova Chiro"*: cắt mất tên hãng.
+   - *"price of labor saving devices 81-130 creep-zit fiberfuse..."* → *"labour-saving wire reels"*: thay mã sản phẩm bằng tên loại chung chung.
+3. **Không có cơ chế quay về kết quả lượt đầu:** Agentic luôn dùng kết quả của lượt tìm cuối, nên mỗi lần viết lại sai làm mất hẳn sản phẩm đúng (4 câu), trong khi không cứu được câu nào. Có trường hợp viết lại giúp được một phần: câu #27 *"device that helps someone relearn to walk after an injury"* được viết lại thành *"orthotic walker devices for gait rehabilitation"*, Recall tăng từ 0.25 lên 0.5 (mục 8).
 
-**(b) Lỗi Generation ở cả bốn cấu hình**
+**(b) Lỗi Generation: "không tìm thấy" dù context đúng, và thiếu trích dẫn**
 
-| | Naive | MiniLM | DeBERTa | Agentic |
+| | Naive | Naive + MiniLM | Naive + DeBERTa | Agentic | Agentic + MiniLM | Agentic + DeBERTa |
+|---|---|---|---|---|---|---|
+| Câu trả lời nói "could not find" / "couldn't find"... | 30 | 21 | 31 | 31 | 27 | 25 |
+| Trong đó sản phẩm đúng có trong 5 nguồn | 27 | 21 | 30 | 25 | 25 | 22 |
+| ...trong đó là câu hỏi về giá / "cheaper" | 23 | 17 | 24 | 20 | 22 | 19 |
+| ...còn lại: từ chối thật dù context đúng | 4 | 4 | 6 | 5 | 3 | 3 |
+| Câu trả lời không có trích dẫn `[n]` | 41 | 32 | 39 | 43 | 30 | 34 |
+
+- **Phần lớn câu "không tìm thấy" là câu hỏi về giá.** Eval set có 31/250 câu hỏi về giá ("price of...", "is there a cheaper..."). Catalog không có trường giá (mục 3.3), nên trả lời "không có thông tin giá" là đúng luật grounding. Vấn đề là nhiều câu trả lời dừng ở đó mà không nêu sản phẩm `[1]`, nên Mention hit trên 31 câu này chỉ 0.532 (Naive), so với 0.678 trên 219 câu còn lại.
+- **Một luật trong prompt gây câu trả lời cụt.** Prompt có luật *"if the list has no product of that type, say you could not find other options"*, viết cho câu hỏi nối tiếp. Với câu đơn kiểu *"is there a cheaper..."*, LLM áp luật này và trả lời *"I could not find other options."* mà không nêu sản phẩm nào. Có 50/1.500 câu trả lời dạng này, 48 câu đã có sản phẩm đúng trong context.
+- **Từ chối thật dù context đúng chỉ còn 3–6 câu mỗi cấu hình,** vd *"slide stopper accessory for a trumpet"*: `[1]` là "Yamaha Slide Stopper" nhưng LLM trả lời không tìm thấy, vì tên sản phẩm không có chữ "trumpet" (mục 8).
+- **Thiếu trích dẫn:** 30–43 câu trả lời không có `[n]`, phần lớn là các câu "không tìm thấy" ở trên (không có sản phẩm nào để trích).
+
+**(c) Agentic + rerank: vì sao Agentic gần bằng Naive khi có rerank**
+
+| | Agentic | Agentic + MiniLM | Agentic + DeBERTa |
+|---|---|---|---|
+| Giám khảo vòng 1 trả "NO" | 55 | **36** | 54 |
+| Trong đó sản phẩm đúng **đã có** trong 5 nguồn | 52 | 33 | 53 |
+| Trong đó sản phẩm đúng **đã ở `[1]`** | 47 / 229 | 32 / 245 | 52 / 244 |
+| Câu mất sản phẩm đúng so với Naive cùng reranker | 4 | **1** | 2 |
+| Câu được cứu | 0 | 0 | 1 |
+
+- **Giám khảo vẫn đánh giá sai khi sản phẩm đúng ở `[1]`** (32–52 câu). Lỗi nằm ở **phần ra quyết định** của Agentic, không nằm ở thứ tự context.
+- **Rerank giảm hậu quả của lần viết lại sai:** ở lượt tìm thứ hai, reranker đọc lại cặp (truy vấn viết lại, tên sản phẩm) bằng mô hình ngôn ngữ, nên ít bị từ đoán thêm làm sai hơn BM25. Số câu mất sản phẩm đúng giảm từ 4 xuống 1–2.
+- MiniLM còn làm giám khảo đánh "NO" ít hơn (36 so với 55). Với DeBERTa thì không (54), nên chưa rõ đây là tác dụng của rerank hay ngẫu nhiên.
+
+### 7.4 Hỏi bằng ảnh
+
+**(a) Tầng Retrieval, chỉ ảnh, không cần LLM**
+
+Script `step17_eval_image_rag_retrieval.py` gọi đúng hàm `rag_core.retrieve(query="", image=..., k=5)` mà `/api/v1/ask_image` dùng, trên 100 truy vấn ảnh của `data/eval_set_image.jsonl`. Mỗi truy vấn là ảnh của một sản phẩm trong catalog đã bị biến đổi (cắt, xoay hoặc đổi độ sáng). Kết quả lưu ở `data/image_rag_retrieval_results.json`.
+
+| Biến đổi | Số câu | Context Recall@5 | Context Precision@5 | Sản phẩm đúng ở [1] | Thời gian / câu (CPU) |
+|---|---|---|---|---|---|
+| Đổi độ sáng | 33 | 1.000 | 1.000 | 33/33 | 0.48 s |
+| Cắt | 34 | 1.000 | 1.000 | 34/34 | 0.55 s |
+| Xoay | 33 | 1.000 | 1.000 | 33/33 | 0.53 s |
+| **Tất cả** | **100** | **1.000** | **1.000** | **100/100** | **0.52 s** |
+
+- Với ảnh chụp lại chính sản phẩm trong catalog, nhánh SigLIP luôn đưa sản phẩm đúng lên `[1]`.
+- **Bộ truy vấn này dễ:** mỗi ảnh truy vấn được tạo từ chính ảnh trong catalog, nên kết quả 1.000 chỉ cho thấy hệ thống chịu được biến đổi nhẹ. Chưa đo với ảnh người dùng tự chụp hoặc ảnh một sản phẩm *tương tự* không có trong catalog.
+
+**(b) Cả hai tầng: chỉ chữ / chỉ ảnh / ảnh + chữ** (`step18_ablation_image_rag.py`)
+
+- **Cách ghép dữ liệu:** mỗi ảnh trong `eval_set_image.jsonl` được tạo từ một sản phẩm đúng của `eval_set.jsonl`, nên ghép được với câu chữ, qrels và `answer_should_mention` của câu đó. Nhờ vậy có 100 bộ (ảnh, câu chữ) có nhãn.
+- Ba cấu hình chạy trên cùng 100 sản phẩm, cùng Naive RAG, có chấm Faithfulness; 300 lượt, 0 lỗi.
+- Answer Relevancy so câu trả lời với câu chữ đã ghép, kể cả ở cấu hình chỉ ảnh, vì đó là nhu cầu mà người dùng muốn diễn đạt.
+- Kết quả lưu ở `data/image_rag_ablation_results.json` và `data/image_rag_ablation_details.jsonl`.
+
+| Cấu hình | Ctx Recall@5 | Ctx Precision@5 | Ctx nDCG@5 | Đúng ở [1] | Faithfulness | Answer Relevancy | Mention hit | Citation | "Không tìm thấy" dù context đúng |
+|---|---|---|---|---|---|---|---|---|---|
+| Chỉ chữ (mốc) | 0.973 | 0.923 | 0.868 | 88/100 | 0.785 | **0.791** | 0.635 | 0.870 | 8 |
+| Chỉ ảnh | 0.988 | **0.986** | 0.858 | **100/100** | 0.708 | 0.539 | 0.620 | 0.900 | 15 |
+| **Ảnh + chữ** (cấu hình chính) | **0.995** | 0.985 | **0.895** | 98/100 | **0.830** | 0.778 | **0.675** | **0.930** | **4** |
+
+**Nhận xét:**
+- **Ảnh + chữ tốt nhất ở cả hai tầng.**
+  - Retrieval: Recall 0.995 và nDCG 0.895 cao nhất; sản phẩm đúng ở `[1]` trong 98/100 câu, so với 88/100 khi chỉ dùng chữ.
+  - Ảnh **cứu được 2 câu** mà câu chữ tìm trượt: *"round basket for serving bread"* (caption tiếng Hà Lan) và *"long track speed skates"* (caption tiếng Na Uy), cũng chính là 2 câu trượt ở mục 7.1. Không có câu nào chữ tìm được mà ảnh + chữ lại làm mất.
+  - Generation: Faithfulness 0.830, Mention hit 0.675 và Citation 0.930 cao nhất; số câu "không tìm thấy" dù context đúng thấp nhất (4).
+- **Chỉ ảnh: Retrieval gần như hoàn hảo, nhưng câu trả lời kém dứt khoát hơn.**
+  - Sản phẩm đúng luôn ở `[1]` (100/100). Recall bằng 0.988 chứ không phải 1.000 vì vài câu có thêm sản phẩm nhãn 2 trong qrels mà ảnh không tìm ra.
+  - Câu trả lời dài nhất (trung bình 208 ký tự, so với 111 khi chỉ chữ và 124 khi ảnh + chữ) và hay liệt kê nhiều lựa chọn, vd *"Based on the product list, I found several options that may match the photo you sent. The top match is [1]..."*. Có 15 câu nói không tìm thấy dù `[1]` đúng: LLM không xem được ảnh nên không chắc `[1]` có khớp hay không.
+  - Answer Relevancy thấp (0.539) một phần do cách đo: câu trả lời được so với câu chữ mà người dùng không hề gõ.
+- **Kết luận cho luồng ảnh:** ảnh + chữ là chế độ nên dùng. Ảnh bổ sung tín hiệu cho câu chữ, nhất là khi caption không phải tiếng Anh; câu chữ giúp LLM biết người dùng cần gì.
+- **Giới hạn:** ảnh truy vấn là ảnh catalog bị biến đổi nhẹ (7.4a), nên tầng Retrieval của luồng ảnh dễ hơn thực tế. Latency không được báo cáo vì cùng lý do ở mục 7.2.
+
+### 7.5 Memory khi tìm kiếm: viết lại câu hỏi nối tiếp
+
+**Câu hỏi:** khi người dùng hỏi tiếp một câu mơ hồ, tìm kiếm có cần dùng lịch sử không, và dùng cách nào?
+
+**Thiết kế** (`step19_ablation_multiturn.py`): hội thoại hai lượt được tạo tự động từ 250 câu của eval set, dùng lại qrels của câu *i* làm ground truth cho lượt 2. Không cần gán nhãn thêm.
+- **Hỏi nối tiếp (250 hội thoại):** lượt 1 là câu *i*; lượt 2 là một câu mơ hồ, lần lượt một trong 4 câu: *"show me more options like that"*, *"do you have any others similar to that?"*, *"what else do you have like this one?"*, *"any alternatives to that?"*. Các câu này giữ nguyên nhu cầu của lượt 1, nên qrels của câu *i* vẫn đúng.
+- **Đổi chủ đề (250 hội thoại):** lượt 1 là câu *j* (cách *i* nửa eval set, chủ đề khác); lượt 2 là câu *i* đầy đủ. Lịch sử **không được** kéo vào tìm kiếm.
+- Lượt 1 chạy thật bằng `answer()` có Memory (1 lượt LLM), để lịch sử giống hệt chatbot. Lượt 2 tìm bằng 4 cách, cùng `retrieve(k=5)`, không rerank:
+
+| Cách tìm ở lượt 2 | Mô tả |
+|---|---|
+| raw | Câu lượt 2 nguyên văn: Memory chỉ dùng khi trả lời, không dùng khi tìm |
+| concat | Câu lượt 1 + câu lượt 2: dùng Memory khi tìm, không cần LLM |
+| **rewrite** | `contextualize_query(câu lượt 2, lịch sử)`: cách chatbot đang dùng, +1 lượt LLM |
+| oracle | Câu *i* viết đầy đủ: mức trần |
+
+Kết quả lưu ở `data/multiturn_ablation_results.json` và `data/multiturn_ablation_details.jsonl`; 500 hội thoại, 0 lỗi.
+
+| Cách tìm | Hỏi nối tiếp: Recall@5 | Precision@5 | nDCG@5 | Đúng ở [1] | Đổi chủ đề: Recall@5 | Precision@5 | nDCG@5 | Đúng ở [1] |
+|---|---|---|---|---|---|---|---|---|
+| raw | 0.004 | 0.002 | 0.003 | 0.0% | **0.983** | **0.942** | **0.878** | **91.6%** |
+| concat | **0.986** | **0.934** | **0.863** | **90.4%** | 0.856 | 0.577 | 0.566 | 39.6% |
+| **rewrite** | 0.868 | 0.779 | 0.745 | 72.4% | 0.938 | 0.899 | 0.839 | 87.2% |
+| oracle (mức trần) | 0.983 | 0.942 | 0.878 | 91.6% | 0.983 | 0.942 | 0.878 | 91.6% |
+
+Trung bình cả 500 hội thoại:
+
+| Cách tìm | Recall@5 | Precision@5 | nDCG@5 | Đúng ở [1] |
 |---|---|---|---|---|
-| Câu trả lời có cụm "không tìm thấy" | 47 | 51 | 50 | 58 |
-| Trong đó sản phẩm đúng có trong 5 nguồn | 45 | 47 | 48 | 41 |
-| Câu trả lời không có trích dẫn `[n]` | 73 | 66 | 61 | 78 |
+| raw | 0.494 | 0.472 | 0.441 | 45.8% |
+| concat | **0.921** | 0.756 | 0.715 | 65.0% |
+| **rewrite** | 0.903 | **0.839** | **0.792** | **79.8%** |
 
-- **LLM từ chối trả lời dù context đúng:** khoảng 45–48/250 câu ở ba cấu hình Naive, sản phẩm đúng đã có trong 5 nguồn nhưng `llama3.1` vẫn nói không tìm thấy. Prompt yêu cầu "nói rõ là không tìm thấy thay vì đoán"; khi context chỉ có tên sản phẩm, model áp luật này quá chặt. Đây là lỗi tầng Generation (mục 8), chiếm phần lớn khoảng cách giữa Context Recall (0.984) và Mention hit (0.656).
-- **Thiếu trích dẫn:** 61–78 câu trả lời không có `[n]`. Một phần là các câu "không tìm thấy" (không có sản phẩm nào để trích), phần còn lại là câu có nêu sản phẩm nhưng quên trích dẫn.
-
-**(c) So sánh model LLM khi chạy thử (trước lần chạy đủ)**
-
-Trước khi chạy đủ, đã chạy thử 3 câu đầu của eval set để chọn model. Phần này chỉ để giải thích vì sao chọn `llama3.1`; 3 câu là quá ít để dùng làm kết quả.
-
-**So sánh model LLM, cấu hình Naive, 3 câu:**
-
-| | `qwen2.5:3b` (3B) | `llama3.1` (8B) |
-|---|---|---|
-| Câu trả lời | `"[1]"` ở cả 3 câu | Câu đầy đủ, nêu tên sản phẩm và trích dẫn `[1]` |
-| Context Recall@5 | 1,0 | 1,0 |
-| Faithfulness | 0,8 / 1,0 / 1,0 | 0,44 / 0,60 / 1,0 |
-| Answer Relevancy | −0,004 / 0,01 / 0,08 | 0,47 / 0,69 / 0,39 |
-| Mention hit | 0 / 0 / 0 | 0,5 / 0,5 / 0,5 (mức trần của 3 câu này là 0,5) |
-| Citation | 1 / 1 / 1 | 1 / 1 / 1 |
-| Thời gian trả lời | ~6–18 s | 57 s (gồm nạp model) / 14 s / 16 s |
-
-**Agentic RAG với `qwen2.5:3b`, 3 câu:** LLM đánh giá "KHÔNG" ở cả 3 câu, ví dụ *"KHÔNG: Không sản phẩm trong danh sách tìm được liên quan đến 'portable outdoor storage shed with zipper doors'."*, trong khi sản phẩm đúng **nằm ở [1]** (Context Recall = 1,0). Hiện tượng giám khảo đánh giá sai này vẫn xảy ra với `llama3.1` khi chạy đủ (123 câu, mục 7.3a).
-
-**Quan sát từ chạy thử:**
-1. **Chọn model ảnh hưởng quyết định tới tầng Generation.** Với cùng Retrieval (đều đúng), model 3B không tạo được câu trả lời có nội dung, còn model 8B thì có. Đây đúng kiểu lỗi "LLM mã nguồn mở nhỏ làm theo hướng dẫn kém" mà paper A2 cũng ghi nhận ở Table 6 (với tác vụ xếp hạng).
-2. **Faithfulness không ổn định khi giám khảo là cùng model nhỏ.** `qwen2.5:3b` cho Faithfulness 0,8–1,0 với câu trả lời `"[1]"`, vốn gần như không có claim nào để chấm. Khi chạy đủ với `llama3.1`, 43–60/250 câu mỗi cấu hình không chấm được (None).
+**Nhận xét:**
+1. **Không dùng lịch sử khi tìm thì câu hỏi nối tiếp hỏng hoàn toàn** (Recall 0.004): câu *"any alternatives to that?"* không chứa thông tin sản phẩm nào. Đây là lý do cần đưa Memory vào tầng Retrieval, không chỉ vào prompt trả lời.
+2. **Ghép câu (concat) rất tốt khi hỏi nối tiếp nhưng hỏng khi đổi chủ đề:** câu lượt 1 lấn câu lượt 2, Precision@5 giảm còn 0.577 và sản phẩm đúng ở `[1]` chỉ còn 39.6%.
+3. **Viết lại (rewrite) là cách duy nhất ổn ở cả hai loại.** Tính trên cả 500 hội thoại, rewrite thắng concat ở Precision (0.839 so với 0.756), nDCG (0.792 so với 0.715) và tỷ lệ đúng ở `[1]` (79.8% so với 65.0%), chỉ thua nhẹ ở Recall (0.903 so với 0.921). Chi phí: 1 lượt LLM, khoảng 1 s mỗi câu trên GPU T4.
+4. **Điểm yếu của rewrite: làm mất tên sản phẩm không phải tiếng Anh.** Ở 31 hội thoại hỏi nối tiếp, oracle tìm được sản phẩm đúng còn rewrite thì không. Đọc 8 ca đầu tiên thì 6 ca là caption không phải tiếng Anh hoặc có mã sản phẩm, bị LLM thay bằng tên loại tiếng Anh, vd *"plasă de ricoșeu fotbal dublă, reglabilă"* (tiếng Romania) → *"soccer goal net"*, *"westcott ac-e10812 magnet blau..."* → *"magnetic index card holder"*. Đây cùng cơ chế lỗi với bước viết lại của Agentic (mục 7.3a). Ngoài ra có trường hợp LLM đoán sai hẳn, vd lượt 1 *"do you have plissé"* → *"running shoes"*.
+5. **Khi đổi chủ đề, rewrite kém raw ở 12/250 hội thoại,** chủ yếu cũng do dịch hoặc rút gọn câu mới (vd *"is there a cheaper кърпа за обувки..."* → *"guitar"*, lấy nhầm từ lượt trước). Truy vấn viết lại có chữ tiếng Việt: 1/500 lần.
+6. **Hướng sửa:** giữ nguyên các từ không phải tiếng Anh và mã sản phẩm của lượt trước thay vì dịch; hoặc kết hợp hai cách, ví dụ gộp RRF kết quả của rewrite với kết quả của câu gốc.
 
 ---
 
@@ -759,19 +869,25 @@ flowchart TD
 | Câu trả lời có thông tin không có trong context | Generation (bịa) | Faithfulness thấp |
 | Câu trả lời không có `[n]` | Generation (grounding) | Citation = 0 |
 
-**Ví dụ có số đo thật:**
+**Phân bố lỗi của Naive RAG trên 250 câu:**
+- **Retrieval:** 3/250 câu không có sản phẩm liên quan nào trong 5 nguồn (mục 7.1).
+- **Generation:** trong 247 câu có context đúng, 27 câu LLM nói "không tìm thấy", trong đó 23 câu là câu hỏi về giá (catalog không có giá) và 4 câu là từ chối sai (mục 7.3b). 41 câu không có trích dẫn.
+- Kết luận: **lỗi chủ yếu nằm ở Generation**, và phần lớn bắt nguồn từ việc context chỉ có tên sản phẩm (không có giá, không có mô tả).
 
-1. **Tầng Retrieval** (không cần LLM): theo bảng mục 7.1, khi không rerank có **3/50 câu viết tay** không có sản phẩm đúng trong 5 nguồn. Ví dụ câu *"device that helps someone relearn to walk after an injury"*, sản phẩm đúng là "Drive Medical tk 1000 Trekker Gait Trainer".
-   - Câu hỏi dùng ngôn ngữ đời thường, còn tên sản phẩm dùng thuật ngữ chuyên ngành ("gait trainer"). Không có từ nào trùng nên BM25 không tìm thấy; báo cáo A1 ghi ca này sai ở mọi cấu hình khi còn dùng CLIP.
-   - Thứ hạng chính xác của ca này với SigLIP **chưa được đo lại** trong báo cáo này.
-   - Khi sản phẩm không vào được 5 nguồn, LLM không thể nêu đúng. Cần sửa ở search (từ đồng nghĩa theo domain, embedding tốt hơn), không phải sửa prompt.
+**Ví dụ có số đo thật (lần chạy 12/10/2026):**
 
-2. **Tầng Generation, từ chối dù context đúng** (`llama3.1`, Naive, câu #16 viết tay): câu hỏi *"cart used to carry anesthesia supplies in a hospital"*. Sản phẩm đúng "Harloff Treatment Cart Classic Line Steel..." nằm ở **`[1]`** (Context Recall = 1), nhưng câu trả lời là *"Không tìm thấy sản phẩm phù hợp cho câu hỏi..."*. Retrieval đúng, lỗi ở Generation: model áp luật "nói không tìm thấy thay vì đoán" quá chặt khi tên sản phẩm không có chữ "anesthesia". Hiện tượng này xảy ra ở 45/250 câu của Naive (mục 7.3b). Hướng sửa: sửa prompt (cho phép chọn sản phẩm gần nhất và nói rõ mức độ chắc chắn), đưa thêm mô tả vào context.
-3. **Tầng Generation, tự đánh giá sai làm hỏng Retrieval** (`llama3.1`, Agentic, câu #12 viết tay): câu hỏi *"replacement handle for wheelbarrow"*. Lượt tìm đầu có "Upper Handle Assembly for 60V Wheelbarrow" ở `[2]`, nhưng `judge_sufficiency` trả *"KHÔNG: Không có thông tin về wheelbarrow trong danh sách."*. LLM viết lại thành `"wheelbarrow replacement handle"` (có ngoặc kép), lượt tìm thứ hai **mất** sản phẩm đúng. Lỗi bắt nguồn từ **phần ra quyết định** của tầng Generation, rồi lan sang Retrieval. Có 17 câu như vậy (mục 7.3a).
-4. **Tầng Generation, câu trả lời rỗng nội dung** (`qwen2.5:3b`, chạy thử, mục 7.3c): Context Recall = 1, nhưng câu trả lời chỉ là `"[1]"`, nên Mention hit = 0. Cách sửa đã áp dụng: **đổi sang `llama3.1`**, và câu trả lời có nội dung.
-5. **Memory kéo ngữ cảnh sai** (`llama3.1`, mục 5.5): câu trả lời cho câu hỏi mới lại nhắc câu hỏi trước. Lỗi do cách đưa lịch sử vào prompt.
+1. **Tầng Retrieval, thiếu sản phẩm tốt nhất** (Naive, câu #27): *"device that helps someone relearn to walk after an injury"*.
+   - Qrels có 4 sản phẩm liên quan: "Drive Medical tk 1000 Trekker Gait Trainer" (nhãn 3), xe tập đi rollator, nạng và gậy chống (nhãn 2).
+   - 5 nguồn chỉ chứa gậy chống "foldable walking stick", nên Context Recall@5 = 0.25. Câu trả lời: *"I found a product that might help someone relearn to walk after an injury: [5] Aluminum alloy with LED light non-slip foldable walking stick."*. Câu trả lời đúng với context, nhưng thiếu sản phẩm phù hợp nhất.
+   - Câu hỏi dùng ngôn ngữ đời thường, còn tên sản phẩm dùng thuật ngữ chuyên ngành ("gait trainer"), không có từ nào trùng nên BM25 không tìm thấy. Cần sửa ở search (từ đồng nghĩa theo domain, embedding tốt hơn), không phải sửa prompt.
+   - Agentic xử lý được một phần câu này: giám khảo đánh "NO", truy vấn viết lại *"orthotic walker devices for gait rehabilitation"* đưa thêm một sản phẩm liên quan vào context, Recall tăng lên 0.5.
+2. **Tầng Generation, từ chối dù context đúng** (Naive, câu #46): *"slide stopper accessory for a trumpet"*. Sản phẩm đúng "Yamaha Slide Stopper" nằm ở **`[1]`** (Context Recall = 1), nhưng câu trả lời là *"I couldn't find a slide stopper accessory for a trumpet."*. Retrieval đúng, lỗi ở Generation: tên sản phẩm không có chữ "trumpet", và model áp luật "nói không tìm thấy thay vì đoán" quá chặt. Hướng sửa: cho phép nêu sản phẩm gần nhất kèm mức độ chắc chắn, đưa thêm mô tả vào context.
+3. **Tầng Generation, câu hỏi về giá** (Naive, câu #87): *"is there a cheaper [fresh] organic french bean 200g malaysia"*. `[1]` đúng là sản phẩm được hỏi, câu trả lời là *"I could not find other options for a cheaper [FRESH] organic French bean 200g Malaysia."*. Không bịa giá là đúng, nhưng câu trả lời nên nêu `[1]` và nói rõ catalog không có thông tin giá. Lỗi do luật "could not find other options" viết cho câu hỏi nối tiếp lại áp vào câu đơn (mục 7.3b).
+4. **Tầng Generation, tự đánh giá sai làm hỏng Retrieval** (Agentic): *"igus - 1 ft. long, igumid g, snap"*. Lượt tìm đầu có sản phẩm đúng, nhưng `judge_sufficiency` trả *"NO: The product description does not exactly match the description in the question."*. LLM viết lại thành *"igus igumid g 1 foot long plastic rod"*, và lượt tìm thứ hai **mất** sản phẩm đúng. Lỗi bắt nguồn từ **phần ra quyết định** của tầng Generation, rồi lan sang Retrieval (4 câu như vậy, mục 7.3a).
+5. **Memory, viết lại câu hỏi làm mất tên sản phẩm** (mục 7.5): lượt 1 *"need to buy plasă de ricoșeu fotbal dublă, reglabilă, galben"*, lượt 2 *"any alternatives to that?"* được viết lại thành *"soccer goal net"*. Catalog ghi tên sản phẩm bằng tiếng Romania nên lượt tìm này trượt, trong khi ghép câu (concat) vẫn tìm được.
 
 ---
+
 
 ## 9. Đạo đức AI
 
@@ -790,12 +906,14 @@ flowchart TD
 ## 10. Hạn chế
 
 **Đánh giá:**
-- Mỗi cấu hình chỉ chạy **1 lần** với 1 model LLM (`llama3.1`); chưa đo độ dao động giữa các lần chạy, nên chênh lệch nhỏ (1–2 điểm phần trăm) giữa các cấu hình Naive có thể chỉ là nhiễu.
-- Faithfulness do cùng model sinh câu trả lời chấm; 43–60/250 câu mỗi cấu hình không chấm được (None).
-- Latency đo khi chạy song song 4 câu trên 2 GPU, không phản ánh thời gian chờ của một người dùng đơn lẻ.
-- **Lệch ngôn ngữ:** câu hỏi và catalog tiếng Anh, câu trả lời tiếng Việt. Answer Relevancy dùng model embedding tiếng Anh. Mention hit so khớp chuỗi nên tên sản phẩm bị dịch sẽ không khớp.
-- Mention hit có mức trần 0,71–0,76 do brand không có trong context.
+- Mỗi cấu hình chạy **1 lần** với 1 model LLM (`llama3.1`), chưa đo độ dao động giữa các lần chạy. Vì LLM sinh câu trả lời ngẫu nhiên, chênh lệch dưới khoảng 3 điểm giữa các cấu hình ở metric Generation chưa được coi là khác biệt thật. Muốn kết luận chắc hơn cần chạy thêm vài lần, hoặc đặt `temperature = 0`.
+- 3 cấu hình Naive và 3 cấu hình Agentic chạy ở 2 session Kaggle khác nhau (cùng code, dữ liệu, model).
+- Faithfulness do cùng model sinh câu trả lời chấm; 32–47/250 câu mỗi cấu hình không chấm được (None).
+- Latency đo khi chạy song song 4 câu trên 2 GPU bị nhiễu, nên không được báo cáo.
+- Answer Relevancy dùng model embedding chỉ hiểu tiếng Anh, và gần như bằng nhau ở mọi cấu hình (0.792–0.804), nên ít giá trị phân biệt.
+- Mention hit có mức trần 0,708 do brand không có trong context.
 - 200/250 câu sinh từ mẫu, dễ hơn thực tế.
+- Ablation hội thoại nhiều lượt (mục 7.5) dùng câu nối tiếp tạo từ 4 mẫu cố định, chỉ gồm loại câu giữ nguyên nhu cầu ("more options like that"). Chưa đo các câu đổi thuộc tính ("other color", "cheaper") vì qrels hiện có không chấm được.
 - **Qrels:**
   - Nhãn do LLM chấm, người rà soát lại các nhãn 2–3 và các sản phẩm đúng bị nghi ngờ. Nhãn 0–1 chưa được rà toàn bộ, và chưa đo độ đồng thuận giữa người chấm (vd Cohen's kappa).
   - Pool chỉ lấy top-10 của 3 cách tìm hiện có, nên sản phẩm liên quan mà cả 3 cách đều bỏ sót sẽ bị coi là nhãn 0. Đây là thiên lệch đã biết của phương pháp pooling.
@@ -803,14 +921,14 @@ flowchart TD
   - Tập truy vấn ảnh (`eval_set_image.jsonl`) chưa có qrels.
 
 **Hệ thống:**
-- `judge_sufficiency` chỉ nhận câu trả lời bắt đầu bằng "CÓ". Nếu LLM trả `"CÓ"` có ngoặc kép, in đậm hoặc "Yes", câu trả lời bị coi là "chưa đủ".
+- `judge_sufficiency` đánh "NO" ở 52 câu đã có sản phẩm đúng trong context (mục 7.3a): context chỉ có tên sản phẩm nên hiếm khi "khớp chính xác" câu hỏi.
 - Với `max_iters = 2`, kết quả đánh giá ở vòng cuối luôn bị bỏ qua (tốn 1 lượt LLM).
-- `rewrite_query` nhận truy vấn hiện tại, không phải câu hỏi gốc. Prompt tiếng Việt sinh truy vấn tiếng Việt ở 31/129 lần viết lại, và truy vấn bị bọc ngoặc kép ở 109/129 lần (mục 7.3a); code không làm sạch kết quả viết lại.
+- `rewrite_query` và `contextualize_query` đều có thể dịch tên sản phẩm không phải tiếng Anh, hoặc thay mã sản phẩm bằng tên loại chung chung, làm BM25 không khớp catalog (mục 7.3a, 7.5).
 - Agentic luôn dùng kết quả của lượt tìm cuối, không so sánh hay gộp với lượt đầu, nên một lần viết lại sai làm mất hẳn sản phẩm đúng.
-- Prompt trả lời khiến `llama3.1` nói "không tìm thấy" ở khoảng 45/250 câu dù sản phẩm đúng có trong context (mục 7.3b).
+- Luật "could not find other options" trong prompt trả lời, viết cho câu hỏi nối tiếp, cũng áp vào câu đơn, sinh câu trả lời cụt không nêu sản phẩm (50/1.500 câu, mục 7.3b).
 - Agentic vẫn gọi LLM khi kết quả tìm kiếm rỗng.
-- Memory chỉ dùng khi sinh câu trả lời, không dùng khi tìm kiếm; có thể kéo lịch sử vào sai chỗ (mục 5.5).
-- Context chỉ có tên sản phẩm; chatbot chỉ nhận câu hỏi bằng chữ.
+- Context chỉ có tên sản phẩm: không có giá, mô tả hay brand riêng.
+- **Hỏi bằng ảnh:** LLM không xem được ảnh, chỉ đọc tên các sản phẩm tìm theo ảnh. Ảnh và chữ được gộp bằng RRF với trọng số bằng nhau, nên câu chữ mơ hồ có thể lấn tín hiệu ảnh. Bộ đánh giá ảnh chỉ gồm ảnh catalog bị biến đổi nhẹ (mục 7.4).
 - Chạy LLM 8B trên CPU chậm (khoảng 15 s mỗi câu trả lời).
 
 ---
@@ -819,28 +937,27 @@ flowchart TD
 
 ### 11.1 Kết luận
 
-- **Retrieval:** A3 dùng lại nguyên tầng Retrieval của A1 (BM25 + SigLIP + RRF; Recall@10 hybrid = 0,996 trên 250 câu theo báo cáo A1).
-- **Hai luồng RAG:** Naive (tuyến tính, 1 lượt LLM) và Agentic (tự đánh giá và tìm lại, 2–4 lượt LLM), dùng chung Memory, Grounding và lựa chọn reranker.
-- **Rerank:** trên 50 câu viết tay, cả hai reranker (MiniLM của A1, DeBERTa từ paper A2) nâng tỷ lệ sản phẩm đúng ở `[1]` từ 78% lên 86–90%, nhưng không tăng số câu có sản phẩm đúng trong 5 nguồn (mục 7.1).
-- **Generation (250 câu × 4 cấu hình, `llama3.1`):**
-  - **Agentic RAG không cải thiện mà làm giảm chất lượng** so với Naive: Context Recall@5 0.984 → 0.924, Mention hit 0.656 → 0.636, Latency gần gấp đôi. Nguyên nhân chính: giám khảo đánh "chưa đủ" sai ở 123 câu, truy vấn viết lại kém hơn truy vấn gốc (ngoặc kép, tiếng Việt), và không có cơ chế giữ kết quả tốt hơn.
-  - **Rerank giúp nhẹ:** MiniLM tăng Mention hit 0.656 → 0.676 và Citation 0.708 → 0.736 trên 250 câu; DeBERTa tăng Citation lên 0.756. Trên 50 câu viết tay, không reranker nào thắng rõ ràng.
-  - **Điểm nghẽn là Generation:** Retrieval đưa được sản phẩm đúng vào context ở 98% câu, nhưng LLM vẫn nói "không tìm thấy" ở khoảng 45 câu có context đúng, và 29% câu trả lời không trích dẫn.
-- **Chọn model:** chạy thử cho thấy `qwen2.5:3b` không làm theo được prompt hiện tại, `llama3.1` thì làm được.
+- **Retrieval:** A3 dùng lại nguyên tầng Retrieval của A1 (BM25 + SigLIP + RRF). Trên 250 câu, sản phẩm liên quan có trong 5 nguồn đưa cho LLM ở 247 câu (Context Recall@5 = 0.983), và đứng ở `[1]` ở 91.6% câu (mục 7.1).
+- **Rerank (MiniLM của A1, DeBERTa từ paper A2):** cải thiện thứ hạng ở tầng Retrieval (đúng ở `[1]` 91.6% → 97.6–98.0%, Precision@5 0.942 → 0.974–0.975, nDCG@5 0.878 → 0.895–0.902), nhưng không đo được cải thiện ở tầng Generation (Mention hit 0.652–0.668 so với 0.660).
+- **Agentic RAG không cải thiện so với Naive:** Recall 0.968 so với 0.983 (4 câu mất sản phẩm đúng, 0 câu được cứu), các metric Generation chênh dưới ngưỡng, nhưng tốn thêm 1–3 lượt LLM. Nguyên nhân: giám khảo đánh "chưa đủ" ở 52 câu đã có sản phẩm đúng, và truy vấn viết lại làm mất tên riêng. Khi có rerank, Agentic gần bằng Naive cùng reranker (Recall chênh −0.001 đến −0.004).
+- **Memory khi tìm kiếm (500 hội thoại):** không dùng lịch sử thì câu hỏi nối tiếp hỏng hoàn toàn (Recall 0.004). Viết lại câu hỏi bằng LLM là cách duy nhất ổn ở cả hỏi nối tiếp và đổi chủ đề: trung bình Precision@5 0.839, nDCG@5 0.792, đúng ở `[1]` 79.8%, so với 0.756 / 0.715 / 65.0% của cách ghép câu. Điểm yếu là làm mất tên sản phẩm không phải tiếng Anh (mục 7.5).
+- **Hỏi bằng ảnh (100 ảnh):** ảnh + chữ tốt nhất ở cả hai tầng (Recall 0.995, đúng ở `[1]` 98/100 so với 88/100 khi chỉ dùng chữ; Faithfulness 0.830, Citation 0.930), và cứu được 2 câu mà chữ tìm trượt (mục 7.4).
+- **Điểm nghẽn là Generation:** Retrieval đã có sản phẩm đúng ở 98% câu, nhưng Mention hit chỉ 0.660 (mức trần 0.708). Phần lớn khoảng cách đến từ câu hỏi về giá (catalog không có giá) và các câu trả lời cụt "could not find other options" (mục 7.3b, 8).
+- **Ground truth:** nâng từ "1 sản phẩm đúng / câu" lên qrels 0–3 (5.064 cặp đã chấm), cho phép đo Context nDCG@5 đa mức (mục 3.2.1).
 
 ### 11.2 Hướng phát triển
 
-Theo thứ tự ưu tiên, dựa trên lỗi đo được ở mục 7.3:
-1. **Sửa Agentic:**
-   - Làm sạch truy vấn viết lại (bỏ ngoặc kép, yêu cầu viết bằng tiếng Anh như catalog), và viết lại từ câu hỏi gốc.
-   - Gộp kết quả lượt đầu và lượt sau (vd RRF hai danh sách) thay vì bỏ hẳn lượt đầu.
-   - Đọc phán đoán của `judge_sufficiency` khoan dung hơn (bỏ ngoặc kép và định dạng, chấp nhận "Yes"); bỏ lượt đánh giá thừa ở vòng cuối.
-   - Chạy lại ablation để kiểm chứng.
-2. **Sửa prompt trả lời** để model không từ chối khi đã có sản phẩm gần đúng (nêu sản phẩm kèm mức độ chắc chắn), và nhắc trích dẫn `[n]`.
-3. Đưa thêm brand và một đoạn mô tả vào context, để LLM trả lời được nhiều thuộc tính hơn và Mention hit không bị giới hạn.
-4. Dùng một model **khác và mạnh hơn** làm giám khảo Faithfulness; chạy nhiều lần để ước lượng độ dao động.
-5. Dùng Memory cả khi tìm kiếm: viết lại câu hỏi nối tiếp thành câu hỏi đầy đủ trước khi tìm.
+Theo thứ tự ưu tiên, dựa trên lỗi đo được ở mục 7.3 và 7.5:
+1. **Sửa prompt trả lời:**
+   - Chỉ thêm luật "could not find other options" khi có lịch sử hội thoại.
+   - Với câu hỏi về giá: nêu sản phẩm `[1]` và nói rõ catalog không có thông tin giá.
+   - Cho phép nêu sản phẩm gần nhất kèm mức độ chắc chắn thay vì từ chối.
+2. **Sửa bước viết lại truy vấn** (`rewrite_query`, `contextualize_query`): giữ nguyên tên và mã sản phẩm không phải tiếng Anh thay vì dịch; hoặc gộp RRF kết quả của câu viết lại với kết quả của câu gốc.
+3. **Sửa Agentic:** gộp kết quả lượt đầu và lượt sau thay vì bỏ hẳn lượt đầu; dặn giám khảo rằng context chỉ có tên sản phẩm nên không cần "khớp chính xác"; bỏ lượt đánh giá thừa ở vòng cuối.
+4. Đưa thêm brand và một đoạn mô tả vào context, để LLM trả lời được nhiều thuộc tính hơn và Mention hit không bị giới hạn.
+5. Dùng một model **khác và mạnh hơn** làm giám khảo Faithfulness; chạy nhiều lần để ước lượng độ dao động.
 6. Thêm tầng Recommendation theo kiến trúc Search → RAG → Recommendation của môn học.
+7. **Hỏi bằng ảnh:** sửa prompt để LLM khẳng định sản phẩm `[1]` khi điểm giống cao; gán trọng số cho RRF ảnh/chữ; xây bộ truy vấn ảnh người dùng tự chụp, kèm câu chữ và qrels; thử LLM đa phương thức (vd LLaVA, Qwen2-VL qua Ollama).
 
 ---
 
@@ -849,11 +966,11 @@ Theo thứ tự ưu tiên, dựa trên lỗi đo được ở mục 7.3:
 | Yêu cầu | Mức đáp ứng | Ở đâu |
 |---|---|---|
 | Baseline RAG | Có | Naive RAG, mục 5.6 |
-| Hệ thống hoàn chỉnh (front, back, dữ liệu) | Có | `/chat`, API (mục 5.8), dữ liệu A1 |
-| Nâng cấp engineering/research | Có | Agentic RAG (5.7); rerank MiniLM/DeBERTa (5.2) |
-| Chứng minh nâng cấp bằng ablation | Có | Retrieval (7.1); Generation 250 câu × 4 cấu hình (7.2, 7.3). Kết quả: rerank giúp nhẹ, Agentic **không** cải thiện |
-| Chatbot nhiều lượt | Có | Memory (5.5) |
-| Đủ metric RAG | Có trong code | 8 metric (6.2) |
+| Hệ thống hoàn chỉnh (front, back, dữ liệu) | Có | `/chat` hỏi bằng chữ hoặc ảnh, API (mục 5.8), dữ liệu A1 |
+| Nâng cấp engineering/research | Có | Hỏi bằng ảnh (5.1.1); Memory khi tìm kiếm (5.5); rerank MiniLM/DeBERTa (5.2); Agentic RAG (5.7); qrels đa mức (3.2.1) |
+| Chứng minh nâng cấp bằng ablation | Có | 250 câu × 6 cấu hình (7.1–7.3); 100 ảnh × 3 cấu hình (7.4); 500 hội thoại × 4 cách tìm (7.5). Có cải thiện: ảnh + chữ (cả hai tầng), Memory khi tìm kiếm, rerank (tầng Retrieval). Không cải thiện: Agentic |
+| Chatbot nhiều lượt | Có | Memory (5.5), đo ở 7.5 |
+| Đủ metric RAG | Có | 8 metric (6.2) |
 | Ground truth ≥ 250 câu, dùng chung A1 | Có, nâng lên qrels 0–3 | `data/eval_set.jsonl` (3.2, 3.2.1) |
 | Chẩn đoán Retrieval/Generation | Có | Mục 8, có ví dụ thật |
 | Đạo đức AI | Có | Mục 9 |
@@ -873,16 +990,22 @@ ollama pull llama3.1
 uvicorn app:app --port 8000
 #    Chatbot: http://localhost:8000/chat     Tìm kiếm A1: http://localhost:8000/search
 
-# 4. Đánh giá
-python step_ablation_rag.py --sample 3          # chạy thử
-python step_ablation_rag.py --sample 50         # 50 câu viết tay
-python step_ablation_rag.py --sample 50 --resume  # chạy tiếp nếu bị ngắt
+# 4. Đánh giá ở máy local (chạy thử)
+python step_ablation_rag.py --sample 3                  # mục 7.2
+python step18_ablation_image_rag.py --sample 3          # mục 7.4b
+python step19_ablation_multiturn.py --sample 3          # mục 7.5
+python step17_eval_image_rag_retrieval.py               # mục 7.4a, không cần Ollama
 
-# 5. Chạy đủ 250 câu trên Kaggle GPU (cách đã dùng cho mục 7.2)
-python kaggle/make_kaggle_rag_bundle.py         # tạo dist/kaggle_rag_bundle.zip, upload làm Kaggle Dataset
-#    Notebook Kaggle (GPU T4 x2, Internet On): chạy kaggle/kaggle_run_rag_ablation.py
-#    Tải rag_ablation_output.zip ở tab Output, giải nén 2 file json vào data/
-#    Sau khi đổi ground truth: chạy trong session mới, KHÔNG dùng --resume với kết quả cũ
+# 5. Chạy đủ trên Kaggle GPU (cách đã dùng cho mục 7)
+python kaggle/make_kaggle_rag_bundle.py   # tạo dist/kaggle_rag_bundle.zip, upload làm Kaggle Dataset
+#    Notebook Kaggle (GPU T4 x2, Internet On): dán kaggle/kaggle_run_rag_ablation.py vào 1 cell,
+#    sửa NOTEBOOK_ARGS rồi chạy. Lần chạy cuối dùng 2 session song song:
+#      session 1: NOTEBOOK_ARGS = ["--configs", "naive", "naive_minilm", "naive_deberta",
+#                                  "--with-image", "--with-multiturn"]
+#      session 2: NOTEBOOK_ARGS = ["--configs", "agentic", "agentic_minilm", "agentic_deberta"]
+#    Tải rag_ablation_output.zip của mỗi session ở tab Output, giải nén các file json vào data/,
+#    ghép 2 file rag_ablation_details.jsonl, rồi tính bảng tổng hợp (không gọi LLM):
+python step_ablation_rag.py --resume
 
 # 6. Xây lại qrels (mục 3.2.1), chỉ khi đổi catalog hoặc eval set
 python step16_build_qrels.py pool    # tạo data/qrels_pool.jsonl
@@ -899,40 +1022,67 @@ DeBERTa distill cần thư mục `models/deberta-10k-rank_net`. Tải từ mục
 
 **Prompt sinh câu trả lời** (`build_prompt`):
 ```
-Bạn là trợ lý tư vấn sản phẩm. CHỈ được dùng thông tin trong danh sách sản phẩm dưới đây để trả lời. KHÔNG được bịa thêm chi tiết (giá, tính năng...) không có trong danh sách. Nếu danh sách không có sản phẩm phù hợp, hãy nói rõ là không tìm thấy thay vì đoán.
+You are a product assistant. Use ONLY the information in the product list below. Do NOT invent details (price, features, colors...) that are not in the list. If no product in the list fits the request, say clearly that you could not find one instead of guessing.
 {lịch sử hội thoại, nếu có}
-Danh sách sản phẩm tìm được:
+{dòng báo có ảnh, nếu có: The customer attached a product photo. You CANNOT see the photo; the product list below was retrieved by visual similarity to it (most similar first).}
+Product list:
 {context [1]..[5]}
 
-Câu hỏi của người dùng: "{câu hỏi}"
+Customer message: "{câu hỏi}"
 
-Trả lời ngắn gọn bằng tiếng Việt, TRÍCH DẪN số thứ tự trong ngoặc vuông (ví dụ [1]) mỗi khi nhắc tới 1 sản phẩm cụ thể. Nếu câu hỏi hiện tại tham chiếu tới lượt hỏi trước (ví dụ "còn màu khác không", "cái đó giá bao nhiêu"), dùng lịch sử hội thoại ở trên để hiểu đúng ý khách đang hỏi về sản phẩm nào.
+Reply briefly in English. CITE the list number in square brackets (e.g. [1]) every time you mention a specific product. If the message refers to an earlier turn, use the conversation history above to work out which product it is about; if the list has no product of that type, say you could not find other options. Answer the customer directly: never repeat their message back or ask them a question.
+```
+
+**Lịch sử hội thoại** (`_format_history`), dùng chung cho prompt trả lời và prompt viết lại câu hỏi nối tiếp:
+```
+Conversation so far (to understand the current message):
+- Customer: "{câu hỏi cũ}" -> Assistant: "{câu trả lời cũ, 150 ký tự đầu}..."
+  Suggested products: {tên 3 sản phẩm đầu}
+```
+
+**Prompt viết lại câu hỏi nối tiếp** (`contextualize_query`):
+```
+{lịch sử hội thoại}
+New customer message: "{câu hỏi mới}"
+
+Rewrite the new message as ONE standalone product-search query, written in English as short keywords.
+Rules:
+- If the message refers to an earlier product ("that one", "other colors", "cheaper"...), take the product type from "Suggested products" of the latest turn.
+- If it asks for a different color, size or brand, DROP the old value and keep only the product type.
+- If it is a completely new topic, keep its meaning and ignore the history.
+- Keep brand and product names exactly as written.
+Examples:
+- Suggested: "Men's Black Leather Biker Jacket" | message: "any other color?" -> leather biker jacket
+- Suggested: "Nike Air Zoom Pegasus 39 Running Shoes" | message: "something cheaper?" -> running shoes
+- Suggested: "Stainless Steel Water Bottle 1L" | message: "do you sell camping tents?" -> camping tent
+Return ONLY the query: no explanation, no quotes.
 ```
 
 **Prompt tự đánh giá** (`judge_sufficiency`):
 ```
-Câu hỏi: "{câu hỏi gốc}"
-Danh sách sản phẩm tìm được:
+Question: "{câu hỏi gốc}"
+Retrieved product list:
 {context}
 
-Danh sách trên có đủ thông tin để trả lời câu hỏi không?
-Trả lời CHỈ theo đúng 1 trong 2 dạng:
-"CÓ"
-hoặc
-"KHÔNG: <lý do ngắn gọn>"
+Does the list above contain enough information to answer the question?
+Reply with EXACTLY one of these two forms:
+YES
+or
+NO: <short reason>
 ```
 
 **Prompt viết lại truy vấn** (`rewrite_query`):
 ```
-Người dùng hỏi: "{truy vấn hiện tại}"
-Kết quả tìm kiếm hiện tại KHÔNG đủ vì: {lý do}
-Hãy viết lại thành 1 câu truy vấn NGẮN GỌN, dùng từ khoá cụ thể hơn để tìm kiếm tốt hơn.
-CHỈ trả về câu truy vấn mới, không giải thích gì thêm.
+The customer asked: "{truy vấn hiện tại}"
+The current search results are NOT enough because: {lý do}
+Rewrite it as ONE SHORT English search query with more specific keywords to get better results.
+Return ONLY the new query: no explanation, no quotes.
 ```
 
 **Prompt chấm Faithfulness** (`rag_metrics._build_faithfulness_prompt`): yêu cầu tách câu trả lời thành các claim và in mỗi claim một dòng `CLAIM: <nội dung> | SUPPORTED` hoặc `| NOT_SUPPORTED`, chỉ dựa vào context. Nguyên văn trong `rag_metrics.py`.
 
 ---
+
 
 ## Tài liệu tham khảo
 

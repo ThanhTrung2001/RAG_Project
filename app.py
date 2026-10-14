@@ -4,13 +4,14 @@ API FastAPI cho tìm kiếm đa phương thức (A1) và chatbot RAG (A3), kèm 
 Chạy: uvicorn app:app --reload --port 8000
   - http://localhost:8000/search : giao diện tìm kiếm A1
   - http://localhost:8000/chat   : giao diện chatbot A3
-Cần có dữ liệu và index từ step1-3; /api/v1/ask cần Ollama (xem rag_core.py).
+Cần có dữ liệu và index từ step1-3; /api/v1/ask và /api/v1/ask_image cần Ollama (xem rag_core.py).
 """
 import time
 import io
 
 import requests
-from fastapi import FastAPI, UploadFile, File, Query, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, Query, HTTPException
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
@@ -139,15 +140,48 @@ def ask(
     session_id: giữ lịch sử hội thoại theo phiên; bỏ trống thì mỗi câu hỏi độc lập.
     reranker: xếp lại ứng viên trước khi đưa vào context (xem rag_core.retrieve()).
     """
-    if reranker == "none":
-        reranker = None
-    elif reranker not in available_rerankers():
-        raise HTTPException(400, f"reranker không hợp lệ hoặc chưa có model: {reranker}")
+    return _run_rag(q, k, agentic, session_id, _parse_reranker(reranker))
 
+
+@app.post("/api/v1/ask_image")
+async def ask_image(
+    file: UploadFile = File(..., description="Ảnh sản phẩm (multipart, field \"file\")"),
+    q: str = Form("", description="Câu hỏi kèm ảnh, có thể bỏ trống"),
+    k: int = Form(5),
+    agentic: bool = Form(False),
+    session_id: str = Form(None),
+    reranker: str = Form("none"),
+):
+    """
+    Hỏi bằng ảnh (có thể kèm chữ). Ảnh dùng để tìm sản phẩm (SigLIP); có chữ thì gộp kết quả ảnh
+    và chữ bằng RRF. LLM chỉ đọc danh sách sản phẩm tìm được, không xem ảnh (rag_core.retrieve()).
+    Có ảnh thì không rerank (reranker chỉ đọc chữ, bỏ mất tín hiệu ảnh), response trả reranker = null.
+    """
+    try:
+        image = Image.open(io.BytesIO(await file.read())).convert("RGB")
+    except Exception:
+        raise HTTPException(400, "File tải lên không phải ảnh hợp lệ")
+    # Gọi LLM là việc chặn (vài giây đến vài phút) -> chạy trong threadpool như endpoint sync /ask.
+    result = await run_in_threadpool(_run_rag, q.strip(), k, agentic, session_id,
+                                     _parse_reranker(reranker), image)
+    result["query_mode"] = "image+text" if q.strip() else "image"
+    return result
+
+
+def _parse_reranker(reranker: str):
+    if reranker == "none":
+        return None
+    if reranker not in available_rerankers():
+        raise HTTPException(400, f"reranker không hợp lệ hoặc chưa có model: {reranker}")
+    return reranker
+
+
+def _run_rag(q, k, agentic, session_id, reranker, image=None):
+    """Gọi naive/agentic RAG, đổi lỗi kết nối Ollama thành HTTP 503."""
     try:
         if agentic:
-            return rag_answer_agentic(q, k=k, session_id=session_id, reranker=reranker)
-        return rag_answer(q, k=k, session_id=session_id, reranker=reranker)
+            return rag_answer_agentic(q, k=k, session_id=session_id, reranker=reranker, image=image)
+        return rag_answer(q, k=k, session_id=session_id, reranker=reranker, image=image)
     except requests.HTTPError as e:
         # Ollama có chạy nhưng trả lỗi (thường là chưa pull đúng model).
         raise HTTPException(503, f"{e}. Xem model đã có bằng `ollama list`; "

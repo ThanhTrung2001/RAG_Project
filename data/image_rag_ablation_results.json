@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-12T15:21:26",
+  "llm_model": "llama3.1",
+  "eval_set_image": "data/eval_set_image.jsonl",
+  "num_images": 100,
+  "k": 5,
+  "workers": 4,
+  "faithfulness": true,
+  "results": [
+    {
+      "name": "Chỉ chữ",
+      "config": "text",
+      "all": {
+        "context_recall": 0.9725,
+        "context_precision": 0.9233333333333333,
+        "context_ndcg": 0.868451634423896,
+        "faithfulness": 0.7852092585094697,
+        "answer_relevancy": 0.7908146809786558,
+        "mention_hit": 0.635,
+        "citation": 0.87,
+        "latency_sec": 3.8493693566322325,
+        "n": 100,
+        "n_errors": 0
+      }
+    },
+    {
+      "name": "Chỉ ảnh",
+      "config": "image",
+      "all": {
+        "context_recall": 0.9875,
+        "context_precision": 0.9858333333333333,
+        "context_ndcg": 0.8578539259433521,
+        "faithfulness": 0.7084681307065028,
+        "answer_relevancy": 0.5389266138710082,
+        "mention_hit": 0.62,
+        "citation": 0.9,
+        "latency_sec": 8.309668512344361,
+        "n": 100,
+        "n_errors": 0
+      }
+    },
+    {
+      "name": "Ảnh + chữ",
+      "config": "image_text",
+      "all": {
+        "context_recall": 0.995,
+        "context_precision": 0.9845,
+        "context_ndcg": 0.8953400890829744,
+        "faithfulness": 0.8301118794625288,
+        "answer_relevancy": 0.777794740498066,
+        "mention_hit": 0.675,
+        "citation": 0.93,
+        "latency_sec": 12.058317496776581,
+        "n": 100,
+        "n_errors": 0
+      }
+    }
+  ]
+}

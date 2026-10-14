@@ -1,0 +1,264 @@
+{
+  "date": "2026-10-10T18:00:21",
+  "llm_model": "llama3.1",
+  "eval_set": "data/eval_set.jsonl",
+  "num_queries": 250,
+  "k": 5,
+  "workers": 4,
+  "faithfulness": true,
+  "ollama_urls": [
+    "http://127.0.0.1:11434/api/generate",
+    "http://127.0.0.1:11435/api/generate"
+  ],
+  "results": [
+    {
+      "name": "Naive RAG",
+      "config": "naive",
+      "all": {
+        "context_recall": 0.983,
+        "context_precision": 0.9419333333333333,
+        "context_ndcg": 0.8776502789106158,
+        "faithfulness": 0.7247597739568503,
+        "answer_relevancy": 0.5728389802575111,
+        "mention_hit": 0.674,
+        "citation": 0.728,
+        "latency_sec": 3.853280411720276,
+        "n": 250,
+        "n_errors": 0
+      },
+      "handwritten": {
+        "context_recall": 0.945,
+        "context_precision": 0.8766666666666667,
+        "context_ndcg": 0.8195215181943541,
+        "faithfulness": 0.7653562200073828,
+        "answer_relevancy": 0.49771844752132893,
+        "mention_hit": 0.64,
+        "citation": 0.78,
+        "latency_sec": 2.945661253929138,
+        "n": 50,
+        "n_errors": 0
+      },
+      "template": {
+        "context_recall": 0.9925,
+        "context_precision": 0.95825,
+        "context_ndcg": 0.8921824690896811,
+        "faithfulness": 0.7136410021086153,
+        "answer_relevancy": 0.5916191134415567,
+        "mention_hit": 0.6825,
+        "citation": 0.715,
+        "latency_sec": 4.08018520116806,
+        "n": 200,
+        "n_errors": 0
+      }
+    },
+    {
+      "name": "Naive + MiniLM",
+      "config": "naive_minilm",
+      "all": {
+        "context_recall": 0.979,
+        "context_precision": 0.9743333333333334,
+        "context_ndcg": 0.8947335009326217,
+        "faithfulness": 0.7073946580383206,
+        "answer_relevancy": 0.5904578374922276,
+        "mention_hit": 0.674,
+        "citation": 0.76,
+        "latency_sec": 8.420273243904115,
+        "n": 250,
+        "n_errors": 0
+      },
+      "handwritten": {
+        "context_recall": 0.915,
+        "context_precision": 0.8916666666666667,
+        "context_ndcg": 0.8277186531350209,
+        "faithfulness": 0.656216577540107,
+        "answer_relevancy": 0.5161935538053513,
+        "mention_hit": 0.63,
+        "citation": 0.8,
+        "latency_sec": 4.242817740440369,
+        "n": 50,
+        "n_errors": 0
+      },
+      "template": {
+        "context_recall": 0.995,
+        "context_precision": 0.995,
+        "context_ndcg": 0.911487212882022,
+        "faithfulness": 0.718069840473531,
+        "answer_relevancy": 0.6090239084139466,
+        "mention_hit": 0.685,
+        "citation": 0.75,
+        "latency_sec": 9.46463711977005,
+        "n": 200,
+        "n_errors": 0
+      }
+    },
+    {
+      "name": "Naive + DeBERTa",
+      "config": "naive_deberta",
+      "all": {
+        "context_recall": 0.981,
+        "context_precision": 0.97525,
+        "context_ndcg": 0.9023042216220667,
+        "faithfulness": 0.6998818857906963,
+        "answer_relevancy": 0.5820764471068979,
+        "mention_hit": 0.674,
+        "citation": 0.728,
+        "latency_sec": 9.702997793197632,
+        "n": 250,
+        "n_errors": 0
+      },
+      "handwritten": {
+        "context_recall": 0.925,
+        "context_precision": 0.89625,
+        "context_ndcg": 0.846352584721998,
+        "faithfulness": 0.7597861195760355,
+        "answer_relevancy": 0.5204629596322775,
+        "mention_hit": 0.64,
+        "citation": 0.86,
+        "latency_sec": 9.69418550491333,
+        "n": 50,
+        "n_errors": 0
+      },
+      "template": {
+        "context_recall": 0.995,
+        "context_precision": 0.995,
+        "context_ndcg": 0.9162921308470838,
+        "faithfulness": 0.6870974456535812,
+        "answer_relevancy": 0.5974798189755529,
+        "mention_hit": 0.6825,
+        "citation": 0.695,
+        "latency_sec": 9.705200865268708,
+        "n": 200,
+        "n_errors": 0
+      }
+    },
+    {
+      "name": "Agentic RAG",
+      "config": "agentic",
+      "all": {
+        "context_recall": 0.919,
+        "context_precision": 0.8567666666666667,
+        "context_ndcg": 0.7989646054354951,
+        "faithfulness": 0.7181115639268385,
+        "answer_relevancy": 0.5725500973165035,
+        "mention_hit": 0.66,
+        "citation": 0.66,
+        "latency_sec": 14.011644765853882,
+        "n": 250,
+        "n_errors": 0,
+        "rewrite_rate": 0.524
+      },
+      "handwritten": {
+        "context_recall": 0.835,
+        "context_precision": 0.7113333333333334,
+        "context_ndcg": 0.6853268673014145,
+        "faithfulness": 0.6937258687258687,
+        "answer_relevancy": 0.5128270091861487,
+        "mention_hit": 0.58,
+        "citation": 0.7,
+        "latency_sec": 9.88529154777527,
+        "n": 50,
+        "n_errors": 0,
+        "rewrite_rate": 0.64
+      },
+      "template": {
+        "context_recall": 0.94,
+        "context_precision": 0.893125,
+        "context_ndcg": 0.8273740399690152,
+        "faithfulness": 0.7237507559420628,
+        "answer_relevancy": 0.5874808693490923,
+        "mention_hit": 0.68,
+        "citation": 0.65,
+        "latency_sec": 15.043233070373535,
+        "n": 200,
+        "n_errors": 0,
+        "rewrite_rate": 0.495
+      }
+    },
+    {
+      "name": "Agentic + MiniLM",
+      "config": "agentic_minilm",
+      "all": {
+        "context_recall": 0.948,
+        "context_precision": 0.9388,
+        "context_ndcg": 0.8520040524182119,
+        "faithfulness": 0.6640009843778226,
+        "answer_relevancy": 0.5817235255539417,
+        "mention_hit": 0.66,
+        "citation": 0.716,
+        "latency_sec": 13.19171751022339,
+        "n": 250,
+        "n_errors": 0,
+        "rewrite_rate": 0.604
+      },
+      "handwritten": {
+        "context_recall": 0.88,
+        "context_precision": 0.8340000000000001,
+        "context_ndcg": 0.765664054127115,
+        "faithfulness": 0.5595051353874884,
+        "answer_relevancy": 0.4989327353239059,
+        "mention_hit": 0.58,
+        "citation": 0.76,
+        "latency_sec": 10.877701878547668,
+        "n": 50,
+        "n_errors": 0,
+        "rewrite_rate": 0.7
+      },
+      "template": {
+        "context_recall": 0.965,
+        "context_precision": 0.965,
+        "context_ndcg": 0.8735890519909859,
+        "faithfulness": 0.68648743289473,
+        "answer_relevancy": 0.6024212231114506,
+        "mention_hit": 0.68,
+        "citation": 0.705,
+        "latency_sec": 13.770221418142318,
+        "n": 200,
+        "n_errors": 0,
+        "rewrite_rate": 0.58
+      }
+    },
+    {
+      "name": "Agentic + DeBERTa",
+      "config": "agentic_deberta",
+      "all": {
+        "context_recall": 0.957,
+        "context_precision": 0.9461333333333333,
+        "context_ndcg": 0.873801333464185,
+        "faithfulness": 0.6573202865905827,
+        "answer_relevancy": 0.5744087515063584,
+        "mention_hit": 0.654,
+        "citation": 0.656,
+        "latency_sec": 16.18396340084076,
+        "n": 250,
+        "n_errors": 0,
+        "rewrite_rate": 0.536
+      },
+      "handwritten": {
+        "context_recall": 0.885,
+        "context_precision": 0.8340000000000001,
+        "context_ndcg": 0.7973208715808049,
+        "faithfulness": 0.6079309348827621,
+        "answer_relevancy": 0.4925286460481584,
+        "mention_hit": 0.61,
+        "citation": 0.74,
+        "latency_sec": 19.898141827583313,
+        "n": 50,
+        "n_errors": 0,
+        "rewrite_rate": 0.48
+      },
+      "template": {
+        "context_recall": 0.975,
+        "context_precision": 0.9741666666666667,
+        "context_ndcg": 0.8929214489350299,
+        "faithfulness": 0.6711108198596495,
+        "answer_relevancy": 0.5948787778709084,
+        "mention_hit": 0.665,
+        "citation": 0.635,
+        "latency_sec": 15.255418794155121,
+        "n": 200,
+        "n_errors": 0,
+        "rewrite_rate": 0.55
+      }
+    }
+  ]
+}

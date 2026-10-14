@@ -53,10 +53,12 @@ a1_multimodal_search/
 ├── step14_eval_image_queries.py   A1  đánh giá bộ truy vấn ảnh
 ├── step15_expand_eval_set.py      A1+A3  mở rộng data/eval_set.jsonl lên 250 câu (chạy 1 lần)
 ├── step16_build_qrels.py          A1+A3  nâng eval set lên qrels 0–3: pool ứng viên + merge nhãn
+├── step17_eval_image_rag_retrieval.py A3  Context Recall/Precision@5 của chatbot khi hỏi bằng ảnh
+├── step18_ablation_image_rag.py    A3  ablation RAG hỏi bằng ảnh: chỉ chữ / chỉ ảnh / ảnh + chữ (cần Ollama)
 ├── step_ablation_rerank.py        A2  ablation rerank: không rerank / MiniLM / DeBERTa distill
-├── rag_core.py                    A3  Naive RAG, Agentic RAG, Memory
+├── rag_core.py                    A3  Naive RAG, Agentic RAG, Memory, hỏi bằng ảnh (retrieve(image=...))
 ├── rag_metrics.py                 A3  Context Precision, Faithfulness, Answer Relevancy
-├── step_ablation_rag.py           A3  ablation: Naive RAG vs Agentic RAG
+├── step_ablation_rag.py           A3  ablation: {Naive, Agentic} x {không rerank, MiniLM, DeBERTa}
 ├── bpm_event_log_simulation.py    BPM mô phỏng event log 3 kịch bản
 ├── kaggle/
 │   ├── kaggle_build_A1_data.py            chạy step1–3 trên Kaggle (GPU) bằng CLIP B/32, xuất zip (bản gốc, không dùng nữa)

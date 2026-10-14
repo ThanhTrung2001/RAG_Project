@@ -12,11 +12,20 @@ Chuẩn bị:
            !python kaggle_run_rag_ablation.py --sample 10    # chạy thử, xem tốc độ
            !python kaggle_run_rag_ablation.py                # chạy đủ 250 câu
        - Hoặc dán toàn bộ file vào 1 cell: sửa NOTEBOOK_ARGS bên dưới rồi chạy cell.
+           !python kaggle_run_rag_ablation.py --resume --with-image
+                # giữ kết quả đã có trong bundle (data/rag_ablation_details.jsonl), chỉ chạy phần còn thiếu
+                # (vd 2 cấu hình Agentic + rerank), rồi chạy thêm step18 (hỏi bằng ảnh, 100 ảnh x 3 cấu hình)
+           !python kaggle_run_rag_ablation.py --image-only    # chỉ chạy step18
+           !python kaggle_run_rag_ablation.py --with-image --with-multiturn   # cả step_ablation_rag, step18, step19
+           !python kaggle_run_rag_ablation.py --multiturn-only   # chỉ chạy step19 (Memory khi tìm kiếm)
 Output (tab Output của Kaggle): rag_ablation_output.zip gồm rag_ablation_results.json,
-rag_ablation_details.jsonl và log của Ollama. Giải nén 2 file json vào data/ ở máy local.
+rag_ablation_details.jsonl, image_rag_ablation_results.json, image_rag_ablation_details.jsonl (nếu chạy
+step18), multiturn_ablation_results.json, multiturn_ablation_details.jsonl (nếu chạy step19) và log của
+Ollama. Giải nén các file json vào data/ ở máy local.
 
 Tham số riêng: --model, --parallel (số yêu cầu song song mỗi GPU, mặc định 2), --bundle-dir, --work-dir,
---skip-setup. Các tham số khác (--sample, --configs, --resume, --workers, --no-faithfulness) được chuyển
+--skip-setup, --with-image (chạy thêm step18_ablation_image_rag.py), --image-only, --with-multiturn (chạy
+thêm step19_ablation_multiturn.py), --multiturn-only. Các tham số khác (--sample, --configs, --resume, --workers, --no-faithfulness) được chuyển
 thẳng cho step_ablation_rag.py; nếu không ghi --workers thì tự đặt = số GPU x --parallel.
 """
 import argparse
@@ -62,7 +71,11 @@ def prepare_workdir(bundle_dir, work_dir):
         shutil.copy(path, work_dir)
     for path in glob.glob(os.path.join(bundle_dir, "data", "*")):
         target = os.path.join(work_dir, "data", os.path.basename(path))
-        if not os.path.exists(target):   # giữ file chi tiết của lần chạy trước để --resume
+        if os.path.exists(target):   # giữ file chi tiết của lần chạy trước để --resume
+            continue
+        if os.path.isdir(path):      # data/query_images/ cho step18
+            shutil.copytree(path, target)
+        else:
             shutil.copy(path, target)
 
     deberta_src = os.path.join(bundle_dir, "models", "deberta-10k-rank_net")
@@ -145,6 +158,10 @@ def zip_outputs(work_dir):
     zip_path = os.path.join(out_dir, "rag_ablation_output.zip")
     files = [os.path.join(work_dir, "data", "rag_ablation_results.json"),
              os.path.join(work_dir, "data", "rag_ablation_details.jsonl"),
+             os.path.join(work_dir, "data", "image_rag_ablation_results.json"),
+             os.path.join(work_dir, "data", "image_rag_ablation_details.jsonl"),
+             os.path.join(work_dir, "data", "multiturn_ablation_results.json"),
+             os.path.join(work_dir, "data", "multiturn_ablation_details.jsonl"),
              *glob.glob(os.path.join(out_dir, "ollama_serve_*.log"))]
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for path in files:
@@ -168,6 +185,12 @@ def main(argv=None):
     parser.add_argument("--work-dir", default=WORK_DIR)
     parser.add_argument("--skip-setup", action="store_true",
                         help="bỏ qua pip/cài Ollama (dùng khi đã cài, hoặc thử ở máy local)")
+    parser.add_argument("--with-image", action="store_true",
+                        help="chạy thêm step18_ablation_image_rag.py sau step_ablation_rag.py")
+    parser.add_argument("--image-only", action="store_true", help="chỉ chạy step18_ablation_image_rag.py")
+    parser.add_argument("--with-multiturn", action="store_true",
+                        help="chạy thêm step19_ablation_multiturn.py (Memory khi tìm kiếm)")
+    parser.add_argument("--multiturn-only", action="store_true", help="chỉ chạy step19_ablation_multiturn.py")
     args, ablation_args = parser.parse_known_args(argv)
     print(f"Tham số: {argv}")
 
@@ -190,14 +213,33 @@ def main(argv=None):
         ablation_args += ["--workers", str(len(urls) * args.parallel)]
     env = dict(os.environ, OLLAMA_MODEL=args.model, PYTHONUNBUFFERED="1",
                OLLAMA_URL=",".join(f"{u}/api/generate" for u in urls))
-    cmd = [sys.executable, "step_ablation_rag.py", *ablation_args]
-    print(f"\n$ {' '.join(cmd)}  (cwd={args.work_dir})", flush=True)
-    result = subprocess.run(cmd, cwd=args.work_dir, env=env)
+    returncodes = []
+    workers_args = ["--workers", ablation_args[ablation_args.index("--workers") + 1]]
+    only = args.image_only or args.multiturn_only
+    if not only:
+        cmd = [sys.executable, "step_ablation_rag.py", *ablation_args]
+        print(f"\n$ {' '.join(cmd)}  (cwd={args.work_dir})", flush=True)
+        returncodes.append(subprocess.run(cmd, cwd=args.work_dir, env=env).returncode)
+    if (args.with_image and not only) or args.image_only:
+        # step18 dùng chung --workers/--resume/--no-faithfulness; --sample/--configs của step_ablation_rag bỏ qua
+        image_args = [a for a in ablation_args if a in ("--resume", "--no-faithfulness")] + workers_args
+        cmd = [sys.executable, "step18_ablation_image_rag.py", *image_args]
+        print(f"\n$ {' '.join(cmd)}  (cwd={args.work_dir})", flush=True)
+        returncodes.append(subprocess.run(cmd, cwd=args.work_dir, env=env).returncode)
+    if (args.with_multiturn and not only) or args.multiturn_only:
+        # step19 dùng chung --workers/--resume/--sample (không chấm Faithfulness, không có --configs)
+        multiturn_args = [a for a in ablation_args if a == "--resume"] + workers_args
+        if "--sample" in ablation_args:
+            multiturn_args += ["--sample", ablation_args[ablation_args.index("--sample") + 1]]
+        cmd = [sys.executable, "step19_ablation_multiturn.py", *multiturn_args]
+        print(f"\n$ {' '.join(cmd)}  (cwd={args.work_dir})", flush=True)
+        returncodes.append(subprocess.run(cmd, cwd=args.work_dir, env=env).returncode)
+    returncode = max(returncodes, default=0)
 
     zip_outputs(args.work_dir)
     print(f"Tổng thời gian: {(time.time() - started) / 60:.1f} phút")
-    if result.returncode != 0:
-        message = (f"step_ablation_rag.py kết thúc với mã lỗi {result.returncode}; "
+    if returncode != 0:
+        message = (f"step_ablation_rag.py / step18 kết thúc với mã lỗi {returncode}; "
                    "chạy lại kèm --resume để tiếp tục từ chỗ dừng")
         if in_notebook():
             print(f"\nLỖI: {message}")   # không raise trong cell để khỏi văng traceback dài

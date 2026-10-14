@@ -4,6 +4,7 @@ Ablation A3 trên data/eval_set.jsonl (dùng chung với A1). Các cấu hình:
   naive_minilm   Naive RAG + rerank cross-encoder MiniLM (A1)
   naive_deberta  Naive RAG + rerank DeBERTa distill (A2); bỏ qua nếu chưa có models/deberta-10k-rank_net
   agentic        Agentic RAG
+  agentic_minilm / agentic_deberta   Agentic RAG + rerank (bảng 2x3: {Naive, Agentic} x {không, MiniLM, DeBERTa})
 
 Ground truth: qrels 0-3 (step16_build_qrels.py); relevant_ids = id có grade >= 2.
 Metric: Context Recall@k, Context Precision@k, Context nDCG@k đa mức (theo qrels), Faithfulness, Answer Relevancy,
@@ -12,7 +13,7 @@ Mỗi câu: Naive 1 lượt LLM, Agentic 2 hoặc 4 lượt (max_iters=2), cộn
 Model LLM lấy từ .env (OLLAMA_MODEL, xem rag_core.py).
 
 CHẠY:
-  python step_ablation_rag.py                      # 250 câu, cả 4 cấu hình
+  python step_ablation_rag.py                      # 250 câu, cả 6 cấu hình
   python step_ablation_rag.py --sample 20          # chạy thử 20 câu đầu
   python step_ablation_rag.py --configs naive agentic
   python step_ablation_rag.py --resume             # chạy tiếp từ data/rag_ablation_details.jsonl
@@ -67,6 +68,9 @@ CONFIGS = {
     "naive_minilm":  ("Naive + MiniLM",  lambda q, k: naive_answer(q, k=k, reranker="cross_encoder")),
     "naive_deberta": ("Naive + DeBERTa", lambda q, k: naive_answer(q, k=k, reranker="deberta")),
     "agentic":       ("Agentic RAG",     lambda q, k: answer_agentic(q, k=k)),
+    # Kết hợp 2 thành phần: Agentic có đỡ hơn khi context đầu vào đã được rerank không?
+    "agentic_minilm":  ("Agentic + MiniLM",  lambda q, k: answer_agentic(q, k=k, reranker="cross_encoder")),
+    "agentic_deberta": ("Agentic + DeBERTa", lambda q, k: answer_agentic(q, k=k, reranker="deberta")),
 }
 METRIC_KEYS = ["context_recall", "context_precision", "context_ndcg", "faithfulness", "answer_relevancy",
                "mention_hit", "citation", "latency_sec"]
@@ -180,9 +184,9 @@ def main():
 
     eval_set = load_eval_set(args.sample)
     config_keys = [c for c in args.configs
-                   if c != "naive_deberta" or "deberta" in available_rerankers()]
+                   if not c.endswith("_deberta") or "deberta" in available_rerankers()]
     if len(config_keys) < len(args.configs):
-        print("Bỏ qua naive_deberta: chưa có models/deberta-10k-rank_net")
+        print("Bỏ qua các cấu hình DeBERTa: chưa có models/deberta-10k-rank_net")
 
     with_faith = not args.no_faithfulness
     print(f"Ablation RAG: {len(eval_set)} câu, k={K}, LLM={LLM_MODEL}, cấu hình={config_keys}")
