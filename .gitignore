@@ -44,3 +44,4 @@ models/
 *.log
 
 # Báo cáo .md - tạm thời không đưa lên
+/data.zip

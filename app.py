@@ -134,13 +134,16 @@ def ask(
     agentic: bool = Query(False, description="True = tự đánh giá và search lại nếu thiếu"),
     session_id: str = Query(None, description="ID phiên chat -- có thì hệ thống nhớ ngữ cảnh câu trước"),
     reranker: str = Query("none", description="none | cross_encoder | deberta"),
+    selected_product_id: int | None = Query(None, ge=0, description="Sản phẩm đã bấm chọn"),
+    product_dialogue: bool = Query(True, description="Bật định tuyến hỏi chi tiết; tắt để ablation baseline"),
 ):
     """
     Search + sinh câu trả lời. agentic=False: naive RAG; True: tự đánh giá, search tối đa 2 lượt.
     session_id: giữ lịch sử hội thoại theo phiên; bỏ trống thì mỗi câu hỏi độc lập.
     reranker: xếp lại ứng viên trước khi đưa vào context (xem rag_core.retrieve()).
     """
-    return _run_rag(q, k, agentic, session_id, _parse_reranker(reranker))
+    return _run_rag(q, k, agentic, session_id, _parse_reranker(reranker),
+                    selected_product_id=selected_product_id, product_dialogue=product_dialogue)
 
 
 @app.post("/api/v1/ask_image")
@@ -176,12 +179,15 @@ def _parse_reranker(reranker: str):
     return reranker
 
 
-def _run_rag(q, k, agentic, session_id, reranker, image=None):
+def _run_rag(q, k, agentic, session_id, reranker, image=None,
+             selected_product_id=None, product_dialogue=True):
     """Gọi naive/agentic RAG, đổi lỗi kết nối Ollama thành HTTP 503."""
     try:
         if agentic:
-            return rag_answer_agentic(q, k=k, session_id=session_id, reranker=reranker, image=image)
-        return rag_answer(q, k=k, session_id=session_id, reranker=reranker, image=image)
+            return rag_answer_agentic(q, k=k, session_id=session_id, reranker=reranker, image=image,
+                                      selected_product_id=selected_product_id, product_dialogue=product_dialogue)
+        return rag_answer(q, k=k, session_id=session_id, reranker=reranker, image=image,
+                          selected_product_id=selected_product_id, product_dialogue=product_dialogue)
     except requests.HTTPError as e:
         # Ollama có chạy nhưng trả lỗi (thường là chưa pull đúng model).
         raise HTTPException(503, f"{e}. Xem model đã có bằng `ollama list`; "

@@ -13,7 +13,7 @@ import argparse
 import os
 import zipfile
 
-CODE_FILES = ["search_core.py", "rag_core.py", "rag_metrics.py", "metrics.py", "step_ablation_rag.py",
+CODE_FILES = ["search_core.py", "rag_core.py", "product_dialogue.py", "rag_metrics.py", "metrics.py", "step_ablation_rag.py",
               # ablation retrieval (A1), chạy bằng kaggle/kaggle_run_retrieval_ablation.py
               "step8_run_ablation.py", "step9_ablation_index_fields.py", "step10_sweep_rrf.py",
               "step_ablation_rerank.py",

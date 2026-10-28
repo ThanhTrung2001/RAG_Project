@@ -56,6 +56,30 @@ Open in a browser:
 - Chatbot: http://localhost:8000/chat
 - Search page: http://localhost:8000/search
 
+### Ask follow-up questions about a product
+
+After searching, click a product card, then ask e.g. “Cái này chất liệu gì?” or
+“Is it waterproof?”. You can also say “Sản phẩm số 2 nặng bao nhiêu?” using the
+latest source list. Detail answers load that product's catalog record by ID;
+missing attributes must be reported as unavailable. Several possible products
+without a selection trigger a clarification question.
+
+Requests for recommendations, alternatives or a new topic still use search.
+Clear rules handle explicit references; ambiguous messages use an LLM intent
+classifier (`search`, `detail`, `clarify`). This classifier still needs evaluation
+on real conversations. Numbered citations refer to the current response's sources.
+
+The text API accepts `selected_product_id` and `product_dialogue=false` to disable
+the new routing for baseline comparisons. State is session-local RAM and is lost
+on restart. New image uploads always use search.
+
+Offline regressions (stub catalog/LLM, including API integration):
+
+```bash
+pip install httpx  # optional test dependency for FastAPI TestClient
+python -m unittest discover -s tests -v
+```
+
 ### Optional: DeBERTa reranker
 
 The chatbot's reranker defaults to `none`; `cross_encoder` (MiniLM) downloads automatically on first

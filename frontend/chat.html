@@ -81,6 +81,7 @@ const RERANKER_LABELS = {
 
 // Cùng session_id cho mọi lượt hỏi để backend nhớ lịch sử hội thoại (Memory).
 let SESSION_ID = newSessionId();
+let selectedProductId = null;
 
 function newSessionId() {
   return 'session-' + Math.random().toString(36).slice(2);
@@ -141,6 +142,9 @@ function renderSources(data, agentic, withImage = false) {
     badge('Rerank', data.reranker ? (RERANKER_LABELS[data.reranker] || data.reranker) : 'tắt', !!data.reranker),
     badge('Chế độ', agentic ? 'Agentic' : 'Naive', agentic),
   );
+  if (data.intent) status.append(badge('Luồng', {
+    search: 'tìm sản phẩm', detail: 'hỏi chi tiết', clarify: 'cần chọn sản phẩm',
+  }[data.intent] || data.intent));
   if (withImage) status.append(badge('Truy vấn', data.query_mode === 'image' ? 'ảnh' : 'ảnh + chữ', true));
 
   const list = document.getElementById('sources');
@@ -219,6 +223,7 @@ async function showProductDetail(source, n) {
     const res = await fetch(`/api/v1/products/${source.id}`);
     const p = await res.json();
     if (!res.ok) throw new Error(p.detail || res.status);
+    selectedProductId = p.id;
 
     panel.innerHTML = `
       <div class="detail-image"><img alt=""></div>
@@ -234,6 +239,7 @@ async function showProductDetail(source, n) {
     if (p.brand) meta.appendChild(badge('Brand', p.brand));
     if (p.category) meta.appendChild(badge('Category', p.category));
     meta.appendChild(badge('ID', p.id));
+    meta.appendChild(badge('Hội thoại', 'Đã chọn — có thể hỏi tiếp về sản phẩm này', true));
 
     panel.querySelector('.detail-desc').textContent = p.description
       ? p.description + (p.description_truncated ? ' …' : '')
@@ -307,10 +313,22 @@ async function ask() {
         reranker: selectedReranker(),
         session_id: SESSION_ID,
       });
+      if (selectedProductId !== null) params.set('selected_product_id', selectedProductId);
       res = await fetch(`/api/v1/ask?${params}`);
     }
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || res.status);
+    if (data.intent === 'search') {
+      selectedProductId = null;
+      document.getElementById('detailCard').classList.remove('active');
+      document.getElementById('productDetail').textContent = 'Bấm chọn một sản phẩm để hỏi chi tiết.';
+    } else if (data.intent === 'detail' && data.sources?.length === 1) {
+      selectedProductId = data.sources[0].id;
+    } else if (data.intent === 'detail') {
+      selectedProductId = null;
+      document.getElementById('detailCard').classList.remove('active');
+      document.getElementById('productDetail').textContent = 'Bấm chọn sản phẩm muốn hỏi tiếp sau khi so sánh.';
+    }
 
     botBubble.classList.remove('typing');
     botBubble.textContent = data.answer;
@@ -322,6 +340,9 @@ async function ask() {
     }
     renderSources(data, agentic, !!image);
     renderCitedProducts(botBubble, citedSources(data.answer, data.sources || []));
+    if (data.intent === 'detail' && data.sources?.length === 1) {
+      await showProductDetail(data.sources[0], 1);
+    }
   } catch (err) {
     botBubble.classList.remove('typing');
     botBubble.classList.add('error');
@@ -334,6 +355,7 @@ async function ask() {
 async function resetChat() {
   await fetch(`/api/v1/reset_session?session_id=${SESSION_ID}`, { method: 'POST' });
   SESSION_ID = newSessionId();
+  selectedProductId = null;
   document.getElementById('chatLog').innerHTML =
     '<div class="bubble bot">Đã bắt đầu cuộc trò chuyện mới.</div>';
   document.getElementById('sources').innerHTML = '<div class="hint">Chưa có câu hỏi.</div>';
