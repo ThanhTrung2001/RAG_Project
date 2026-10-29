@@ -135,6 +135,31 @@ function badge(label, value, on = false) {
   return el;
 }
 
+const COMPONENT_LABELS = { bm25: 'BM25', dense: 'Dense', image: 'Ảnh' };
+
+// Hạng + điểm của từng nhánh trước khi gộp, rồi điểm gộp RRF và điểm rerank (nếu có).
+function scoreText(r) {
+  const branches = Object.entries(r.components || {}).map(([name, c]) => {
+    const label = COMPONENT_LABELS[name] || name;
+    return c ? `${label} #${c.rank} (${c.score})` : `${label}: ngoài top ${r.top_n ?? ''}`.trim();
+  });
+  // Chỉ 1 nhánh (hỏi bằng ảnh) thì không có bước gộp: score chính là cosine của nhánh đó.
+  if (branches.length === 1 && r.rerank_score === undefined) return branches[0];
+  const fused = r.rerank_score !== undefined ? `rerank ${r.rerank_score} · rrf ${r.score}` : `rrf ${r.score}`;
+  return branches.length ? `${branches.join(' · ')}\n${fused}` : fused;
+}
+
+// Citation: câu trả lời có trích dẫn [n] trỏ đúng vào danh sách nguồn không.
+function citationBadge(answer, sourceCount) {
+  const numbers = [...new Set([...(answer || '').matchAll(/\[(\d+)\]/g)].map(m => Number(m[1])))];
+  const valid = numbers.filter(n => n >= 1 && n <= sourceCount);
+  const invalid = numbers.filter(n => n < 1 || n > sourceCount);
+  if (!numbers.length) return badge('Citation', 'không có [n]');
+  let text = valid.map(n => `[${n}]`).join(' ') || '—';
+  if (invalid.length) text += ` · sai số: ${invalid.map(n => `[${n}]`).join(' ')}`;
+  return badge('Citation', text, valid.length > 0 && !invalid.length);
+}
+
 function renderSources(data, agentic, withImage = false) {
   const status = document.getElementById('status');
   status.innerHTML = '';
@@ -146,6 +171,9 @@ function renderSources(data, agentic, withImage = false) {
     search: 'tìm sản phẩm', detail: 'hỏi chi tiết', clarify: 'cần chọn sản phẩm',
   }[data.intent] || data.intent));
   if (withImage) status.append(badge('Truy vấn', data.query_mode === 'image' ? 'ảnh' : 'ảnh + chữ', true));
+  if (data.intent !== 'clarify' && (data.sources || []).length) {
+    status.append(citationBadge(data.answer, data.sources.length));
+  }
 
   const list = document.getElementById('sources');
   list.innerHTML = '';
@@ -165,9 +193,7 @@ function renderSources(data, agentic, withImage = false) {
     item.querySelector('.num').textContent = `[${i + 1}]`;
     item.querySelector('.text').textContent = r.caption;
     item.querySelector('.caption').title = r.caption;
-    item.querySelector('.score').textContent = r.rerank_score !== undefined
-      ? `rerank ${r.rerank_score} · rrf ${r.score}`
-      : `rrf ${r.score}`;
+    item.querySelector('.score').textContent = scoreText(r);
     list.appendChild(item);
   });
 }
@@ -244,9 +270,8 @@ async function showProductDetail(source, n) {
     panel.querySelector('.detail-desc').textContent = p.description
       ? p.description + (p.description_truncated ? ' …' : '')
       : 'Sản phẩm không có mô tả.';
-    panel.querySelector('.score').textContent = source.rerank_score !== undefined
-      ? `Điểm: rerank ${source.rerank_score} · rrf ${source.score}`
-      : `Điểm: rrf ${source.score}`;
+    // Sản phẩm từ luồng hỏi chi tiết (tra theo ID) không có điểm search.
+    panel.querySelector('.score').textContent = source.score !== undefined ? `Điểm: ${scoreText(source)}` : '';
   } catch (err) {
     panel.innerHTML = '';
     const el = document.createElement('div');
@@ -318,7 +343,10 @@ async function ask() {
     }
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || res.status);
-    if (data.intent === 'search') {
+    if (data.intent === 'search' && data.product_options) {
+      // Hỏi lựa chọn khác nhưng không tìm được: server giữ danh sách và sản phẩm đang hỏi cũ.
+      selectedProductId = data.focused_product_id ?? null;
+    } else if (data.intent === 'search') {
       selectedProductId = data.focused_product_id ?? (data.sources?.length === 1 ? data.sources[0].id : null);
       document.getElementById('detailCard').classList.remove('active');
       document.getElementById('productDetail').textContent = 'Bấm chọn một sản phẩm để hỏi chi tiết.';
@@ -327,7 +355,8 @@ async function ask() {
     } else if (data.intent === 'detail') {
       selectedProductId = null;
       document.getElementById('detailCard').classList.remove('active');
-      document.getElementById('productDetail').textContent = 'Bấm chọn sản phẩm muốn hỏi tiếp sau khi so sánh.';
+      document.getElementById('productDetail').textContent =
+        'Câu hỏi tiếp sẽ áp dụng cho các sản phẩm vừa so sánh; bấm một sản phẩm để chỉ hỏi về nó.';
     }
 
     botBubble.classList.remove('typing');
@@ -338,10 +367,19 @@ async function ask() {
       note.textContent = `Đã tự viết lại câu hỏi để search: "${data.final_query_used}"`;
       botBubble.appendChild(note);
     }
+    if (data.excluded_ids?.length) {
+      const note = document.createElement('span');
+      note.className = 'note';
+      note.textContent = data.product_options
+        ? `Không có lựa chọn khác phù hợp — vẫn giữ sản phẩm đang hỏi (ID ${data.excluded_ids.join(', ')}) và danh sách trước đó.`
+        : `Đã bỏ sản phẩm đang hỏi (ID ${data.excluded_ids.join(', ')}) khỏi danh sách lựa chọn khác.`;
+      botBubble.appendChild(note);
+    }
     renderSources({ ...data, sources: data.product_options ?? data.sources }, agentic, !!image);
     renderCitedProducts(botBubble, citedSources(data.answer, data.sources || []));
     if ((data.intent === 'search' || data.intent === 'detail') && selectedProductId !== null) {
-      const focused = data.sources?.find(p => p.id === selectedProductId);
+      const focused = (data.sources || []).concat(data.product_options || [])
+        .find(p => p.id === selectedProductId);
       if (focused) {
         const index = (data.product_options ?? data.sources).findIndex(p => p.id === focused.id);
         await showProductDetail(focused, index >= 0 ? index + 1 : null);

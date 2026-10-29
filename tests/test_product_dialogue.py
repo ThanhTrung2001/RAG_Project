@@ -11,7 +11,7 @@ import types
 import unittest
 from unittest.mock import Mock, patch
 
-from product_dialogue import route_product_query, resolve_product_references
+from product_dialogue import route_product_query, resolve_product_references, asks_for_alternatives
 
 
 SOURCES = [{"id": i, "caption": f"Tent model {i}", "score": 0.1,
@@ -126,6 +126,60 @@ class DialogueTests(unittest.TestCase):
                 self.assertIn("Customer question: Tent model 4 weight?", self.llm.call_args.args[0])
                 self.retrieve.assert_not_called()
 
+    def _alternatives(self, fn, answer_text):
+        """Gọi 'more options' với câu trả lời cố định (agentic: judge luôn YES)."""
+        self.llm.side_effect = lambda p: "YES" if p.startswith("Question:") else answer_text
+        try:
+            return fn("Show me more options like that", session_id="s")
+        finally:
+            self.llm.side_effect = None
+
+    def test_alternatives_exclude_discussed_product(self):
+        for fn in [self.rag.answer, self.rag.answer_agentic]:
+            with self.subTest(fn=fn.__name__):
+                self.rag.clear_history("s")
+                self.seed()
+                fn("Product 1 details?", session_id="s")   # focus = id 0
+                result = self._alternatives(fn, "Another option is [1].")
+                self.assertEqual(result["intent"], "search")
+                self.assertEqual(result["excluded_ids"], [0])
+                self.assertNotIn(0, [s["id"] for s in result["sources"]])
+                self.assertEqual(self.retrieve.call_args.kwargs["k"], 6)   # lấy dư 1 để vẫn đủ 5
+                # Prompt trả lời báo cho LLM sản phẩm đã bị loại, để nó không gắn tên cũ vào [1].
+                self.assertIn("ALTERNATIVES to: Tent model 0", self.llm.call_args.args[0])
+                # Tìm được lựa chọn khác: danh sách mới thay danh sách cũ.
+                self.assertNotIn("product_options", result)
+                self.assertEqual(self.rag._PRODUCT_STATE["s"]["focused_id"], 1)
+                # Câu tìm kiếm mới (không phải hỏi lựa chọn khác) không bỏ sản phẩm nào.
+                self.assertEqual(fn("Recommend a coffee maker", session_id="s")["excluded_ids"], [])
+
+    def test_alternatives_not_found_keeps_discussed_product(self):
+        for fn in [self.rag.answer, self.rag.answer_agentic]:
+            with self.subTest(fn=fn.__name__):
+                self.rag.clear_history("s")
+                self.seed()
+                fn("Product 3 details?", session_id="s")   # focus = id 2
+                result = self._alternatives(fn, "I couldn't find other options.")
+                self.assertEqual(result["focused_product_id"], 2)
+                self.assertEqual(result["product_options"], SOURCES)
+                self.assertEqual(self.rag._PRODUCT_STATE["s"]["sources"], SOURCES)
+                self.assertIn("Tent model 2", self.rag.get_history("s")[-1]["products"])
+                self.retrieve.reset_mock()
+                self.assertEqual(fn("How much capacity?", session_id="s")["sources"][0]["id"], 2)
+                self.retrieve.assert_not_called()
+
+    def test_compared_products_stay_in_focus_together(self):
+        for fn in [self.rag.answer, self.rag.answer_agentic]:
+            with self.subTest(fn=fn.__name__):
+                self.rag.clear_history("s")
+                self.seed()
+                fn("Compare product 1 and product 2", session_id="s")
+                self.assertEqual([s["id"] for s in fn("How much capacity?", session_id="s")["sources"]], [0, 1])
+                result = self._alternatives(fn, "I couldn't find other options.")
+                self.assertEqual(result["excluded_ids"], [0, 1])
+                self.assertEqual(self.rag._PRODUCT_STATE["s"]["discussed_ids"], [0, 1])
+                self.assertEqual([s["id"] for s in fn("Weight?", session_id="s")["sources"]], [0, 1])
+
     def test_focus_survives_multiple_detail_turns(self):
         for fn in [self.rag.answer, self.rag.answer_agentic]:
             with self.subTest(fn=fn.__name__):
@@ -195,7 +249,9 @@ class DialogueTests(unittest.TestCase):
                 label = f'{scenario["id"]}/{mode}/ui={simulate_ui}/turn={turn}: {step["query"]}'
                 self.assertEqual(response["intent"], step["intent"], label)
                 if step["intent"] == "search":
-                    options = result_sets[step["result_set"]]
+                    # Hỏi lựa chọn khác thì sản phẩm đang được hỏi bị bỏ khỏi danh sách.
+                    excluded = {focus} if focus is not None and asks_for_alternatives(step["query"]) else set()
+                    options = [o for o in result_sets[step["result_set"]] if o["id"] not in excluded]
                     focus = (options[0]["id"] if len(options) == 1 else
                              options[1]["id"] if step.get("result_set") == "one_recommended" else
                              options[0]["id"] if step.get("result_set") in {"first_recommended", "topic_first"} else None)

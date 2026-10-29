@@ -30,11 +30,21 @@ def resolve_product_references(query, sources):
     return query
 
 
-def route_product_query(query, sources, focused_id=None, llm_call=None):
+def asks_for_alternatives(query):
+    """'more options like that', 'cheaper', 'màu khác'... want products other than the one discussed."""
+    return bool(re.search(
+        r"\b(show me (?:more|other)|more options|other options|others|alternatives?|similar|"
+        r"more like|like (?:that|this)|cheaper|other colou?rs?|lua chon khac|san pham khac|"
+        r"mau khac|tuong tu|re hon)\b", normalize(query)))
+
+
+def route_product_query(query, sources, focused_id=None, llm_call=None, discussed_ids=()):
     """Return search/detail/clarify. A detail route may only use known source IDs.
 
     Rules resolve explicit positions and clear search requests; an LLM classifies
     the remaining contextual messages. Invalid output asks for clarification.
+    discussed_ids: products of the last detail turn (e.g. two compared products); contextual
+    follow-ups without a single focus apply to all of them.
     """
     q = normalize(query)
     def decision(intent, ids=(), reason="rules"):
@@ -67,9 +77,15 @@ def route_product_query(query, sources, focused_id=None, llm_call=None):
         return decision("detail", named)
     elliptical = bool(re.fullmatch(r"(?:what (?:is the )?|how much )?(?:material|weight|capacity|warranty|dimensions|price)\??|(?:chat lieu|can nang|dung tich|bao hanh|kich thuoc|gia)(?: gi| bao nhieu| the nao)?\??", q.strip()))
     functional_followup = bool(re.match(r"how (?:does|can) (?:it|this product|that product)\b", q.strip()))
-    if (detail or functional_followup) and (referential or (focused_id is not None and elliptical)):
-        target = focused_id if focused_id is not None else (sources[0]["id"] if len(sources) == 1 else None)
-        return decision("detail", [target]) if target is not None else decision("clarify", reason="ambiguous_product")
+    has_focus = focused_id is not None or bool(discussed_ids)
+    if (detail or functional_followup) and (referential or (has_focus and elliptical)):
+        if focused_id is not None:
+            return decision("detail", [focused_id])
+        if discussed_ids:
+            return decision("detail", discussed_ids)
+        if len(sources) == 1:
+            return decision("detail", [sources[0]["id"]])
+        return decision("clarify", reason="ambiguous_product")
     if not sources:
         return decision("clarify" if referential else "search", reason="no_product_context")
     if llm_call is None:

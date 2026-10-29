@@ -161,11 +161,17 @@ def search(query, query_type: str, k: int = 10, components=None, top_n: int = 50
         components = list(COMPONENT_REGISTRY.keys())
 
     results_by_component = []
+    # Hạng (từ 1) và điểm gốc của từng nhánh, để giao diện giải thích vì sao 1 sản phẩm lên/xuống hạng.
+    component_ranks = {}
     for name in components:
         fn = COMPONENT_REGISTRY.get(name)
         if fn is None:
             continue
-        results_by_component.append(fn(query, query_type, top_n))
+        ranked = fn(query, query_type, top_n)
+        results_by_component.append(ranked)
+        if ranked:   # BM25 với query ảnh trả [] -> không hiển thị nhánh này
+            component_ranks[name] = {doc_id: (rank, float(score))
+                                     for rank, (doc_id, score) in enumerate(ranked, start=1)}
 
     fused = _fuse_all(results_by_component, rrf_k=rrf_k)
 
@@ -185,7 +191,14 @@ def search(query, query_type: str, k: int = 10, components=None, top_n: int = 50
             "id": doc_id,
             "image_path": row["image_path"],
             "caption": row["caption"],
-            "score": round(float(score), 4)
+            "score": round(float(score), 4),
+            # None = sản phẩm nằm ngoài top_n của nhánh đó.
+            "components": {
+                name: ({"rank": ranks[doc_id][0], "score": round(ranks[doc_id][1], 4)}
+                       if doc_id in ranks else None)
+                for name, ranks in component_ranks.items()
+            },
+            "top_n": top_n,
         })
 
     if do_rerank:

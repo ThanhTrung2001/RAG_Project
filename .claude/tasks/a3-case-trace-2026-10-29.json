@@ -1,0 +1,1313 @@
+[
+  {
+    "query": "round basket for serving bread",
+    "targets": [
+      {
+        "id": 1396,
+        "title": "APS Brood- en Fruitmand, rond, diameter: 205 mm",
+        "bm25_rank": 1219,
+        "bm25_score": 0.0,
+        "dense_rank": 1,
+        "dense_score": 0.12383462488651276,
+        "rrf_rank": 9,
+        "rrf_score": 0.01639344262295082,
+        "rrf_pool30_rank": 6
+      }
+    ],
+    "top5": [
+      {
+        "id": 807,
+        "title": "8 Pcs Mini Square Fry Baskets, 4.13×3.3×2.5inch Stainless Steel Fry Basket with Handle Steel French Fry Chip Basket French Fries Desk Food Presentation Mesh Basket Kitchen Cooking Tool",
+        "bm25_rank": 2,
+        "dense_rank": 11,
+        "rrf_score": 0.03021353930031804
+      },
+      {
+        "id": 1201,
+        "title": "ZeZe Pet Basket Bed",
+        "bm25_rank": 10,
+        "dense_rank": 9,
+        "rrf_score": 0.02877846790890269
+      },
+      {
+        "id": 1567,
+        "title": "Elma - Parts Washer Parts Basket",
+        "bm25_rank": 1,
+        "dense_rank": 48,
+        "rrf_score": 0.02565270188221008
+      },
+      {
+        "id": 1921,
+        "title": "1 x RAW Customer Returns SONGMICS Rotating Makeup Organizer, Round Cosmetic Organizer, 3 Levels, Cosmetic Storage, Adjustable, for Dressing Table, Gift Idea, Cloud White JKA011W01 - RRP €23.36",
+        "bm25_rank": 9,
+        "dense_rank": 32,
+        "rrf_score": 0.025362318840579712
+      },
+      {
+        "id": 818,
+        "title": "LANDZIE Lawn and Garden Spreaders - 60 x 20 Inch Tow-Behind Compost and Peat Moss Spreader for Large Lawns Commercial Landscaping - Effortlessly Spread Perfect Layer of Topdressing - Large Lawn Care",
+        "bm25_rank": 23,
+        "dense_rank": 24,
+        "rrf_score": 0.023952954675846242
+      }
+    ],
+    "rerank": {
+      "minilm": {
+        "target_ranks": {
+          "1396": 17
+        },
+        "top5": [
+          {
+            "id": 717,
+            "title": "Mookaite Jasper Round",
+            "score": -8.2809
+          },
+          {
+            "id": 807,
+            "title": "8 Pcs Mini Square Fry Baskets, 4.13×3.3×2.5inch Stainless Steel Fry Basket with Handle Steel French Fry Chip Basket French Fries Desk Food Presentation Mesh Basket Kitchen Cooking Tool",
+            "score": -9.3323
+          },
+          {
+            "id": 1567,
+            "title": "Elma - Parts Washer Parts Basket",
+            "score": -9.5175
+          },
+          {
+            "id": 1201,
+            "title": "ZeZe Pet Basket Bed",
+            "score": -10.0409
+          },
+          {
+            "id": 1056,
+            "title": "Air Filter Round Safety",
+            "score": -10.1496
+          }
+        ]
+      },
+      "deberta": {
+        "target_ranks": {
+          "1396": 6
+        },
+        "top5": [
+          {
+            "id": 807,
+            "title": "8 Pcs Mini Square Fry Baskets, 4.13×3.3×2.5inch Stainless Steel Fry Basket with Handle Steel French Fry Chip Basket French Fries Desk Food Presentation Mesh Basket Kitchen Cooking Tool",
+            "score": -5.1323
+          },
+          {
+            "id": 1201,
+            "title": "ZeZe Pet Basket Bed",
+            "score": -5.3674
+          },
+          {
+            "id": 717,
+            "title": "Mookaite Jasper Round",
+            "score": -5.4991
+          },
+          {
+            "id": 828,
+            "title": "Lamson 3\" x 6\" and 4\" x 6\" Dough (Bench) Scraper with Walnut Handle",
+            "score": -5.541
+          },
+          {
+            "id": 250,
+            "title": "Dentelles rond Ø 20 cm blanc (2000 unités)",
+            "score": -5.5622
+          }
+        ]
+      }
+    },
+    "historical": [
+      {
+        "config": "naive",
+        "retrieved_ids": [
+          807,
+          1201,
+          1567,
+          1921,
+          818
+        ],
+        "answer": "I couldn't find a product in the list that matches your request for a round basket for serving bread.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.20208310829219417,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "naive_minilm",
+        "retrieved_ids": [
+          717,
+          807,
+          1567,
+          1201,
+          1056
+        ],
+        "answer": "I found a round basket in product list [1] Mookaite Jasper Round.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.12750024571574825,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "naive_deberta",
+        "retrieved_ids": [
+          807,
+          1201,
+          717,
+          828,
+          250
+        ],
+        "answer": "I have found a product that fits your request: [5] Dentelles rond Ø 20 cm blanc (2000 unités).",
+        "context_recall": 0.0,
+        "context_ndcg": 0.2802595260297114,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "agentic",
+        "retrieved_ids": [
+          1201,
+          166,
+          1271,
+          230,
+          1567
+        ],
+        "answer": "I couldn't find a round basket for serving bread in the list.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.08703245752405495,
+        "judge_verdicts": [
+          "NO: The product list does not contain any items that match the description \"round basket for serving bread\".",
+          "YES"
+        ],
+        "final_query_used": "round wicker bread basket"
+      },
+      {
+        "config": "agentic_minilm",
+        "retrieved_ids": [
+          946,
+          717,
+          807,
+          1567,
+          1201
+        ],
+        "answer": "The Mookaite Jasper Round [2] and the Elma - Parts Washer Parts Basket [4] are round.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.10104155414609708,
+        "judge_verdicts": [
+          "NO: None of the products match a \"round basket for serving bread\" description.",
+          "NO: None of the products are described as a \"round basket for serving bread\"."
+        ],
+        "final_query_used": "round bread basket serving platter"
+      },
+      {
+        "config": "agentic_deberta",
+        "retrieved_ids": [
+          807,
+          250,
+          1396,
+          1800,
+          1561
+        ],
+        "answer": "I found a round basket for serving bread: [3] APS Brood- en Fruitmand, rond, diameter: 205 mm.",
+        "context_recall": 1.0,
+        "context_ndcg": 0.7108844341837509,
+        "judge_verdicts": [
+          "NO: None of the products match the description of a \"round basket for serving bread\".",
+          "NO: Most items don't match the description of a \"round basket for serving bread\""
+        ],
+        "final_query_used": "Round wicker bread basket for serving"
+      }
+    ]
+  },
+  {
+    "query": "long track speed skates",
+    "targets": [
+      {
+        "id": 1493,
+        "title": "Zandstra 525 Lengdeløp Fastskøyte",
+        "bm25_rank": 555,
+        "bm25_score": 0.0,
+        "dense_rank": 2,
+        "dense_score": 0.06127256155014038,
+        "rrf_rank": 6,
+        "rrf_score": 0.016129032258064516,
+        "rrf_pool30_rank": 5
+      }
+    ],
+    "top5": [
+      {
+        "id": 1867,
+        "title": "Neon Combo roller skates Rainbow",
+        "bm25_rank": 1,
+        "dense_rank": 6,
+        "rrf_score": 0.031544957774465976
+      },
+      {
+        "id": 1578,
+        "title": "Bauer Colorado Recreational Ice Skates - Senior",
+        "bm25_rank": 2,
+        "dense_rank": 13,
+        "rrf_score": 0.029827662395050816
+      },
+      {
+        "id": 204,
+        "title": "Race Speed Skin",
+        "bm25_rank": 43,
+        "dense_rank": 1,
+        "rrf_score": 0.02610218048702849
+      },
+      {
+        "id": 1681,
+        "title": "Drive Medical tk 1000 Trekker Gait Trainer, Tyke, Orange",
+        "bm25_rank": 20,
+        "dense_rank": 17,
+        "rrf_score": 0.02548701298701299
+      },
+      {
+        "id": 1545,
+        "title": "Shock Rack Adjustable",
+        "bm25_rank": 31,
+        "dense_rank": 10,
+        "rrf_score": 0.025274725274725275
+      }
+    ],
+    "rerank": {
+      "minilm": {
+        "target_ranks": {
+          "1493": 15
+        },
+        "top5": [
+          {
+            "id": 1867,
+            "title": "Neon Combo roller skates Rainbow",
+            "score": -5.4543
+          },
+          {
+            "id": 577,
+            "title": "Soft Flask 500ml/17 SPEED 42",
+            "score": -6.9278
+          },
+          {
+            "id": 1578,
+            "title": "Bauer Colorado Recreational Ice Skates - Senior",
+            "score": -7.4511
+          },
+          {
+            "id": 1287,
+            "title": "A Line 3 Speed White MSRP 1300 USD",
+            "score": -8.1138
+          },
+          {
+            "id": 204,
+            "title": "Race Speed Skin",
+            "score": -8.9033
+          }
+        ]
+      },
+      "deberta": {
+        "target_ranks": {
+          "1493": 15
+        },
+        "top5": [
+          {
+            "id": 450,
+            "title": "GEHL MB253 Rubber Track 300x52.5Wx76 ( 12\" ) Block Pattern",
+            "score": -4.9598
+          },
+          {
+            "id": 1287,
+            "title": "A Line 3 Speed White MSRP 1300 USD",
+            "score": -5.2555
+          },
+          {
+            "id": 619,
+            "title": "Rtech TRACK MARKER TAPE 120 MT - 1 KG WHITE + RED, TRACK TAPE WHITE & RED RTECH LOGO",
+            "score": -5.5342
+          },
+          {
+            "id": 1578,
+            "title": "Bauer Colorado Recreational Ice Skates - Senior",
+            "score": -5.6425
+          },
+          {
+            "id": 1867,
+            "title": "Neon Combo roller skates Rainbow",
+            "score": -5.8514
+          }
+        ]
+      }
+    },
+    "historical": [
+      {
+        "config": "naive",
+        "retrieved_ids": [
+          1867,
+          1578,
+          204,
+          1681,
+          1545
+        ],
+        "answer": "I could not find long track speed skates in the list.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.39480936517049525,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "naive_minilm",
+        "retrieved_ids": [
+          1867,
+          577,
+          1578,
+          1287,
+          204
+        ],
+        "answer": "I found one option that might fit what you're looking for: [3] Bauer Colorado Recreational Ice Skates - Senior.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.3631143808977028,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "naive_deberta",
+        "retrieved_ids": [
+          450,
+          1287,
+          619,
+          1578,
+          1867
+        ],
+        "answer": "I couldn't find other options.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.19790444623298845,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "agentic",
+        "retrieved_ids": [
+          1578,
+          1681,
+          1545,
+          1867,
+          204
+        ],
+        "answer": "I could not find any long track speed skates in the product list.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.346332821766451,
+        "judge_verdicts": [
+          "NO: The list does not contain any information related to \"long track speed skates\".",
+          "YES"
+        ],
+        "final_query_used": "long track speed skating equipment"
+      },
+      {
+        "config": "agentic_minilm",
+        "retrieved_ids": [
+          1867,
+          1578,
+          204,
+          1992,
+          1206
+        ],
+        "answer": "I couldn't find other options.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.39480936517049525,
+        "judge_verdicts": [
+          "NO: There is no mention of \"long track speed skates\" in the list.",
+          "NO: The term \"long track speed skates\" is not mentioned anywhere in the product list."
+        ],
+        "final_query_used": "long track speed skates for sale"
+      },
+      {
+        "config": "agentic_deberta",
+        "retrieved_ids": [
+          450,
+          1287,
+          619,
+          1578,
+          1867
+        ],
+        "answer": "I couldn't find any long track speed skates in the product list.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.19790444623298845,
+        "judge_verdicts": [
+          "YES"
+        ],
+        "final_query_used": "long track speed skates"
+      }
+    ]
+  },
+  {
+    "query": "price of sp1 reed valve rebuild kit - 59-90154",
+    "targets": [
+      {
+        "id": 801,
+        "title": "SP1 REED VALVE REBUILD KIT - 59-90154",
+        "bm25_rank": 1,
+        "bm25_score": 60.6156873550707,
+        "dense_rank": 137,
+        "dense_score": 0.016757601872086525,
+        "rrf_rank": 7,
+        "rrf_score": 0.01639344262295082,
+        "rrf_pool30_rank": 3
+      }
+    ],
+    "top5": [
+      {
+        "id": 1474,
+        "title": "Bradley S21-026 Service Valve Core Assy",
+        "bm25_rank": 10,
+        "dense_rank": 6,
+        "rrf_score": 0.029437229437229435
+      },
+      {
+        "id": 1107,
+        "title": "Race Star 14mmx1.50 CTS-V Open End Deluxe Lug Kit - 20 PK",
+        "bm25_rank": 19,
+        "dense_rank": 5,
+        "rrf_score": 0.02804284323271665
+      },
+      {
+        "id": 487,
+        "title": "1508300 | OIL PRESS INDICATOR PRICE PER EACH",
+        "bm25_rank": 7,
+        "dense_rank": 48,
+        "rrf_score": 0.02418463239358762
+      },
+      {
+        "id": 790,
+        "title": "منظم الحرارة - SUZUKI KIZASHI ( 2012 )",
+        "bm25_rank": 42,
+        "dense_rank": 11,
+        "rrf_score": 0.023888428610880974
+      },
+      {
+        "id": 1845,
+        "title": "Curicyn Equine Triage Kit",
+        "bm25_rank": 27,
+        "dense_rank": 32,
+        "rrf_score": 0.022363818090954522
+      }
+    ],
+    "rerank": {
+      "minilm": {
+        "target_ranks": {
+          "801": 1
+        },
+        "top5": [
+          {
+            "id": 801,
+            "title": "SP1 REED VALVE REBUILD KIT - 59-90154",
+            "score": 5.4364
+          },
+          {
+            "id": 1086,
+            "title": "2 x Brand New 8 Pcs Black Replacement Zipper Pulls for Jacket Zipper Slider Replacement for Small Hole Head Handle Zippers Detachable Zipper Pull Tab Repair Kit for Clothing Coat Backpack Suitcase Boot Purse - RRP £8.76",
+            "score": -7.3948
+          },
+          {
+            "id": 982,
+            "title": "Emerald 701M Bassoon Reed - Medium",
+            "score": -8.1352
+          },
+          {
+            "id": 1474,
+            "title": "Bradley S21-026 Service Valve Core Assy",
+            "score": -9.3213
+          },
+          {
+            "id": 1948,
+            "title": "SealLine Vinyl Dry Bag Repair Kit",
+            "score": -9.4717
+          }
+        ]
+      },
+      "deberta": {
+        "target_ranks": {
+          "801": 1
+        },
+        "top5": [
+          {
+            "id": 801,
+            "title": "SP1 REED VALVE REBUILD KIT - 59-90154",
+            "score": 2.3423
+          },
+          {
+            "id": 92,
+            "title": "Ferrea Chevy/Chry/Ford SB 1.625in 11/32in 5.14in 0.29in +.200 Ti Comp Exh Valve - Single (D/S Only)",
+            "score": -6.1248
+          },
+          {
+            "id": 1104,
+            "title": "Kintsu Pressure Balance Valve Only Trim (Less Handle) - Chrome T60P006-PCLHP Brizo",
+            "score": -6.1749
+          },
+          {
+            "id": 1474,
+            "title": "Bradley S21-026 Service Valve Core Assy",
+            "score": -6.2052
+          },
+          {
+            "id": 982,
+            "title": "Emerald 701M Bassoon Reed - Medium",
+            "score": -6.4016
+          }
+        ]
+      }
+    },
+    "historical": [
+      {
+        "config": "naive",
+        "retrieved_ids": [
+          1474,
+          1107,
+          487,
+          790,
+          1845
+        ],
+        "answer": "I could not find the sp1 reed valve rebuild kit or any other information related to it in the product list.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.0,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "naive_minilm",
+        "retrieved_ids": [
+          801,
+          1086,
+          982,
+          1474,
+          1948
+        ],
+        "answer": "The price of [1] SP1 REED VALVE REBUILD KIT - 59-90154 is not specified in the list.",
+        "context_recall": 1.0,
+        "context_ndcg": 1.0,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "naive_deberta",
+        "retrieved_ids": [
+          801,
+          92,
+          1104,
+          1474,
+          982
+        ],
+        "answer": "I couldn't find the price for the SP1 Reed Valve Rebuild Kit - 59-90154 in the list.",
+        "context_recall": 1.0,
+        "context_ndcg": 1.0,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "agentic",
+        "retrieved_ids": [
+          1474,
+          1107,
+          969,
+          1877,
+          365
+        ],
+        "answer": "I could not find a product in the list that matches the name \"sp1 reed valve rebuild kit - 59-90154\".",
+        "context_recall": 0.0,
+        "context_ndcg": 0.0,
+        "judge_verdicts": [
+          "NO: The product being searched for is a specific \"price\" of a \"sp1 reed valve rebuild kit\" with a specific part number (59-90154), but the list only shows available products and does not include their prices.",
+          "YES"
+        ],
+        "final_query_used": "sp1 reed valve rebuild kit 59-90154 price"
+      },
+      {
+        "config": "agentic_minilm",
+        "retrieved_ids": [
+          801,
+          982,
+          1086,
+          1474,
+          1948
+        ],
+        "answer": "The price of the SP1 Reed Valve Rebuild Kit - 59-90154 is not listed.",
+        "context_recall": 1.0,
+        "context_ndcg": 1.0,
+        "judge_verdicts": [
+          "NO: The price of the specific product \"59-90154\" is not specified.",
+          "YES"
+        ],
+        "final_query_used": "sp1 reed valve rebuild kit 59-90154 price"
+      },
+      {
+        "config": "agentic_deberta",
+        "retrieved_ids": [
+          801,
+          92,
+          1104,
+          1474,
+          982
+        ],
+        "answer": "The price of the SP1 Reed Valve Rebuild Kit - 59-90154 is associated with product [1].",
+        "context_recall": 1.0,
+        "context_ndcg": 1.0,
+        "judge_verdicts": [
+          "YES"
+        ],
+        "final_query_used": "price of sp1 reed valve rebuild kit - 59-90154"
+      }
+    ]
+  },
+  {
+    "query": "inflatable towable tube for boating",
+    "targets": [
+      {
+        "id": 748,
+        "title": "Ace Racing",
+        "bm25_rank": 14,
+        "bm25_score": 8.112873524376319,
+        "dense_rank": 1,
+        "dense_score": 0.1198992133140564,
+        "rrf_rank": 2,
+        "rrf_score": 0.029906956136464335,
+        "rrf_pool30_rank": 2
+      }
+    ],
+    "top5": [
+      {
+        "id": 1434,
+        "title": "Transpa Inflatable Water Roller, Inflatable Clear Water Rolling Tube",
+        "bm25_rank": 1,
+        "dense_rank": 4,
+        "rrf_score": 0.032018442622950824
+      },
+      {
+        "id": 748,
+        "title": "Ace Racing",
+        "bm25_rank": 14,
+        "dense_rank": 1,
+        "rrf_score": 0.029906956136464335
+      },
+      {
+        "id": 333,
+        "title": "Kids Inflatable Pool Water Slide Cannon Splash Park Castle Outdoor Toys 427X374CM",
+        "bm25_rank": 9,
+        "dense_rank": 9,
+        "rrf_score": 0.028985507246376812
+      },
+      {
+        "id": 1216,
+        "title": "VIKING RescYou Liferaft 8 Person Valise Offshore Pack",
+        "bm25_rank": 18,
+        "dense_rank": 7,
+        "rrf_score": 0.027745885954841176
+      },
+      {
+        "id": 144,
+        "title": "PodiuMax Baseball Softball Pitching Screen, 7x7FT Pitcher Protection Net with Upgrade Frame, Baseball Batting Pitching Net for Backyard Field Outdoor, Line Drive Protective L-Screen with Carry Bag",
+        "bm25_rank": 40,
+        "dense_rank": 36,
+        "rrf_score": 0.020416666666666666
+      }
+    ],
+    "rerank": {
+      "minilm": {
+        "target_ranks": {
+          "748": 24
+        },
+        "top5": [
+          {
+            "id": 1434,
+            "title": "Transpa Inflatable Water Roller, Inflatable Clear Water Rolling Tube",
+            "score": 1.9076
+          },
+          {
+            "id": 763,
+            "title": "Inflatable Ottoman Stool D21 xH9 for Outdoor/Indoor Use, Water Repellent Patio Foot Rest Stool with Portable Handle,Round Pouf Ottoman Suitable for Garden,Deck and Camping - Stripe Red Blue",
+            "score": -4.6092
+          },
+          {
+            "id": 1206,
+            "title": "Everfit GoFun 3X1M Inflatable Air Track Mat with Pump Tumbling Gymnastics Green",
+            "score": -5.486
+          },
+          {
+            "id": 333,
+            "title": "Kids Inflatable Pool Water Slide Cannon Splash Park Castle Outdoor Toys 427X374CM",
+            "score": -8.1893
+          },
+          {
+            "id": 127,
+            "title": "Juexica 2 Pack Ottoman Poufs Indoor Outdoor Inflatable Ottoman Stool Cube Pouffe Square Footstool with Handle for Patio Garden Home Boho Decorative Living Room, Bedroom(16 x 16 x 16 Inches)",
+            "score": -8.7154
+          }
+        ]
+      },
+      "deberta": {
+        "target_ranks": {
+          "748": 23
+        },
+        "top5": [
+          {
+            "id": 1434,
+            "title": "Transpa Inflatable Water Roller, Inflatable Clear Water Rolling Tube",
+            "score": -4.2729
+          },
+          {
+            "id": 763,
+            "title": "Inflatable Ottoman Stool D21 xH9 for Outdoor/Indoor Use, Water Repellent Patio Foot Rest Stool with Portable Handle,Round Pouf Ottoman Suitable for Garden,Deck and Camping - Stripe Red Blue",
+            "score": -5.0135
+          },
+          {
+            "id": 1697,
+            "title": "ELITE Pro - Handmade Tubular",
+            "score": -5.2847
+          },
+          {
+            "id": 726,
+            "title": "Outsunny 8FT Christmas Inflatable Outdoor Decoration with Dynamic Disco & LED Lights, Self-Inflating Christmas Blow Up Snowman for Garden, Indoor Outdoor Home Decor",
+            "score": -5.3502
+          },
+          {
+            "id": 127,
+            "title": "Juexica 2 Pack Ottoman Poufs Indoor Outdoor Inflatable Ottoman Stool Cube Pouffe Square Footstool with Handle for Patio Garden Home Boho Decorative Living Room, Bedroom(16 x 16 x 16 Inches)",
+            "score": -5.4156
+          }
+        ]
+      }
+    },
+    "historical": [
+      {
+        "config": "naive",
+        "retrieved_ids": [
+          1434,
+          748,
+          333,
+          1216,
+          144
+        ],
+        "answer": "You can consider [1] Transpa Inflatable Water Roller.",
+        "context_recall": 1.0,
+        "context_ndcg": 0.6716163029634937,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "naive_minilm",
+        "retrieved_ids": [
+          1434,
+          763,
+          1206,
+          333,
+          127
+        ],
+        "answer": "I found a product that fits your request: [1] Transpa Inflatable Water Roller, Inflatable Clear Water Rolling Tube.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.20208310829219417,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "naive_deberta",
+        "retrieved_ids": [
+          1434,
+          763,
+          1697,
+          726,
+          127
+        ],
+        "answer": "I found an option for an inflatable towable tube for boating: [1] Transpa Inflatable Water Roller, Inflatable Clear Water Rolling Tube.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.20208310829219417,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "agentic",
+        "retrieved_ids": [
+          1434,
+          748,
+          333,
+          1216,
+          144
+        ],
+        "answer": "I found an inflatable water roller that might fit what you're looking for: [1] Transpa Inflatable Water Roller, Inflatable Clear Water Rolling Tube.",
+        "context_recall": 1.0,
+        "context_ndcg": 0.6716163029634937,
+        "judge_verdicts": [
+          "YES"
+        ],
+        "final_query_used": "inflatable towable tube for boating"
+      },
+      {
+        "config": "agentic_minilm",
+        "retrieved_ids": [
+          1434,
+          763,
+          333,
+          1704,
+          1697
+        ],
+        "answer": "I found an option that matches your request: [1] Transpa Inflatable Water Roller.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.20208310829219417,
+        "judge_verdicts": [
+          "NO: None of the products match the description of an \"inflatable towable tube for boating\".",
+          "NO: None of the products match the description \"inflatable towable tube for boating\"."
+        ],
+        "final_query_used": "inflatable towable water tube boat tube water sports equipment"
+      },
+      {
+        "config": "agentic_deberta",
+        "retrieved_ids": [
+          1434,
+          763,
+          1697,
+          726,
+          127
+        ],
+        "answer": "I found an inflatable product that might fit your request. The Transpa Inflatable Water Roller, [1], is an inflatable clear water rolling tube.",
+        "context_recall": 0.0,
+        "context_ndcg": 0.20208310829219417,
+        "judge_verdicts": [
+          "YES"
+        ],
+        "final_query_used": "inflatable towable tube for boating"
+      }
+    ]
+  },
+  {
+    "query": "10-in-1 air fryer toaster oven combo",
+    "targets": [
+      {
+        "id": 272,
+        "title": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+        "bm25_rank": 1,
+        "bm25_score": 35.54365878544842,
+        "dense_rank": 1,
+        "dense_score": 0.1325206756591797,
+        "rrf_rank": 1,
+        "rrf_score": 0.03278688524590164,
+        "rrf_pool30_rank": 1
+      }
+    ],
+    "top5": [
+      {
+        "id": 272,
+        "title": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+        "bm25_rank": 1,
+        "dense_rank": 1,
+        "rrf_score": 0.03278688524590164
+      },
+      {
+        "id": 1336,
+        "title": "Breville Smart Oven",
+        "bm25_rank": 2,
+        "dense_rank": 3,
+        "rrf_score": 0.03200204813108039
+      },
+      {
+        "id": 73,
+        "title": "Pyramid Silicone Mat Non Stick Fat Reducing  - UK Seller",
+        "bm25_rank": 5,
+        "dense_rank": 5,
+        "rrf_score": 0.03076923076923077
+      },
+      {
+        "id": 405,
+        "title": "Ovenkast Lyon 60x46x81,5 cm grijs sonoma eikenkleurig",
+        "bm25_rank": 7,
+        "dense_rank": 27,
+        "rrf_score": 0.026419626007891578
+      },
+      {
+        "id": 1659,
+        "title": "Non Stick Microwave & Oven Proof Baking Paper",
+        "bm25_rank": 4,
+        "dense_rank": 36,
+        "rrf_score": 0.026041666666666664
+      }
+    ],
+    "rerank": {
+      "minilm": {
+        "target_ranks": {
+          "272": 1
+        },
+        "top5": [
+          {
+            "id": 272,
+            "title": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+            "score": 8.9856
+          },
+          {
+            "id": 1658,
+            "title": "Chute w/Launcher 10ft Black Air Boss Nylon",
+            "score": -8.1433
+          },
+          {
+            "id": 141,
+            "title": "4FT 12-in-1 Combo Games Tables Foosball Soccer Basketball Hockey Pool Table Tennis",
+            "score": -8.3634
+          },
+          {
+            "id": 1167,
+            "title": "AirBake – Silikon Airfryer Topf & Backform – Wiederverwendbares Quadrat-BBQ- und Ofen-Tablett",
+            "score": -8.4351
+          },
+          {
+            "id": 1336,
+            "title": "Breville Smart Oven",
+            "score": -8.4961
+          }
+        ]
+      },
+      "deberta": {
+        "target_ranks": {
+          "272": 1
+        },
+        "top5": [
+          {
+            "id": 272,
+            "title": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+            "score": 3.4323
+          },
+          {
+            "id": 1167,
+            "title": "AirBake – Silikon Airfryer Topf & Backform – Wiederverwendbares Quadrat-BBQ- und Ofen-Tablett",
+            "score": -5.1439
+          },
+          {
+            "id": 807,
+            "title": "8 Pcs Mini Square Fry Baskets, 4.13×3.3×2.5inch Stainless Steel Fry Basket with Handle Steel French Fry Chip Basket French Fries Desk Food Presentation Mesh Basket Kitchen Cooking Tool",
+            "score": -5.7502
+          },
+          {
+            "id": 1336,
+            "title": "Breville Smart Oven",
+            "score": -6.0056
+          },
+          {
+            "id": 1613,
+            "title": "St. Croix PANFISH ICE COMBO",
+            "score": -6.0395
+          }
+        ]
+      }
+    },
+    "historical": [
+      {
+        "config": "naive",
+        "retrieved_ids": [
+          272,
+          1336,
+          73,
+          405,
+          1659
+        ],
+        "answer": "I found an option that fits your request: [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, which is a 10-in-1 air fryer toaster oven combo.",
+        "context_recall": 1.0,
+        "context_ndcg": 0.7337495705923308,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "naive_minilm",
+        "retrieved_ids": [
+          272,
+          1658,
+          141,
+          1167,
+          1336
+        ],
+        "answer": "The product you're looking for is a 10-in-1 air fryer toaster oven combo. I found it in the product list as [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo.",
+        "context_recall": 1.0,
+        "context_ndcg": 0.7714582001381546,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "naive_deberta",
+        "retrieved_ids": [
+          272,
+          1167,
+          807,
+          1336,
+          1613
+        ],
+        "answer": "I found an option that fits your request: [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, which is a 10-in-1 air fryer toaster oven combo.",
+        "context_recall": 1.0,
+        "context_ndcg": 0.9218235822624828,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "agentic",
+        "retrieved_ids": [
+          272,
+          1336,
+          73,
+          405,
+          1659
+        ],
+        "answer": "I found an air fryer toaster oven combo that fits your request: [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo.",
+        "context_recall": 1.0,
+        "context_ndcg": 0.7337495705923308,
+        "judge_verdicts": [
+          "YES"
+        ],
+        "final_query_used": "10-in-1 air fryer toaster oven combo"
+      },
+      {
+        "config": "agentic_minilm",
+        "retrieved_ids": [
+          272,
+          1658,
+          141,
+          1167,
+          1336
+        ],
+        "answer": "I have a product that matches your request: [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free.",
+        "context_recall": 1.0,
+        "context_ndcg": 0.7714582001381546,
+        "judge_verdicts": [
+          "YES"
+        ],
+        "final_query_used": "10-in-1 air fryer toaster oven combo"
+      },
+      {
+        "config": "agentic_deberta",
+        "retrieved_ids": [
+          272,
+          1167,
+          807,
+          1336,
+          1613
+        ],
+        "answer": "We have a 10-in-1 air fryer toaster oven combo available, which is the [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo.",
+        "context_recall": 1.0,
+        "context_ndcg": 0.9218235822624828,
+        "judge_verdicts": [
+          "YES"
+        ],
+        "final_query_used": "10-in-1 air fryer toaster oven combo"
+      }
+    ]
+  },
+  {
+    "query": "rubber bag you fill with hot water to stay warm",
+    "targets": [
+      {
+        "id": 888,
+        "title": "2L Long-strip Multifunctional Water-filled Rubber Hot Water Bags, Spec: Light Gray Twist",
+        "bm25_rank": 6,
+        "bm25_score": 14.731152865101244,
+        "dense_rank": 1,
+        "dense_score": 0.09392449259757996,
+        "rrf_rank": 1,
+        "rrf_score": 0.031544957774465976,
+        "rrf_pool30_rank": 1
+      }
+    ],
+    "top5": [
+      {
+        "id": 888,
+        "title": "2L Long-strip Multifunctional Water-filled Rubber Hot Water Bags, Spec: Light Gray Twist",
+        "bm25_rank": 6,
+        "dense_rank": 1,
+        "rrf_score": 0.031544957774465976
+      },
+      {
+        "id": 1609,
+        "title": "United Attire Double Sided Skinny Bean Bag - Royal Blue",
+        "bm25_rank": 29,
+        "dense_rank": 5,
+        "rrf_score": 0.02662057044079516
+      },
+      {
+        "id": 640,
+        "title": "Holi Magic Water Balloons for Kids - 111 pcs (Multicolor)",
+        "bm25_rank": 1,
+        "dense_rank": 42,
+        "rrf_score": 0.02619736419157827
+      },
+      {
+        "id": 716,
+        "title": "Whites Rim Lock - 2.15",
+        "bm25_rank": 42,
+        "dense_rank": 6,
+        "rrf_score": 0.024955436720142603
+      },
+      {
+        "id": 1030,
+        "title": "Billingham SP40 Shoulder Pad - Tan Leather with Antique Studs",
+        "bm25_rank": 12,
+        "dense_rank": 31,
+        "rrf_score": 0.02487789987789988
+      }
+    ],
+    "rerank": {
+      "minilm": {
+        "target_ranks": {
+          "888": 1
+        },
+        "top5": [
+          {
+            "id": 888,
+            "title": "2L Long-strip Multifunctional Water-filled Rubber Hot Water Bags, Spec: Light Gray Twist",
+            "score": 4.9327
+          },
+          {
+            "id": 216,
+            "title": "Rubber Platforms For Landing Systems",
+            "score": -8.8415
+          },
+          {
+            "id": 616,
+            "title": "40OZ Nut Milk Maker Machine - Multi-Functional Automatic Almond with 10 Blades, Plant-Based, Oat, Soy, and Dairy Free Beverages 12 Hours Timer/Auto-clean/Room Temp/Keep Warm/Boil, White",
+            "score": -9.5456
+          },
+          {
+            "id": 1466,
+            "title": "Small Plastic Wash Basin",
+            "score": -10.2541
+          },
+          {
+            "id": 1609,
+            "title": "United Attire Double Sided Skinny Bean Bag - Royal Blue",
+            "score": -10.3728
+          }
+        ]
+      },
+      "deberta": {
+        "target_ranks": {
+          "888": 1
+        },
+        "top5": [
+          {
+            "id": 888,
+            "title": "2L Long-strip Multifunctional Water-filled Rubber Hot Water Bags, Spec: Light Gray Twist",
+            "score": -2.5963
+          },
+          {
+            "id": 578,
+            "title": "Faraday Bag for Phone, Faraday Pouch for Key Fob, Fireproof & Waterproof Faraday Bags EMP Proof, Faraday Key Fob Protector, Cell Phone Signal Jammer (2 Pack)",
+            "score": -5.7666
+          },
+          {
+            "id": 616,
+            "title": "40OZ Nut Milk Maker Machine - Multi-Functional Automatic Almond with 10 Blades, Plant-Based, Oat, Soy, and Dairy Free Beverages 12 Hours Timer/Auto-clean/Room Temp/Keep Warm/Boil, White",
+            "score": -5.7823
+          },
+          {
+            "id": 911,
+            "title": "Invigorated Water pH001 Alkaline Water Filter Pitcher - Multi-Stage Water Filter with Anti-Slip Countertop Design - Removes Chlorine Heavy Metals and Fluoride - Increases pH Up to 9 - Long Lasting",
+            "score": -5.9641
+          },
+          {
+            "id": 861,
+            "title": "Vaginal Douche Spray Premium Cock Gear",
+            "score": -6.0122
+          }
+        ]
+      }
+    },
+    "historical": [
+      {
+        "config": "naive",
+        "retrieved_ids": [
+          888,
+          1609,
+          640,
+          716,
+          1030
+        ],
+        "answer": "We have a product that matches your description: [1] 2L Long-strip Multifunctional Water-filled Rubber Hot Water Bags, Spec: Light Gray Twist.",
+        "context_recall": 1.0,
+        "context_ndcg": 1.0,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "naive_minilm",
+        "retrieved_ids": [
+          888,
+          216,
+          616,
+          1466,
+          1609
+        ],
+        "answer": "We have a product that matches your description: [1] 2L Long-strip Multifunctional Water-filled Rubber Hot Water Bags, Spec: Light Gray Twist.",
+        "context_recall": 1.0,
+        "context_ndcg": 1.0,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "naive_deberta",
+        "retrieved_ids": [
+          888,
+          578,
+          616,
+          911,
+          861
+        ],
+        "answer": "I found a product that matches your description: a rubber bag that you fill with hot water to stay warm. It's a [1] 2L Long-strip Multifunctional Water-filled Rubber Hot Water Bags, Spec: Light Gray Twist.",
+        "context_recall": 1.0,
+        "context_ndcg": 1.0,
+        "judge_verdicts": null,
+        "final_query_used": null
+      },
+      {
+        "config": "agentic",
+        "retrieved_ids": [
+          888,
+          1609,
+          640,
+          716,
+          1030
+        ],
+        "answer": "[1] is a product that matches your description.",
+        "context_recall": 1.0,
+        "context_ndcg": 1.0,
+        "judge_verdicts": [
+          "YES"
+        ],
+        "final_query_used": "rubber bag you fill with hot water to stay warm"
+      },
+      {
+        "config": "agentic_minilm",
+        "retrieved_ids": [
+          888,
+          216,
+          616,
+          1466,
+          1609
+        ],
+        "answer": "We have a product that matches your description: a 2L Long-strip Multifunctional Water-filled Rubber Hot Water Bag, which is item [1] in our list.",
+        "context_recall": 1.0,
+        "context_ndcg": 1.0,
+        "judge_verdicts": [
+          "YES"
+        ],
+        "final_query_used": "rubber bag you fill with hot water to stay warm"
+      },
+      {
+        "config": "agentic_deberta",
+        "retrieved_ids": [
+          888,
+          260,
+          79,
+          833,
+          375
+        ],
+        "answer": "I think I have the product you're looking for: [1] 2L Long-strip Multifunctional Water-filled Rubber Hot Water Bags.",
+        "context_recall": 1.0,
+        "context_ndcg": 1.0,
+        "judge_verdicts": [
+          "NO: The list does not explicitly describe any product as a \"rubber bag you fill with hot water to stay warm\", but some products are related to water, and one product is a \"hot water bag\" that is explicitly mentioned.",
+          "YES"
+        ],
+        "final_query_used": "rubber water heating pad"
+      }
+    ]
+  }
+]

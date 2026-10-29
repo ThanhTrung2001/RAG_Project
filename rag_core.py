@@ -23,7 +23,7 @@ import requests
 from dotenv import load_dotenv
 
 from search_core import rrf_fusion, search, get_product
-from product_dialogue import route_product_query, resolve_product_references
+from product_dialogue import route_product_query, resolve_product_references, asks_for_alternatives
 
 load_dotenv(Path(__file__).with_name(".env"))   # không ghi đè biến môi trường đã có
 
@@ -57,23 +57,31 @@ def get_history(session_id: str):
 HISTORY_PRODUCTS = 3   # tên rút gọn cho prompt; _PRODUCT_STATE giữ đủ nguồn/ID để resolve thứ tự
 
 
+def _cited_ids(answer_text, sources):
+    """ID các nguồn được câu trả lời trích dẫn [n] (bỏ số ngoài danh sách)."""
+    return {sources[int(n) - 1]["id"] for n in re.findall(r"\[(\d+)\]", answer_text)
+            if 1 <= int(n) <= len(sources)}
+
+
 def _search_focused_id(answer_text, sources):
     """Focus a sole source or the sole distinct product cited in a search answer."""
     if len(sources) == 1:
         return sources[0]["id"]
-    cited_ids = {sources[int(n) - 1]["id"] for n in re.findall(r"\[(\d+)\]", answer_text)
-                 if 1 <= int(n) <= len(sources)}
+    cited_ids = _cited_ids(answer_text, sources)
     return next(iter(cited_ids)) if len(cited_ids) == 1 else None
 
 
 def append_history(session_id: str, query: str, answer_text: str, sources=None,
-                   intent="search"):
-    """Search thay danh sách/focus theo đề xuất; detail đổi focus; clarify giữ nguyên."""
+                   intent="search", keep_products=False):
+    """
+    Search thay danh sách/focus theo đề xuất; detail đổi focus; clarify giữ nguyên.
+    keep_products=True: search "lựa chọn khác" không đề xuất được gì -> giữ danh sách/focus cũ.
+    """
     history = _SESSION_STORE.setdefault(session_id, [])
     products = [r["caption"] for r in (sources or [])[:HISTORY_PRODUCTS]]
     history.append({"query": query, "answer": answer_text, "products": products,
                     "source_ids": [r["id"] for r in (sources or [])], "intent": intent})
-    if intent == "search":
+    if intent == "search" and not keep_products:
         _PRODUCT_STATE[session_id] = {
             "sources": [dict(r) for r in (sources or [])],
             "focused_id": _search_focused_id(answer_text, sources or []),
@@ -83,6 +91,8 @@ def append_history(session_id: str, query: str, answer_text: str, sources=None,
             "sources": [dict(r) for r in (sources or [])],
         })
         state["focused_id"] = sources[0]["id"] if len(sources or []) == 1 else None
+        # Sản phẩm của lượt hỏi chi tiết gần nhất (1 cái, hoặc các cái vừa so sánh).
+        state["discussed_ids"] = [r["id"] for r in (sources or [])]
     if len(history) > MAX_HISTORY_TURNS:
         del history[0]
 
@@ -101,6 +111,7 @@ def _answer_product_followup(query, session_id, selected_product_id=None):
     state = _PRODUCT_STATE.get(session_id, {}) if session_id else {}
     sources = list(state.get("sources", []))
     focus = state.get("focused_id")
+    discussed = state.get("discussed_ids", [])
     if selected_product_id is not None:
         selected = get_product(selected_product_id)
         if selected is None:
@@ -109,9 +120,9 @@ def _answer_product_followup(query, session_id, selected_product_id=None):
             focus = selected_product_id
             if not any(s["id"] == focus for s in sources):
                 sources.append(selected)
-            route = route_product_query(query, sources, focus, call_llm)
+            route = route_product_query(query, sources, focus, call_llm, discussed)
     else:
-        route = route_product_query(query, sources, focus, call_llm)
+        route = route_product_query(query, sources, focus, call_llm, discussed)
     if route["intent"] == "search":
         return None
     results = []
@@ -220,13 +231,23 @@ def build_context(results):
     return "\n".join(lines)
 
 
-def build_prompt(query, context, history=None, has_image=False):
-    """Prompt ràng buộc: chỉ dùng context, trích dẫn [n], nói rõ nếu không tìm thấy."""
+def build_prompt(query, context, history=None, has_image=False, excluded_titles=None):
+    """
+    Prompt ràng buộc: chỉ dùng context, trích dẫn [n], nói rõ nếu không tìm thấy.
+    excluded_titles: sản phẩm khách đang hỏi lựa chọn thay thế; đã bỏ khỏi context. Phải nói rõ với LLM,
+    nếu không nó lấy tên từ lịch sử rồi gắn vào [1] (đã gặp: "[1] Nuwave..." trong khi [1] là Breville).
+    """
     history_block = _format_history(history) if history else ""
     if has_image:
         # LLM không xem được ảnh: báo rằng danh sách được tìm theo ảnh để nó không đòi mô tả thêm.
         history_block += ("The customer attached a product photo. You CANNOT see the photo; the product "
                           "list below was retrieved by visual similarity to it (most similar first).\n")
+    if excluded_titles:
+        history_block += ("The customer wants ALTERNATIVES to: " + "; ".join(excluded_titles) + ". "
+                          "That product is NOT in the list below: never name it or cite it as an option. "
+                          "Recommend a listed product only if it is the same kind of product; otherwise say "
+                          "there are no other similar options. Cite [n] ONLY for products you recommend; "
+                          "never cite a product just to say it does not fit.\n")
 
     # Không đặt câu hỏi mẫu kiểu "any other color?" ở cuối prompt: llama3.1 từng chép nguyên câu đó ra trả lời.
     return f"""You are a product assistant. Use ONLY the information in the product list below. Do NOT invent details (price, features, colors...) that are not in the list. If no product in the list fits the request, say clearly that you could not find one instead of guessing.
@@ -304,16 +325,77 @@ def _retrieve_with_image(query: str, image, k: int, components=None):
     """
     query = (query or "").strip()
     if not query:
-        return search(image, query_type="image", k=k, components=components)
+        results = search(image, query_type="image", k=k, components=components)
+        # Nhánh dense của query ảnh là so ảnh với ảnh; đổi tên để giao diện không nhầm với dense chữ.
+        for r in results:
+            r["components"] = {"image": r.get("components", {}).get("dense")}
+        return results
 
     image_results = search(image, query_type="image", k=IMAGE_POOL, components=components,
                            top_n=IMAGE_POOL)
     text_results = search(query, query_type="text", k=IMAGE_POOL, components=components,
                           top_n=IMAGE_POOL)
     rows = {r["id"]: r for r in image_results + text_results}
+    # Hạng trong từng danh sách trước khi gộp: ảnh, và các nhánh của search chữ.
+    image_ranks = {r["id"]: {"rank": i, "score": r["score"]} for i, r in enumerate(image_results, start=1)}
+    text_components = {r["id"]: r.get("components", {}) for r in text_results}
+    text_names = list(text_results[0].get("components", {})) if text_results else []
     fused = rrf_fusion([(r["id"], r["score"]) for r in image_results],
                        [(r["id"], r["score"]) for r in text_results])
-    return [{**rows[doc_id], "score": round(float(score), 4)} for doc_id, score in fused[:k]]
+    return [{**rows[doc_id], "score": round(float(score), 4),
+             "components": {"image": image_ranks.get(doc_id),
+                            **{name: (text_components.get(doc_id) or {}).get(name) for name in text_names}}}
+            for doc_id, score in fused[:k]]
+
+
+def _excluded_product_ids(query, session_id, selected_product_id=None):
+    """
+    Hỏi lựa chọn khác ("show me more options like that") thì bỏ sản phẩm đang được nói tới: câu viết lại
+    thường chứa nguyên tên sản phẩm đó nên nếu không bỏ, nó lại đứng [1] và bị giới thiệu lại như lựa chọn mới.
+    """
+    if not session_id or not asks_for_alternatives(query):
+        return set()
+    state = _PRODUCT_STATE.get(session_id, {})
+    ids = set(state.get("discussed_ids", []))   # vd 2 sản phẩm vừa so sánh: bỏ cả 2
+    for pid in (selected_product_id, state.get("focused_id")):
+        if pid is not None:
+            ids.add(pid)
+    return ids
+
+
+def _discussed_products(session_id, ids):
+    """Bản ghi của các sản phẩm đang được bàn: lấy từ danh sách hiện tại, không có thì tra catalog."""
+    known = {s["id"]: s for s in _PRODUCT_STATE.get(session_id, {}).get("sources", [])}
+    return [p for p in (known.get(pid) or get_product(pid) for pid in sorted(ids)) if p]
+
+
+def _product_titles(session_id, ids):
+    return [p["caption"] for p in _discussed_products(session_id, ids)]
+
+
+def _retrieve_excluding(query, k, excluded_ids, **kwargs):
+    """retrieve() nhưng bỏ excluded_ids; lấy dư để vẫn đủ k nguồn."""
+    results = retrieve(query, k=k + len(excluded_ids), **kwargs)
+    return [r for r in results if r["id"] not in excluded_ids][:k]
+
+
+def _record_search_turn(session_id, history_query, llm_answer, results, excluded):
+    """
+    Ghi lượt search và trả (focused_id, product_options cho giao diện).
+    Hỏi lựa chọn khác mà câu trả lời không trích dẫn sản phẩm nào (không tìm được thay thế phù hợp):
+    giữ danh sách và sản phẩm đang hỏi cũ, để câu hỏi tiếp ("dung tích?") vẫn nói về chúng.
+    """
+    keep = bool(excluded) and not _cited_ids(llm_answer, results)
+    if not session_id:
+        return _search_focused_id(llm_answer, results), None
+    if not keep:
+        append_history(session_id, history_query, llm_answer, results)
+        return _search_focused_id(llm_answer, results), None
+    state = _PRODUCT_STATE.get(session_id, {})
+    # Lịch sử ghi tên các sản phẩm vẫn đang được bàn, để câu viết lại ở lượt sau lấy đúng loại sản phẩm.
+    append_history(session_id, history_query, llm_answer, _discussed_products(session_id, excluded),
+                   keep_products=True)
+    return state.get("focused_id"), state.get("sources", [])
 
 
 def _history_query(query: str, image) -> str:
@@ -347,29 +429,33 @@ def answer(query: str, k: int = 5, components=None, session_id: str = None,
     history = get_history(session_id) if session_id else []
     if image is not None:
         reranker = None   # xem _retrieve_with_image()
+    excluded = _excluded_product_ids(query, session_id, selected_product_id) \
+        if product_dialogue and image is None else set()
 
     search_query = contextualize_query(query, history)
-    results = retrieve(search_query, k=k, components=components, reranker=reranker, image=image)
+    results = _retrieve_excluding(search_query, k, excluded, components=components,
+                                  reranker=reranker, image=image)
 
     if not results:
         # Không gọi LLM với context rỗng để tránh bịa.
         fallback = "Sorry, I could not find any product matching this question."
-        if session_id:
-            append_history(session_id, _history_query(query, image), fallback)
+        focus, options = _record_search_turn(session_id, _history_query(query, image), fallback, [], excluded)
         return {"answer": fallback, "sources": [], "reranker": reranker, "search_query": search_query,
-                "intent": "search", "focused_product_id": None}
+                "intent": "search", "focused_product_id": focus, "excluded_ids": sorted(excluded),
+                **({"product_options": options} if options is not None else {})}
 
     context = build_context(results)
     prompt_query = query if query or image is None else IMAGE_ONLY_QUERY
-    prompt = build_prompt(prompt_query, context, history=history, has_image=image is not None)
+    prompt = build_prompt(prompt_query, context, history=history, has_image=image is not None,
+                          excluded_titles=_product_titles(session_id, excluded))
     llm_answer = call_llm(prompt)
 
-    if session_id:
-        append_history(session_id, _history_query(query, image), llm_answer, results)
-
+    focus, options = _record_search_turn(session_id, _history_query(query, image), llm_answer, results, excluded)
     return {"answer": llm_answer, "sources": results, "reranker": reranker,
             "search_query": search_query, "intent": "search",
-            "focused_product_id": _search_focused_id(llm_answer, results)}
+            "focused_product_id": focus, "excluded_ids": sorted(excluded),
+            # Có product_options = không tìm được lựa chọn khác, giao diện giữ danh sách cũ để chọn tiếp.
+            **({"product_options": options} if options is not None else {})}
 
 
 # ---------------------------------------------------------------------------
@@ -419,6 +505,8 @@ def answer_agentic(query: str, k: int = 5, components=None, max_iters: int = 2,
     has_image = image is not None
     if has_image:
         reranker = None   # xem _retrieve_with_image()
+    excluded = _excluded_product_ids(query, session_id, selected_product_id) \
+        if product_dialogue and not has_image else set()
     # Câu nối tiếp được viết lại theo lịch sử trước khi search và judge (xem contextualize_query()).
     search_query = contextualize_query(query, history)
     judge_query = search_query if search_query or not has_image else IMAGE_ONLY_QUERY
@@ -429,8 +517,8 @@ def answer_agentic(query: str, k: int = 5, components=None, max_iters: int = 2,
     verdicts = []
 
     for attempt in range(max_iters):
-        results = retrieve(current_query, k=k, components=components, reranker=reranker,
-                           image=image)
+        results = _retrieve_excluding(current_query, k, excluded, components=components,
+                                      reranker=reranker, image=image)
         context = build_context(results) if results else "(no results)"
 
         verdict = judge_sufficiency(judge_query, context)   # luôn so với query gốc
@@ -442,12 +530,11 @@ def answer_agentic(query: str, k: int = 5, components=None, max_iters: int = 2,
         current_query = rewrite_query(current_query or judge_query, reason)
 
     # Câu trả lời cuối dựa trên query gốc của người dùng (kèm lịch sử), không phải query đã viết lại.
-    prompt = build_prompt(answer_query, context, history=history, has_image=has_image)
+    prompt = build_prompt(answer_query, context, history=history, has_image=has_image,
+                          excluded_titles=_product_titles(session_id, excluded))
     llm_answer = call_llm(prompt)
 
-    if session_id:
-        append_history(session_id, _history_query(query, image), llm_answer, results)
-
+    focus, options = _record_search_turn(session_id, _history_query(query, image), llm_answer, results, excluded)
     return {
         "answer": llm_answer,
         "sources": results,
@@ -456,5 +543,7 @@ def answer_agentic(query: str, k: int = 5, components=None, max_iters: int = 2,
         "judge_verdicts": verdicts,
         "reranker": reranker,
         "intent": "search",
-        "focused_product_id": _search_focused_id(llm_answer, results),
+        "focused_product_id": focus,
+        "excluded_ids": sorted(excluded),
+        **({"product_options": options} if options is not None else {}),
     }

@@ -26,6 +26,7 @@ def main():
                         help="Run selected scenarios in these modes; default uses preferred mode")
     parser.add_argument("--resume", type=Path, help="Reuse a previous report's passing prefix; rerun from first failure")
     parser.add_argument("--llm-timeout", type=int, default=600, help="Per LLM call, same default as app")
+    parser.add_argument("--k", type=int, help="Sources per search (UI uses 5); default 2, or 1 for 'single' steps")
     args = parser.parse_args()
     previous = json.loads(args.resume.read_text(encoding="utf-8")) if args.resume else {}
     root = Path(__file__).resolve().parents[1]
@@ -45,7 +46,7 @@ def main():
     if unknown:
         parser.error(f"Unknown scenarios: {sorted(unknown)}")
     report = {"kind": "real retrieval and Ollama; no UI clicks; no mocks",
-              "focus_policy": "single_source_or_single_cited_product",
+              "focus_policy": "single_source_or_single_cited_product; uncited_alternatives_keep_focus",
               "checks": "intent, target IDs, retained choices, focus; NOT answer fact scoring",
               "model": rag.LLM_MODEL, "scenarios": []}
 
@@ -73,9 +74,10 @@ def main():
                     and old.get("query") == step["query"]
                     and old.get("image") == step.get("image")):
                 result = old["response"]
+                kept = "product_options" in result
                 rag.append_history(session, step["query"], result["answer"],
-                                   result["sources"], intent=result["intent"])
-                if result["intent"] == "search":
+                                   result["sources"], intent=result["intent"], keep_products=kept)
+                if result["intent"] == "search" and not kept:
                     options = result["sources"]
                 record["turns"].append({**old, "reused_from": str(args.resume)})
                 print(f'{scenario["id"]} {n}: reusing previous PASS', flush=True)
@@ -94,21 +96,32 @@ def main():
                     from PIL import Image
                     with Image.open(root / step["image"]) as opened:
                         image = opened.convert("RGB")
-                result = fn(step["query"], k=1 if step.get("result_set") == "single" else 2,
+                previous_focus = rag._PRODUCT_STATE.get(session, {}).get("focused_id")
+                result = fn(step["query"], k=args.k or (1 if step.get("result_set") == "single" else 2),
                             session_id=session, image=image)
                 state = rag._PRODUCT_STATE.get(session, {})
                 errors = []
                 if result["intent"] != step["intent"]:
                     errors.append("intent mismatch")
                 if step["intent"] == "search":
-                    options = result["sources"]
-                    if not options:
+                    sources = result["sources"]
+                    if not sources:
                         errors.append("empty search")
-                    cited = {options[int(n) - 1]["id"]
+                    excluded = set(result.get("excluded_ids", []))
+                    if excluded & {p["id"] for p in sources}:
+                        errors.append("discussed product offered again")
+                    cited = {sources[int(n) - 1]["id"]
                              for n in re.findall(r"\[(\d+)\]", result["answer"])
-                             if 1 <= int(n) <= len(options)}
-                    expected_focus = (options[0]["id"] if len(options) == 1 else
-                                      next(iter(cited)) if len(cited) == 1 else None)
+                             if 1 <= int(n) <= len(sources)}
+                    if "product_options" in result:
+                        # Alternatives request with no cited alternative: old choices and focus stay.
+                        if cited or not excluded:
+                            errors.append("kept old choices although an alternative was cited")
+                        expected_focus = previous_focus
+                    else:
+                        options = sources
+                        expected_focus = (options[0]["id"] if len(options) == 1 else
+                                          next(iter(cited)) if len(cited) == 1 else None)
                     if result.get("focused_product_id") != expected_focus:
                         errors.append("response focus mismatch")
                 elif step["intent"] == "detail":
