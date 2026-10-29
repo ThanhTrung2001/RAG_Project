@@ -1,0 +1,1675 @@
+{
+  "kind": "real retrieval and Ollama; no UI clicks; no mocks",
+  "focus_policy": "single_source_or_single_cited_product",
+  "checks": "intent, target IDs, retained choices, focus; NOT answer fact scoring",
+  "model": "llama3.1",
+  "scenarios": [
+    {
+      "id": "naive_airfryer_auto_focus",
+      "mode": "naive",
+      "turns": [
+        {
+          "query": "10-in-1 air fryer toaster oven combo",
+          "image": null,
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "You're looking for a 10-in-1 air fryer toaster oven combo. I found one that matches your request: [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo.",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.032
+              }
+            ],
+            "reranker": null,
+            "search_query": "10-in-1 air fryer toaster oven combo",
+            "intent": "search",
+            "focused_product_id": 272
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 27.02
+        },
+        {
+          "query": "What material is this made of?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            272
+          ],
+          "response": {
+            "answer": "The Nuwave Bravo Pro Air Fryer Toaster Oven Combo is made of stainless steel. This is according to the product description: \"Material Stainless Steel : Item Weight 16 Pounds\" ([1]).",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "brand": "NuWave",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "Overview Brand : Nuwave Color : Stainless Steel Product Dimensions : 13.5\"D x 17.6\"W x 9.6\"H Special Feature : 10 Cooking Functions Control Type : Touch Capacity 21 Quarts : Wattage 1800 watts : Capacity 21 Quarts : Wattage 1800 watts Material Stainless Steel : Item Weight 16 Pounds : Material Stainless Steel : Item Weight 16 Pounds About this item 10 PRE-PROGRAMMED PRESETS - This premium non-toxic 1800-watt air fryer and toaster oven combo offers 10 functions in one powerful appliance: Air Fry, Roast, Bake, Reheat, Bagel, Pizza, Toast, Broil, Waffle, and Dehydrate. 2025 IMPROVED DIGITAL DISPLAY - Enjoy a more intuitive, easy-to-read, and user-friendly cool white display for the best, seamless cooking experience. The display offers a wealth of information for the ultimate interactive experience. PIZZA OVEN WITH ON-THE-FLY CUSTOMIZATION - Adjust the convection fan speed and the ratio of top and bottom heaters from 0 to 100% to create different heating zones at any time. For the perfect thick pizza, set the bottom heaters to 70% power and the top heaters to 30% for a crispy crust and perfectly melted, cheesy toppings. HIGH SPEED FAN - Achieve irresistibly crisp, golden-brown results with the new 2025 fan and housing design of the Nuwave Bravo Pro Air Fryer Toast Oven Combo, which delivers speeds that are 100% faster, cooking food more quickly than ever. MULTI-LAYER EVEN COOKING - Save time and energy like never before. The new convection system maintains a temperature difference of only 0-1°F between layers, ensuring even and efficient multi-layer cooking. COMPACT 21 QT SIZE - The Nuwave Bravo Pro Air Fryer’s compact design is perfect for small kitchens, motorhomes, and RVs. Even with its small design, it has a large capacity, accommodating a 12-inch pizza, a 4-pound chicken, a 4-pound roast, or 16 ounces of fries, making it ideal for families. 450°F MAX TEMPERATURE - The Nuwave Bravo Air Fryer Toast Oven Combo features adjustable fan speeds ranging from 0 to 3 and a ",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.032
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                272
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 19.94
+        },
+        {
+          "query": "How much capacity?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            272
+          ],
+          "response": {
+            "answer": "The capacity of the product is 21 Quarts, as stated in the product description for [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo.",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "brand": "NuWave",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "Overview Brand : Nuwave Color : Stainless Steel Product Dimensions : 13.5\"D x 17.6\"W x 9.6\"H Special Feature : 10 Cooking Functions Control Type : Touch Capacity 21 Quarts : Wattage 1800 watts : Capacity 21 Quarts : Wattage 1800 watts Material Stainless Steel : Item Weight 16 Pounds : Material Stainless Steel : Item Weight 16 Pounds About this item 10 PRE-PROGRAMMED PRESETS - This premium non-toxic 1800-watt air fryer and toaster oven combo offers 10 functions in one powerful appliance: Air Fry, Roast, Bake, Reheat, Bagel, Pizza, Toast, Broil, Waffle, and Dehydrate. 2025 IMPROVED DIGITAL DISPLAY - Enjoy a more intuitive, easy-to-read, and user-friendly cool white display for the best, seamless cooking experience. The display offers a wealth of information for the ultimate interactive experience. PIZZA OVEN WITH ON-THE-FLY CUSTOMIZATION - Adjust the convection fan speed and the ratio of top and bottom heaters from 0 to 100% to create different heating zones at any time. For the perfect thick pizza, set the bottom heaters to 70% power and the top heaters to 30% for a crispy crust and perfectly melted, cheesy toppings. HIGH SPEED FAN - Achieve irresistibly crisp, golden-brown results with the new 2025 fan and housing design of the Nuwave Bravo Pro Air Fryer Toast Oven Combo, which delivers speeds that are 100% faster, cooking food more quickly than ever. MULTI-LAYER EVEN COOKING - Save time and energy like never before. The new convection system maintains a temperature difference of only 0-1°F between layers, ensuring even and efficient multi-layer cooking. COMPACT 21 QT SIZE - The Nuwave Bravo Pro Air Fryer’s compact design is perfect for small kitchens, motorhomes, and RVs. Even with its small design, it has a large capacity, accommodating a 12-inch pizza, a 4-pound chicken, a 4-pound roast, or 16 ounces of fries, making it ideal for families. 450°F MAX TEMPERATURE - The Nuwave Bravo Air Fryer Toast Oven Combo features adjustable fan speeds ranging from 0 to 3 and a ",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.032
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                272
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 11.14
+        },
+        {
+          "query": "Show me more options like that",
+          "image": null,
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "Here are two more options that match your previous request: [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, and the Breville Smart Oven, which is a 10-in-1 air fryer toaster oven combo as well.",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.0323
+              }
+            ],
+            "reranker": null,
+            "search_query": "air fryer toaster oven combo",
+            "intent": "search",
+            "focused_product_id": 272
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 30.76
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "naive_airfryer_auto_focus",
+      "mode": "agentic",
+      "turns": [
+        {
+          "query": "10-in-1 air fryer toaster oven combo",
+          "image": null,
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "I found a product that matches your request: [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, it's a 10-in-1 air fryer toaster oven combo.",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.032
+              }
+            ],
+            "search_query": "10-in-1 air fryer toaster oven combo",
+            "final_query_used": "10-in-1 air fryer toaster oven combo",
+            "judge_verdicts": [
+              "YES"
+            ],
+            "reranker": null,
+            "intent": "search",
+            "focused_product_id": 272
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 15.71
+        },
+        {
+          "query": "What material is this made of?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            272
+          ],
+          "response": {
+            "answer": "The Nuwave Bravo Pro Air Fryer Toaster Oven Combo is made of Stainless Steel. This is according to record [1].",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "brand": "NuWave",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "Overview Brand : Nuwave Color : Stainless Steel Product Dimensions : 13.5\"D x 17.6\"W x 9.6\"H Special Feature : 10 Cooking Functions Control Type : Touch Capacity 21 Quarts : Wattage 1800 watts : Capacity 21 Quarts : Wattage 1800 watts Material Stainless Steel : Item Weight 16 Pounds : Material Stainless Steel : Item Weight 16 Pounds About this item 10 PRE-PROGRAMMED PRESETS - This premium non-toxic 1800-watt air fryer and toaster oven combo offers 10 functions in one powerful appliance: Air Fry, Roast, Bake, Reheat, Bagel, Pizza, Toast, Broil, Waffle, and Dehydrate. 2025 IMPROVED DIGITAL DISPLAY - Enjoy a more intuitive, easy-to-read, and user-friendly cool white display for the best, seamless cooking experience. The display offers a wealth of information for the ultimate interactive experience. PIZZA OVEN WITH ON-THE-FLY CUSTOMIZATION - Adjust the convection fan speed and the ratio of top and bottom heaters from 0 to 100% to create different heating zones at any time. For the perfect thick pizza, set the bottom heaters to 70% power and the top heaters to 30% for a crispy crust and perfectly melted, cheesy toppings. HIGH SPEED FAN - Achieve irresistibly crisp, golden-brown results with the new 2025 fan and housing design of the Nuwave Bravo Pro Air Fryer Toast Oven Combo, which delivers speeds that are 100% faster, cooking food more quickly than ever. MULTI-LAYER EVEN COOKING - Save time and energy like never before. The new convection system maintains a temperature difference of only 0-1°F between layers, ensuring even and efficient multi-layer cooking. COMPACT 21 QT SIZE - The Nuwave Bravo Pro Air Fryer’s compact design is perfect for small kitchens, motorhomes, and RVs. Even with its small design, it has a large capacity, accommodating a 12-inch pizza, a 4-pound chicken, a 4-pound roast, or 16 ounces of fries, making it ideal for families. 450°F MAX TEMPERATURE - The Nuwave Bravo Air Fryer Toast Oven Combo features adjustable fan speeds ranging from 0 to 3 and a ",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.032
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                272
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 9.55
+        },
+        {
+          "query": "How much capacity?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            272
+          ],
+          "response": {
+            "answer": "The capacity of the product is 21 Quarts.",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "brand": "NuWave",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "Overview Brand : Nuwave Color : Stainless Steel Product Dimensions : 13.5\"D x 17.6\"W x 9.6\"H Special Feature : 10 Cooking Functions Control Type : Touch Capacity 21 Quarts : Wattage 1800 watts : Capacity 21 Quarts : Wattage 1800 watts Material Stainless Steel : Item Weight 16 Pounds : Material Stainless Steel : Item Weight 16 Pounds About this item 10 PRE-PROGRAMMED PRESETS - This premium non-toxic 1800-watt air fryer and toaster oven combo offers 10 functions in one powerful appliance: Air Fry, Roast, Bake, Reheat, Bagel, Pizza, Toast, Broil, Waffle, and Dehydrate. 2025 IMPROVED DIGITAL DISPLAY - Enjoy a more intuitive, easy-to-read, and user-friendly cool white display for the best, seamless cooking experience. The display offers a wealth of information for the ultimate interactive experience. PIZZA OVEN WITH ON-THE-FLY CUSTOMIZATION - Adjust the convection fan speed and the ratio of top and bottom heaters from 0 to 100% to create different heating zones at any time. For the perfect thick pizza, set the bottom heaters to 70% power and the top heaters to 30% for a crispy crust and perfectly melted, cheesy toppings. HIGH SPEED FAN - Achieve irresistibly crisp, golden-brown results with the new 2025 fan and housing design of the Nuwave Bravo Pro Air Fryer Toast Oven Combo, which delivers speeds that are 100% faster, cooking food more quickly than ever. MULTI-LAYER EVEN COOKING - Save time and energy like never before. The new convection system maintains a temperature difference of only 0-1°F between layers, ensuring even and efficient multi-layer cooking. COMPACT 21 QT SIZE - The Nuwave Bravo Pro Air Fryer’s compact design is perfect for small kitchens, motorhomes, and RVs. Even with its small design, it has a large capacity, accommodating a 12-inch pizza, a 4-pound chicken, a 4-pound roast, or 16 ounces of fries, making it ideal for families. 450°F MAX TEMPERATURE - The Nuwave Bravo Air Fryer Toast Oven Combo features adjustable fan speeds ranging from 0 to 3 and a ",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.032
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                272
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 6.65
+        },
+        {
+          "query": "Show me more options like that",
+          "image": null,
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "I found another product that matches your request, [2] Breville Smart Oven, but unfortunately, I couldn't find any other products that are a 10-in-1 air fryer toaster oven combo.",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.0323
+              }
+            ],
+            "search_query": "air fryer toaster oven combo",
+            "final_query_used": "air fryer toaster oven combo",
+            "judge_verdicts": [
+              "YES"
+            ],
+            "reranker": null,
+            "intent": "search",
+            "focused_product_id": 1336
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 1336,
+          "seconds": 29.98
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "agentic_thermostat_auto_focus",
+      "mode": "naive",
+      "turns": [
+        {
+          "query": "smart thermostat with air quality sensor",
+          "image": null,
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "I found a product that matches your request: [1] ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor.",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0328
+              },
+              {
+                "id": 1229,
+                "image_path": "data/images/001229.jpg",
+                "caption": "Kelon 24 000 BTU Split Air Conditioner",
+                "score": 0.0308
+              }
+            ],
+            "reranker": null,
+            "search_query": "smart thermostat with air quality sensor",
+            "intent": "search",
+            "focused_product_id": 443
+          },
+          "option_ids": [
+            443,
+            1229
+          ],
+          "focus": 443,
+          "seconds": 8.36
+        },
+        {
+          "query": "Show me details of this product",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            443
+          ],
+          "response": {
+            "answer": "Based on the product details you're asking about, here's what I found:\n\nThis product, ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor, has the following details:\n\n* It's a programmable Wi-Fi thermostat that works with Siri, Alexa, and Google Assistant.\n* It's an ENERGY STAR certified product.\n* It comes with a built-in SmartSensor that adjusts the temperature in the rooms that matter most.\n* It also has a built-in air quality monitor that alerts you to poor air quality and provides tips on how to improve it.\n* The product has a large, vibrant display with a cinematic interface and advanced engineering.\n* It's compatible with most 24VAC HVAC systems, including furnaces, ACs, heat pumps, boilers, PTACs, and fan coil units.\n* It includes a Power Extender Kit for C-Wire-less homes.\n* It requires an ecobee Smart Security plan for some features.\n\nPlease note that the catalog does not provide information on the product's price, stock, warranty, or specifications that are not mentioned in the product description.",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "brand": "ecobee",
+                "category": "Hardware > Heating, Ventilation & Air Conditioning > HVAC Controls > Thermostats",
+                "description": "Brand: ecobee Color: Black Features: Save up to 26% per year on heating and cooling costs. ENERGY STAR certified. Included SmartSensor (50 dollar value) adjusts the temperature in the rooms that matter most to reduce hot or cold spots to keep you comfortable. Compared to a hold of 72°F. Built-in air quality monitor alerts you to poor air quality, provides tips on how to improve it, and reminds you when it’s time to change your furnace’s air filter. Premium materials and advanced engineering mean a large, vibrant display with a cinematic interface, a timeless design, and next level occupancy sensing. ecobee Smart Thermostat Premium is a complete home monitoring hub that includes built-in smoke alarm detection and alerts to possible break-ins when your system is armed. Get notifications during sudden temperature drops that could cause damage. ecobee Smart Security plan required Comes with a smart speaker and your choice of Siri or Alexa Built-in. Control your home using the power of your voice and listen to your favorite Spotify playlists and podcast through your thermostat’s speaker. Apple home hub required to enable Siri on Smart Thermostat Premium Compatible with most 24VAC HVAC systems: furnaces, ACs (2H/2C), heat pumps (2H/2C + 2 stage AUX), boilers, PTACs, and fan coil units (3 fan speeds). Includes Power Extender Kit for C-Wire-less homes, ensuring easy installation. If a window or door is left open for 5 minutes ecobee will alert you and automatically pause your heating or cooling, saving you money while helping the environment. SmartSensor for doors and windows and an ecobee Smart Security subscription required to access this feature Binding: Kitchen Release Date: 17-05-2022 model number: EB-STATE6-01 Part Number: EB-STATE6-01 Details: ecobee's Smart Thermostat Premium is brilliant at savings and comfort, allowing you to optimize your energy use through superior intelligence and technology. Included SmartSensor eliminates hot and cold spots and adjusts the te",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0328
+              },
+              {
+                "id": 1229,
+                "image_path": "data/images/001229.jpg",
+                "caption": "Kelon 24 000 BTU Split Air Conditioner",
+                "score": 0.0308
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                443
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            443,
+            1229
+          ],
+          "focus": 443,
+          "seconds": 58.04
+        },
+        {
+          "query": "How does it monitor air quality?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            443
+          ],
+          "response": {
+            "answer": "According to the product description, the ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor ([1]) has a built-in air quality monitor that:\n\n* Alerts you to poor air quality\n* Provides tips on how to improve it\n* Reminds you when it’s time to change your furnace’s air filter\n\nThis means that the thermostat can detect and report air quality issues, but it does not provide more detailed information on how it monitors air quality. The catalog does not provide specific technical details on the monitoring process.",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "brand": "ecobee",
+                "category": "Hardware > Heating, Ventilation & Air Conditioning > HVAC Controls > Thermostats",
+                "description": "Brand: ecobee Color: Black Features: Save up to 26% per year on heating and cooling costs. ENERGY STAR certified. Included SmartSensor (50 dollar value) adjusts the temperature in the rooms that matter most to reduce hot or cold spots to keep you comfortable. Compared to a hold of 72°F. Built-in air quality monitor alerts you to poor air quality, provides tips on how to improve it, and reminds you when it’s time to change your furnace’s air filter. Premium materials and advanced engineering mean a large, vibrant display with a cinematic interface, a timeless design, and next level occupancy sensing. ecobee Smart Thermostat Premium is a complete home monitoring hub that includes built-in smoke alarm detection and alerts to possible break-ins when your system is armed. Get notifications during sudden temperature drops that could cause damage. ecobee Smart Security plan required Comes with a smart speaker and your choice of Siri or Alexa Built-in. Control your home using the power of your voice and listen to your favorite Spotify playlists and podcast through your thermostat’s speaker. Apple home hub required to enable Siri on Smart Thermostat Premium Compatible with most 24VAC HVAC systems: furnaces, ACs (2H/2C), heat pumps (2H/2C + 2 stage AUX), boilers, PTACs, and fan coil units (3 fan speeds). Includes Power Extender Kit for C-Wire-less homes, ensuring easy installation. If a window or door is left open for 5 minutes ecobee will alert you and automatically pause your heating or cooling, saving you money while helping the environment. SmartSensor for doors and windows and an ecobee Smart Security subscription required to access this feature Binding: Kitchen Release Date: 17-05-2022 model number: EB-STATE6-01 Part Number: EB-STATE6-01 Details: ecobee's Smart Thermostat Premium is brilliant at savings and comfort, allowing you to optimize your energy use through superior intelligence and technology. Included SmartSensor eliminates hot and cold spots and adjusts the te",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0328
+              },
+              {
+                "id": 1229,
+                "image_path": "data/images/001229.jpg",
+                "caption": "Kelon 24 000 BTU Split Air Conditioner",
+                "score": 0.0308
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                443
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            443,
+            1229
+          ],
+          "focus": 443,
+          "seconds": 26.13
+        },
+        {
+          "query": "Show me more options like that",
+          "image": null,
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "I found another product with air quality monitoring capability, but it's a thermostat, not a water timer: [1] ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat.",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0328
+              },
+              {
+                "id": 1128,
+                "image_path": "data/images/001128.jpg",
+                "caption": "RAINPOINT WiFi Water Timer, Brass Inlet Smart Hose Faucet Timer, Automatic Irrigation System Controller for Yard Watering, APP Control via 2.4Ghz WiFi and Bluetooth (V2, 2025 Release)",
+                "score": 0.0315
+              }
+            ],
+            "reranker": null,
+            "search_query": "smart thermostat",
+            "intent": "search",
+            "focused_product_id": 443
+          },
+          "option_ids": [
+            443,
+            1128
+          ],
+          "focus": 443,
+          "seconds": 25.15
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "agentic_thermostat_auto_focus",
+      "mode": "agentic",
+      "turns": [
+        {
+          "query": "smart thermostat with air quality sensor",
+          "image": null,
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "I have a product that matches your request: [1] ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor.",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0328
+              },
+              {
+                "id": 1229,
+                "image_path": "data/images/001229.jpg",
+                "caption": "Kelon 24 000 BTU Split Air Conditioner",
+                "score": 0.0308
+              }
+            ],
+            "search_query": "smart thermostat with air quality sensor",
+            "final_query_used": "smart thermostat with air quality sensor",
+            "judge_verdicts": [
+              "YES"
+            ],
+            "reranker": null,
+            "intent": "search",
+            "focused_product_id": 443
+          },
+          "option_ids": [
+            443,
+            1229
+          ],
+          "focus": 443,
+          "seconds": 11.33
+        },
+        {
+          "query": "Show me details of this product",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            443
+          ],
+          "response": {
+            "answer": "Here are the details of the product:\n\n**Product Name:** ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor\n**Product ID:** 443\n**Brand:** ecobee\n**Category:** Hardware > Heating, Ventilation & Air Conditioning > HVAC Controls > Thermostats\n**Description:** This product is an ENERGY STAR certified, programmable Wi-Fi thermostat that works with Siri, Alexa, or Google Assistant. It includes a SmartSensor that adjusts the temperature in the rooms that matter most, reducing hot or cold spots. It also has a built-in air quality monitor that alerts you to poor air quality and provides tips on how to improve it. The thermostat has a large, vibrant display and advanced engineering, and it includes a Power Extender Kit for easy installation.\n**Model Number:** EB-STATE6-01\n**Part Number:** EB-STATE6-01\n**Release Date:** 17-05-2022\n**Binding:** Kitchen\n\nNote: The catalog does not provide a price or stock information for this product.",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "brand": "ecobee",
+                "category": "Hardware > Heating, Ventilation & Air Conditioning > HVAC Controls > Thermostats",
+                "description": "Brand: ecobee Color: Black Features: Save up to 26% per year on heating and cooling costs. ENERGY STAR certified. Included SmartSensor (50 dollar value) adjusts the temperature in the rooms that matter most to reduce hot or cold spots to keep you comfortable. Compared to a hold of 72°F. Built-in air quality monitor alerts you to poor air quality, provides tips on how to improve it, and reminds you when it’s time to change your furnace’s air filter. Premium materials and advanced engineering mean a large, vibrant display with a cinematic interface, a timeless design, and next level occupancy sensing. ecobee Smart Thermostat Premium is a complete home monitoring hub that includes built-in smoke alarm detection and alerts to possible break-ins when your system is armed. Get notifications during sudden temperature drops that could cause damage. ecobee Smart Security plan required Comes with a smart speaker and your choice of Siri or Alexa Built-in. Control your home using the power of your voice and listen to your favorite Spotify playlists and podcast through your thermostat’s speaker. Apple home hub required to enable Siri on Smart Thermostat Premium Compatible with most 24VAC HVAC systems: furnaces, ACs (2H/2C), heat pumps (2H/2C + 2 stage AUX), boilers, PTACs, and fan coil units (3 fan speeds). Includes Power Extender Kit for C-Wire-less homes, ensuring easy installation. If a window or door is left open for 5 minutes ecobee will alert you and automatically pause your heating or cooling, saving you money while helping the environment. SmartSensor for doors and windows and an ecobee Smart Security subscription required to access this feature Binding: Kitchen Release Date: 17-05-2022 model number: EB-STATE6-01 Part Number: EB-STATE6-01 Details: ecobee's Smart Thermostat Premium is brilliant at savings and comfort, allowing you to optimize your energy use through superior intelligence and technology. Included SmartSensor eliminates hot and cold spots and adjusts the te",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0328
+              },
+              {
+                "id": 1229,
+                "image_path": "data/images/001229.jpg",
+                "caption": "Kelon 24 000 BTU Split Air Conditioner",
+                "score": 0.0308
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                443
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            443,
+            1229
+          ],
+          "focus": 443,
+          "seconds": 48.19
+        },
+        {
+          "query": "How does it monitor air quality?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            443
+          ],
+          "response": {
+            "answer": "The ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor monitors air quality with a built-in air quality monitor. According to the product description, this monitor alerts you to poor air quality, provides tips on how to improve it, and reminds you when it's time to change your furnace's air filter. (Note 1)",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "brand": "ecobee",
+                "category": "Hardware > Heating, Ventilation & Air Conditioning > HVAC Controls > Thermostats",
+                "description": "Brand: ecobee Color: Black Features: Save up to 26% per year on heating and cooling costs. ENERGY STAR certified. Included SmartSensor (50 dollar value) adjusts the temperature in the rooms that matter most to reduce hot or cold spots to keep you comfortable. Compared to a hold of 72°F. Built-in air quality monitor alerts you to poor air quality, provides tips on how to improve it, and reminds you when it’s time to change your furnace’s air filter. Premium materials and advanced engineering mean a large, vibrant display with a cinematic interface, a timeless design, and next level occupancy sensing. ecobee Smart Thermostat Premium is a complete home monitoring hub that includes built-in smoke alarm detection and alerts to possible break-ins when your system is armed. Get notifications during sudden temperature drops that could cause damage. ecobee Smart Security plan required Comes with a smart speaker and your choice of Siri or Alexa Built-in. Control your home using the power of your voice and listen to your favorite Spotify playlists and podcast through your thermostat’s speaker. Apple home hub required to enable Siri on Smart Thermostat Premium Compatible with most 24VAC HVAC systems: furnaces, ACs (2H/2C), heat pumps (2H/2C + 2 stage AUX), boilers, PTACs, and fan coil units (3 fan speeds). Includes Power Extender Kit for C-Wire-less homes, ensuring easy installation. If a window or door is left open for 5 minutes ecobee will alert you and automatically pause your heating or cooling, saving you money while helping the environment. SmartSensor for doors and windows and an ecobee Smart Security subscription required to access this feature Binding: Kitchen Release Date: 17-05-2022 model number: EB-STATE6-01 Part Number: EB-STATE6-01 Details: ecobee's Smart Thermostat Premium is brilliant at savings and comfort, allowing you to optimize your energy use through superior intelligence and technology. Included SmartSensor eliminates hot and cold spots and adjusts the te",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0328
+              },
+              {
+                "id": 1229,
+                "image_path": "data/images/001229.jpg",
+                "caption": "Kelon 24 000 BTU Split Air Conditioner",
+                "score": 0.0308
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                443
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            443,
+            1229
+          ],
+          "focus": 443,
+          "seconds": 15.67
+        },
+        {
+          "query": "Show me more options like that",
+          "image": null,
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "I have another product that matches your request: [2] SenseCAP Sensor Hub 4G Data Logger (with built-in rechargeable battery version). It's a data logger with built-in rechargeable battery, but it does not mention air quality monitoring specifically.",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0328
+              },
+              {
+                "id": 1530,
+                "image_path": "data/images/001530.jpg",
+                "caption": "SenseCAP Sensor Hub 4G Data Logger (with built-in rechargeable battery version)",
+                "score": 0.0297
+              }
+            ],
+            "search_query": "smart thermostat air quality sensor",
+            "final_query_used": "smart thermostat air quality sensor",
+            "judge_verdicts": [
+              "YES"
+            ],
+            "reranker": null,
+            "intent": "search",
+            "focused_product_id": 1530
+          },
+          "option_ids": [
+            443,
+            1530
+          ],
+          "focus": 1530,
+          "seconds": 29.71
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "image_text_switch_and_replace",
+      "mode": "naive",
+      "turns": [
+        {
+          "query": "10-in-1 air fryer toaster oven combo",
+          "image": "data/images/000272.jpg",
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "You're looking for a 10-in-1 air fryer toaster oven combo. I found a product that fits your description: [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo.",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.0323
+              }
+            ],
+            "reranker": null,
+            "search_query": "10-in-1 air fryer toaster oven combo",
+            "intent": "search",
+            "focused_product_id": 272
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 14.07
+        },
+        {
+          "query": "How much capacity?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            272
+          ],
+          "response": {
+            "answer": "The capacity of the Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo is 21 quarts. This is stated in the product description, which can be found at [1].",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "brand": "NuWave",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "Overview Brand : Nuwave Color : Stainless Steel Product Dimensions : 13.5\"D x 17.6\"W x 9.6\"H Special Feature : 10 Cooking Functions Control Type : Touch Capacity 21 Quarts : Wattage 1800 watts : Capacity 21 Quarts : Wattage 1800 watts Material Stainless Steel : Item Weight 16 Pounds : Material Stainless Steel : Item Weight 16 Pounds About this item 10 PRE-PROGRAMMED PRESETS - This premium non-toxic 1800-watt air fryer and toaster oven combo offers 10 functions in one powerful appliance: Air Fry, Roast, Bake, Reheat, Bagel, Pizza, Toast, Broil, Waffle, and Dehydrate. 2025 IMPROVED DIGITAL DISPLAY - Enjoy a more intuitive, easy-to-read, and user-friendly cool white display for the best, seamless cooking experience. The display offers a wealth of information for the ultimate interactive experience. PIZZA OVEN WITH ON-THE-FLY CUSTOMIZATION - Adjust the convection fan speed and the ratio of top and bottom heaters from 0 to 100% to create different heating zones at any time. For the perfect thick pizza, set the bottom heaters to 70% power and the top heaters to 30% for a crispy crust and perfectly melted, cheesy toppings. HIGH SPEED FAN - Achieve irresistibly crisp, golden-brown results with the new 2025 fan and housing design of the Nuwave Bravo Pro Air Fryer Toast Oven Combo, which delivers speeds that are 100% faster, cooking food more quickly than ever. MULTI-LAYER EVEN COOKING - Save time and energy like never before. The new convection system maintains a temperature difference of only 0-1°F between layers, ensuring even and efficient multi-layer cooking. COMPACT 21 QT SIZE - The Nuwave Bravo Pro Air Fryer’s compact design is perfect for small kitchens, motorhomes, and RVs. Even with its small design, it has a large capacity, accommodating a 12-inch pizza, a 4-pound chicken, a 4-pound roast, or 16 ounces of fries, making it ideal for families. 450°F MAX TEMPERATURE - The Nuwave Bravo Air Fryer Toast Oven Combo features adjustable fan speeds ranging from 0 to 3 and a ",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.0323
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                272
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 9.92
+        },
+        {
+          "query": "What is the weight of product 2?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            1336
+          ],
+          "response": {
+            "answer": "The weight of the Breville Smart Oven is not specified in the catalog record [1].",
+            "sources": [
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "brand": "Breville",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "1800-watt convection toaster oven with 0.8-cubic-foot nonstick interior Element IQ technology for smarter control over the heat; 9 pre-set functions. Blue back-lit LCD screen turns orange during pre-heating. 5 quartz heating elements; user-friendly control panel; LCD screen; 3 rack positions Auto-eject wire rack; removable crumb tray; pizza pan, baking pan, and broil rack included Measures 18-1/2 by 16-1/4 by 11-1/4 inches; 1-year limited warranty",
+                "description_truncated": false
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.0323
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                1336
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 1336,
+          "seconds": 10.03
+        },
+        {
+          "query": "smart thermostat with air quality sensor",
+          "image": "data/images/000443.jpg",
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "I found a product that fits your description: [1] ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor.",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0328
+              },
+              {
+                "id": 1918,
+                "image_path": "data/images/001918.jpg",
+                "caption": "Air Purifier 4 Stage Hepa W/Replacement Filter",
+                "score": 0.0303
+              }
+            ],
+            "reranker": null,
+            "search_query": "smart thermostat with air quality sensor",
+            "intent": "search",
+            "focused_product_id": 443
+          },
+          "option_ids": [
+            443,
+            1918
+          ],
+          "focus": 443,
+          "seconds": 22.64
+        },
+        {
+          "query": "How does it monitor air quality?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            443
+          ],
+          "response": {
+            "answer": "The ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor ([1]) has a built-in air quality monitor that alerts you to poor air quality and provides tips on how to improve it. This feature is mentioned in the product description, which states that the air quality monitor \"alerts you to poor air quality, provides tips on how to improve it, and reminds you when it’s time to change your furnace’s air filter.\"",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "brand": "ecobee",
+                "category": "Hardware > Heating, Ventilation & Air Conditioning > HVAC Controls > Thermostats",
+                "description": "Brand: ecobee Color: Black Features: Save up to 26% per year on heating and cooling costs. ENERGY STAR certified. Included SmartSensor (50 dollar value) adjusts the temperature in the rooms that matter most to reduce hot or cold spots to keep you comfortable. Compared to a hold of 72°F. Built-in air quality monitor alerts you to poor air quality, provides tips on how to improve it, and reminds you when it’s time to change your furnace’s air filter. Premium materials and advanced engineering mean a large, vibrant display with a cinematic interface, a timeless design, and next level occupancy sensing. ecobee Smart Thermostat Premium is a complete home monitoring hub that includes built-in smoke alarm detection and alerts to possible break-ins when your system is armed. Get notifications during sudden temperature drops that could cause damage. ecobee Smart Security plan required Comes with a smart speaker and your choice of Siri or Alexa Built-in. Control your home using the power of your voice and listen to your favorite Spotify playlists and podcast through your thermostat’s speaker. Apple home hub required to enable Siri on Smart Thermostat Premium Compatible with most 24VAC HVAC systems: furnaces, ACs (2H/2C), heat pumps (2H/2C + 2 stage AUX), boilers, PTACs, and fan coil units (3 fan speeds). Includes Power Extender Kit for C-Wire-less homes, ensuring easy installation. If a window or door is left open for 5 minutes ecobee will alert you and automatically pause your heating or cooling, saving you money while helping the environment. SmartSensor for doors and windows and an ecobee Smart Security subscription required to access this feature Binding: Kitchen Release Date: 17-05-2022 model number: EB-STATE6-01 Part Number: EB-STATE6-01 Details: ecobee's Smart Thermostat Premium is brilliant at savings and comfort, allowing you to optimize your energy use through superior intelligence and technology. Included SmartSensor eliminates hot and cold spots and adjusts the te",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0328
+              },
+              {
+                "id": 1918,
+                "image_path": "data/images/001918.jpg",
+                "caption": "Air Purifier 4 Stage Hepa W/Replacement Filter",
+                "score": 0.0303
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                443
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            443,
+            1918
+          ],
+          "focus": 443,
+          "seconds": 19.31
+        },
+        {
+          "query": "Show me more options like that",
+          "image": null,
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "Here are some other product options: [1] ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Prog.",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0307
+              },
+              {
+                "id": 1006,
+                "image_path": "data/images/001006.jpg",
+                "caption": "Motorola Digital Audio Timer Baby Monitor MBP161",
+                "score": 0.0288
+              }
+            ],
+            "reranker": null,
+            "search_query": "air quality monitor",
+            "intent": "search",
+            "focused_product_id": 443
+          },
+          "option_ids": [
+            443,
+            1006
+          ],
+          "focus": 443,
+          "seconds": 22.3
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "image_text_switch_and_replace",
+      "mode": "agentic",
+      "turns": [
+        {
+          "query": "10-in-1 air fryer toaster oven combo",
+          "image": "data/images/000272.jpg",
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "I found a product that matches your request: [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, which is a 10-in-1 air fryer toaster oven combo.",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.0323
+              }
+            ],
+            "search_query": "10-in-1 air fryer toaster oven combo",
+            "final_query_used": "10-in-1 air fryer toaster oven combo",
+            "judge_verdicts": [
+              "YES"
+            ],
+            "reranker": null,
+            "intent": "search",
+            "focused_product_id": 272
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 15.25
+        },
+        {
+          "query": "How much capacity?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            272
+          ],
+          "response": {
+            "answer": "The Nuwave Bravo Pro Air Fryer Toaster Oven Combo has a capacity of 21 Quarts. (1)",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "brand": "NuWave",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "Overview Brand : Nuwave Color : Stainless Steel Product Dimensions : 13.5\"D x 17.6\"W x 9.6\"H Special Feature : 10 Cooking Functions Control Type : Touch Capacity 21 Quarts : Wattage 1800 watts : Capacity 21 Quarts : Wattage 1800 watts Material Stainless Steel : Item Weight 16 Pounds : Material Stainless Steel : Item Weight 16 Pounds About this item 10 PRE-PROGRAMMED PRESETS - This premium non-toxic 1800-watt air fryer and toaster oven combo offers 10 functions in one powerful appliance: Air Fry, Roast, Bake, Reheat, Bagel, Pizza, Toast, Broil, Waffle, and Dehydrate. 2025 IMPROVED DIGITAL DISPLAY - Enjoy a more intuitive, easy-to-read, and user-friendly cool white display for the best, seamless cooking experience. The display offers a wealth of information for the ultimate interactive experience. PIZZA OVEN WITH ON-THE-FLY CUSTOMIZATION - Adjust the convection fan speed and the ratio of top and bottom heaters from 0 to 100% to create different heating zones at any time. For the perfect thick pizza, set the bottom heaters to 70% power and the top heaters to 30% for a crispy crust and perfectly melted, cheesy toppings. HIGH SPEED FAN - Achieve irresistibly crisp, golden-brown results with the new 2025 fan and housing design of the Nuwave Bravo Pro Air Fryer Toast Oven Combo, which delivers speeds that are 100% faster, cooking food more quickly than ever. MULTI-LAYER EVEN COOKING - Save time and energy like never before. The new convection system maintains a temperature difference of only 0-1°F between layers, ensuring even and efficient multi-layer cooking. COMPACT 21 QT SIZE - The Nuwave Bravo Pro Air Fryer’s compact design is perfect for small kitchens, motorhomes, and RVs. Even with its small design, it has a large capacity, accommodating a 12-inch pizza, a 4-pound chicken, a 4-pound roast, or 16 ounces of fries, making it ideal for families. 450°F MAX TEMPERATURE - The Nuwave Bravo Air Fryer Toast Oven Combo features adjustable fan speeds ranging from 0 to 3 and a ",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.0323
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                272
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 7.29
+        },
+        {
+          "query": "What is the weight of product 2?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            1336
+          ],
+          "response": {
+            "answer": "The weight of the Breville Smart Oven is not specified in the catalog record [1].",
+            "sources": [
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "brand": "Breville",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "1800-watt convection toaster oven with 0.8-cubic-foot nonstick interior Element IQ technology for smarter control over the heat; 9 pre-set functions. Blue back-lit LCD screen turns orange during pre-heating. 5 quartz heating elements; user-friendly control panel; LCD screen; 3 rack positions Auto-eject wire rack; removable crumb tray; pizza pan, baking pan, and broil rack included Measures 18-1/2 by 16-1/4 by 11-1/4 inches; 1-year limited warranty",
+                "description_truncated": false
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.0323
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                1336
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 1336,
+          "seconds": 5.77
+        },
+        {
+          "query": "smart thermostat with air quality sensor",
+          "image": "data/images/000443.jpg",
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "I found a product that matches your request: [1] ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor.",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0328
+              },
+              {
+                "id": 1918,
+                "image_path": "data/images/001918.jpg",
+                "caption": "Air Purifier 4 Stage Hepa W/Replacement Filter",
+                "score": 0.0303
+              }
+            ],
+            "search_query": "smart thermostat with air quality sensor",
+            "final_query_used": "smart thermostat with air quality sensor",
+            "judge_verdicts": [
+              "YES"
+            ],
+            "reranker": null,
+            "intent": "search",
+            "focused_product_id": 443
+          },
+          "option_ids": [
+            443,
+            1918
+          ],
+          "focus": 443,
+          "seconds": 25.71
+        },
+        {
+          "query": "How does it monitor air quality?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            443
+          ],
+          "response": {
+            "answer": "The ecobee Smart Thermostat Premium monitors air quality through its built-in air quality monitor. According to the product details, it \"alerts you to poor air quality, provides tips on how to improve it, and reminds you when it’s time to change your furnace’s air filter\" ([1]).",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "brand": "ecobee",
+                "category": "Hardware > Heating, Ventilation & Air Conditioning > HVAC Controls > Thermostats",
+                "description": "Brand: ecobee Color: Black Features: Save up to 26% per year on heating and cooling costs. ENERGY STAR certified. Included SmartSensor (50 dollar value) adjusts the temperature in the rooms that matter most to reduce hot or cold spots to keep you comfortable. Compared to a hold of 72°F. Built-in air quality monitor alerts you to poor air quality, provides tips on how to improve it, and reminds you when it’s time to change your furnace’s air filter. Premium materials and advanced engineering mean a large, vibrant display with a cinematic interface, a timeless design, and next level occupancy sensing. ecobee Smart Thermostat Premium is a complete home monitoring hub that includes built-in smoke alarm detection and alerts to possible break-ins when your system is armed. Get notifications during sudden temperature drops that could cause damage. ecobee Smart Security plan required Comes with a smart speaker and your choice of Siri or Alexa Built-in. Control your home using the power of your voice and listen to your favorite Spotify playlists and podcast through your thermostat’s speaker. Apple home hub required to enable Siri on Smart Thermostat Premium Compatible with most 24VAC HVAC systems: furnaces, ACs (2H/2C), heat pumps (2H/2C + 2 stage AUX), boilers, PTACs, and fan coil units (3 fan speeds). Includes Power Extender Kit for C-Wire-less homes, ensuring easy installation. If a window or door is left open for 5 minutes ecobee will alert you and automatically pause your heating or cooling, saving you money while helping the environment. SmartSensor for doors and windows and an ecobee Smart Security subscription required to access this feature Binding: Kitchen Release Date: 17-05-2022 model number: EB-STATE6-01 Part Number: EB-STATE6-01 Details: ecobee's Smart Thermostat Premium is brilliant at savings and comfort, allowing you to optimize your energy use through superior intelligence and technology. Included SmartSensor eliminates hot and cold spots and adjusts the te",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0328
+              },
+              {
+                "id": 1918,
+                "image_path": "data/images/001918.jpg",
+                "caption": "Air Purifier 4 Stage Hepa W/Replacement Filter",
+                "score": 0.0303
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                443
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            443,
+            1918
+          ],
+          "focus": 443,
+          "seconds": 12.77
+        },
+        {
+          "query": "Show me more options like that",
+          "image": null,
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "I found another product with a built-in air quality sensor: [1] ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0328
+              },
+              {
+                "id": 1229,
+                "image_path": "data/images/001229.jpg",
+                "caption": "Kelon 24 000 BTU Split Air Conditioner",
+                "score": 0.0308
+              }
+            ],
+            "search_query": "smart thermostat with air quality sensor",
+            "final_query_used": "smart thermostat with air quality sensor",
+            "judge_verdicts": [
+              "YES"
+            ],
+            "reranker": null,
+            "intent": "search",
+            "focused_product_id": 443
+          },
+          "option_ids": [
+            443,
+            1229
+          ],
+          "focus": 443,
+          "seconds": 24.91
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "image_only_followup",
+      "mode": "naive",
+      "turns": [
+        {
+          "query": "",
+          "image": "data/images/000272.jpg",
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "Based on the photo you sent, I found products that match it. \n\nI found one product that matches the photo: [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo.",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 1.0
+              }
+            ],
+            "reranker": null,
+            "search_query": "",
+            "intent": "search",
+            "focused_product_id": 272
+          },
+          "option_ids": [
+            272
+          ],
+          "focus": 272,
+          "seconds": 9.89
+        },
+        {
+          "query": "What material is this made of?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            272
+          ],
+          "response": {
+            "answer": "The Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo is made of stainless steel. According to the product description, the material is mentioned twice as \"Stainless Steel\" ([1]).",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "brand": "NuWave",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "Overview Brand : Nuwave Color : Stainless Steel Product Dimensions : 13.5\"D x 17.6\"W x 9.6\"H Special Feature : 10 Cooking Functions Control Type : Touch Capacity 21 Quarts : Wattage 1800 watts : Capacity 21 Quarts : Wattage 1800 watts Material Stainless Steel : Item Weight 16 Pounds : Material Stainless Steel : Item Weight 16 Pounds About this item 10 PRE-PROGRAMMED PRESETS - This premium non-toxic 1800-watt air fryer and toaster oven combo offers 10 functions in one powerful appliance: Air Fry, Roast, Bake, Reheat, Bagel, Pizza, Toast, Broil, Waffle, and Dehydrate. 2025 IMPROVED DIGITAL DISPLAY - Enjoy a more intuitive, easy-to-read, and user-friendly cool white display for the best, seamless cooking experience. The display offers a wealth of information for the ultimate interactive experience. PIZZA OVEN WITH ON-THE-FLY CUSTOMIZATION - Adjust the convection fan speed and the ratio of top and bottom heaters from 0 to 100% to create different heating zones at any time. For the perfect thick pizza, set the bottom heaters to 70% power and the top heaters to 30% for a crispy crust and perfectly melted, cheesy toppings. HIGH SPEED FAN - Achieve irresistibly crisp, golden-brown results with the new 2025 fan and housing design of the Nuwave Bravo Pro Air Fryer Toast Oven Combo, which delivers speeds that are 100% faster, cooking food more quickly than ever. MULTI-LAYER EVEN COOKING - Save time and energy like never before. The new convection system maintains a temperature difference of only 0-1°F between layers, ensuring even and efficient multi-layer cooking. COMPACT 21 QT SIZE - The Nuwave Bravo Pro Air Fryer’s compact design is perfect for small kitchens, motorhomes, and RVs. Even with its small design, it has a large capacity, accommodating a 12-inch pizza, a 4-pound chicken, a 4-pound roast, or 16 ounces of fries, making it ideal for families. 450°F MAX TEMPERATURE - The Nuwave Bravo Air Fryer Toast Oven Combo features adjustable fan speeds ranging from 0 to 3 and a ",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 1.0
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                272
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272
+          ],
+          "focus": 272,
+          "seconds": 11.34
+        },
+        {
+          "query": "Show me more options like that",
+          "image": null,
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "Based on the products I found earlier, here are some similar options: \n\nI found two products that match your request. \n\n[1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, \n[2] Breville Smart Oven",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.0323
+              }
+            ],
+            "reranker": null,
+            "search_query": "air fryer toaster oven combo",
+            "intent": "search",
+            "focused_product_id": null
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": null,
+          "seconds": 25.1
+        },
+        {
+          "query": "What is the weight of product 2?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            1336
+          ],
+          "response": {
+            "answer": "The weight of the Breville Smart Oven is not specified in the catalog records.",
+            "sources": [
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "brand": "Breville",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "1800-watt convection toaster oven with 0.8-cubic-foot nonstick interior Element IQ technology for smarter control over the heat; 9 pre-set functions. Blue back-lit LCD screen turns orange during pre-heating. 5 quartz heating elements; user-friendly control panel; LCD screen; 3 rack positions Auto-eject wire rack; removable crumb tray; pizza pan, baking pan, and broil rack included Measures 18-1/2 by 16-1/4 by 11-1/4 inches; 1-year limited warranty",
+                "description_truncated": false
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.0323
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                1336
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 1336,
+          "seconds": 5.06
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "image_only_followup",
+      "mode": "agentic",
+      "turns": [
+        {
+          "query": "",
+          "image": "data/images/000272.jpg",
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "Based on the photo you sent, I found a product similar to it. [1] is a 2-in-1 zester and food shredder designed for various kitchen tasks.",
+            "sources": [
+              {
+                "id": 1499,
+                "image_path": "data/images/001499.jpg",
+                "caption": "2-in-1 DESIGNED BY CHEFS Lemon Parmesan Cheese Zester and Food Shredder - Essential Grater Kitchen Tool Perfect Spiralizer for Citrus, Garlic, Vegetables, Fruits and More",
+                "score": 0.0286
+              }
+            ],
+            "search_query": "",
+            "final_query_used": "Find products like similar",
+            "judge_verdicts": [
+              "NO: The product list does not include information about similar products. It only includes a description of one specific product.",
+              "NO: The product list only contains one product, and the product itself is not a direct match for the description in the question."
+            ],
+            "reranker": null,
+            "intent": "search",
+            "focused_product_id": 1499
+          },
+          "option_ids": [
+            1499
+          ],
+          "focus": 1499,
+          "seconds": 28.17
+        },
+        {
+          "query": "What material is this made of?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            1499
+          ],
+          "response": {
+            "answer": "According to the catalog, the 2-in-1 DESIGNED BY CHEFS Lemon Parmesan Cheese Zester and Food Shredder is made of stainless steel. (product_id=1499)",
+            "sources": [
+              {
+                "id": 1499,
+                "image_path": "data/images/001499.jpg",
+                "caption": "2-in-1 DESIGNED BY CHEFS Lemon Parmesan Cheese Zester and Food Shredder - Essential Grater Kitchen Tool Perfect Spiralizer for Citrus, Garlic, Vegetables, Fruits and More",
+                "brand": "GraceGrind",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Tools & Utensils > Food Graters & Zesters > Food Zesters",
+                "description": "Overview Color : 2 in 1 Zester Grater Material : Stainless Steel Brand : Grace & Grind Style : Modern Shape : Rectangular About this item DESIGNED BY COOKS👫 - My wife and I love to cook but got tired of all the crappy zesters on Amazon so we just made our own. We worked with 83 other pro cooks who helped us design this zester grater. So what makes this one special? IT IS BIG 💪 – This baby is 15 inches tall - more surface area means much faster zesting & grating. It's as tall as a bowling pin yet it fits in our drawer (but we like to hang ours up like a trophy). IT DOES WHAT YOU WANT 👌 - Our zester grater is delicate enough to perfectly zest your lemons yet strong enough to plow through a block of aged parmesan cheese. Trust us - we spent two years fixating on the angle of micro teeth. FEELS DAMN GOOD IN YOUR HANDS ✋ - The handle was custom designed to fit any hand like a dream. We also added a perfectly placed thumb divot for more control. EASIER TO CLEAN 💧 - With the way we curved the blade, it makes it easier for food to release and also to clean. It’s not effortless but much easier to clean than anything else on the market.",
+                "description_truncated": false
+              }
+            ],
+            "product_options": [
+              {
+                "id": 1499,
+                "image_path": "data/images/001499.jpg",
+                "caption": "2-in-1 DESIGNED BY CHEFS Lemon Parmesan Cheese Zester and Food Shredder - Essential Grater Kitchen Tool Perfect Spiralizer for Citrus, Garlic, Vegetables, Fruits and More",
+                "score": 0.0286
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                1499
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            1499
+          ],
+          "focus": 1499,
+          "seconds": 15.75
+        },
+        {
+          "query": "Show me more options like that",
+          "image": null,
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "I found a similar product to the one I previously suggested. [2] is a stainless steel kitchen cheese grater with a plastic cover and ergonomic soft blue handle.",
+            "sources": [
+              {
+                "id": 1499,
+                "image_path": "data/images/001499.jpg",
+                "caption": "2-in-1 DESIGNED BY CHEFS Lemon Parmesan Cheese Zester and Food Shredder - Essential Grater Kitchen Tool Perfect Spiralizer for Citrus, Garlic, Vegetables, Fruits and More",
+                "score": 0.0328
+              },
+              {
+                "id": 1875,
+                "image_path": "data/images/001875.jpg",
+                "caption": "Lemon Zester, Stainless Steel Kitchen Cheese Grater, Plastic Cover Ergonomic Soft Blue Handle",
+                "score": 0.032
+              }
+            ],
+            "search_query": "lemon parmesan cheese zester and food shredder",
+            "final_query_used": "lemon parmesan cheese zester and food shredder",
+            "judge_verdicts": [
+              "YES"
+            ],
+            "reranker": null,
+            "intent": "search",
+            "focused_product_id": 1875
+          },
+          "option_ids": [
+            1499,
+            1875
+          ],
+          "focus": 1875,
+          "seconds": 26.76
+        },
+        {
+          "query": "What is the weight of product 2?",
+          "image": null,
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            1875
+          ],
+          "response": {
+            "answer": "The weight of the Lemon Zester, Stainless Steel Kitchen Cheese Grater, Plastic Cover Ergonomic Soft Blue Handle is 95 Grams. [1]",
+            "sources": [
+              {
+                "id": 1875,
+                "image_path": "data/images/001875.jpg",
+                "caption": "Lemon Zester, Stainless Steel Kitchen Cheese Grater, Plastic Cover Ergonomic Soft Blue Handle",
+                "brand": "ALLWIN-HOUSEWARE",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Tools & Utensils > Food Graters & Zesters > Food Zesters",
+                "description": "Overview Color : B-Blue Material : Stainless Steel Brand : ALLWIN-HOUSEWARE W Style : Modern Item Weight : 95 Grams About this item High-quality 18/8 razor sharp stainless steel blade. Reusable protective cover included. Generous grating surface, dishwasher safe. Ergonomic soft grip TPE plastic handle, comfortable and non-slip. Excellent for citrus fruits, chocolate, ginger, and hard cheeses.",
+                "description_truncated": false
+              }
+            ],
+            "product_options": [
+              {
+                "id": 1499,
+                "image_path": "data/images/001499.jpg",
+                "caption": "2-in-1 DESIGNED BY CHEFS Lemon Parmesan Cheese Zester and Food Shredder - Essential Grater Kitchen Tool Perfect Spiralizer for Citrus, Garlic, Vegetables, Fruits and More",
+                "score": 0.0328
+              },
+              {
+                "id": 1875,
+                "image_path": "data/images/001875.jpg",
+                "caption": "Lemon Zester, Stainless Steel Kitchen Cheese Grater, Plastic Cover Ergonomic Soft Blue Handle",
+                "score": 0.032
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                1875
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            1499,
+            1875
+          ],
+          "focus": 1875,
+          "seconds": 11.1
+        }
+      ],
+      "status": "PASS"
+    }
+  ]
+}

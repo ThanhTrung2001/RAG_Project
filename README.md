@@ -60,14 +60,22 @@ Open in a browser:
 
 After searching, click a product card, then ask e.g. “Cái này chất liệu gì?” or
 “Is it waterproof?”. You can also say “Sản phẩm số 2 nặng bao nhiêu?” using the
-latest source list. Detail answers load that product's catalog record by ID;
+latest search's source list. That list and its numbering stay available while you
+ask about product 1, then product 2; short follow-ups use the last product discussed.
+A new search replaces the list and resets focus to its sole result, or to the one
+distinct product cited in the answer. Multiple cited products leave no focus.
+The UI automatically selects and opens that product; no click is required.
+Search responses expose this selection as `focused_product_id` (null if ambiguous).
+Detail answers load that product's catalog record by ID;
 missing attributes must be reported as unavailable. Several possible products
 without a selection trigger a clarification question.
 
 Requests for recommendations, alternatives or a new topic still use search.
 Clear rules handle explicit references; ambiguous messages use an LLM intent
 classifier (`search`, `detail`, `clarify`). This classifier still needs evaluation
-on real conversations. Numbered citations refer to the current response's sources.
+on real conversations. Numbered citations refer to the current response's `sources`;
+the separate `product_options` field on follow-up responses keeps the search list
+for selecting products and resolving spoken numbers.
 
 The text API accepts `selected_product_id` and `product_dialogue=false` to disable
 the new routing for baseline comparisons. State is session-local RAM and is lost
@@ -79,6 +87,42 @@ Offline regressions (stub catalog/LLM, including API integration):
 pip install httpx  # optional test dependency for FastAPI TestClient
 python -m unittest discover -s tests -v
 ```
+
+Conversation scenarios live in `tests/product_dialogue_scenarios.json`. They include
+the air-fryer and thermostat examples, switching products in Vietnamese, comparison
+then choosing one product, changing topic, one-result follow-ups, clarification
+then choosing by number, the original no-click examples, image-only follow-ups,
+and image+text search followed by switching products and uploading a different image.
+The offline suite runs all eleven in both pipelines, with and without the UI's
+selection ID (44 variants, 276 turns). Retrieval and LLM output
+are fixtures here; these checks verify routing/state rather than answer quality.
+
+```bash
+node tests/check_chat_product_flow.cjs  # actual ask() wiring with DOM/API fixtures
+python tests/run_product_dialogue_live.py --output .claude/tasks/happy-live.json
+python tests/run_product_dialogue_live.py --scenario image_text_switch_and_replace --scenario image_only_followup --modes naive agentic --output .claude/tasks/happy-image-live.json
+```
+
+The live runner is opt-in: it uses the cached search model/indexes and real Ollama,
+records answers and intent/identity/state checks after every turn, and runs the
+original air-fryer example in Naive and thermostat example in Agentic, now without
+clicking or selecting a product by number before the first follow-up. `--modes`
+runs each selected scenario in both pipelines. Image steps load actual local photos.
+It does not score factual answer quality. The longer switching scenarios identify
+products by number when moving between them;
+“this product” alone is ambiguous when several products are proposed and no focus
+exists. A single proposed product is focused automatically.
+
+Image+text uses both an image search and a hybrid text search, merged with RRF;
+text-only reranking is disabled for image input. Every new upload is a search,
+even if its text looks like a detail question. A following text-only message can
+ask about the focused product or select a numbered item from the retained list.
+The upload is cleared after sending: "more options" on a later text-only turn uses
+textual history, not the previous raw image. Upload it again for another visual search.
+For slow local models the runner uses the app's 600-second timeout per LLM call.
+To resume after a failure, use `--resume <previous-report.json>` and a different
+`--output` path; passing prefix turns are explicitly marked as reused, then the
+remaining conversation runs again. Keep the original report as failure evidence.
 
 ### Optional: DeBERTa reranker
 

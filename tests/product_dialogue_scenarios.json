@@ -1,0 +1,135 @@
+{
+  "description": "Text/image/image+text happy paths, each exercised in both pipelines, with and without UI selection IDs. The image field is a real local image for live runs. Positions refer to the latest SEARCH list, never local detail citations. Offline products and LLM output are fixtures, not factual answer evaluations.",
+  "scenarios": [
+    {
+      "id": "naive_airfryer_auto_focus",
+      "preferred_mode": "naive",
+      "steps": [
+        {"query": "10-in-1 air fryer toaster oven combo", "intent": "search", "result_set": "first_recommended"},
+        {"query": "What material is this made of?", "intent": "detail", "targets": [1]},
+        {"query": "How much capacity?", "intent": "detail", "targets": [1]},
+        {"query": "Show me more options like that", "intent": "search", "result_set": "alternatives"}
+      ]
+    },
+    {
+      "id": "agentic_thermostat_auto_focus",
+      "preferred_mode": "agentic",
+      "steps": [
+        {"query": "smart thermostat with air quality sensor", "intent": "search", "result_set": "first_recommended"},
+        {"query": "Show me details of this product", "intent": "detail", "targets": [1]},
+        {"query": "How does it monitor air quality?", "intent": "detail", "targets": [1]},
+        {"query": "Show me more options like that", "intent": "search", "result_set": "alternatives"}
+      ]
+    },
+    {
+      "id": "image_text_switch_and_replace",
+      "preferred_mode": "naive",
+      "steps": [
+        {"query": "10-in-1 air fryer toaster oven combo", "image": "data/images/000272.jpg", "intent": "search", "result_set": "first_recommended"},
+        {"query": "How much capacity?", "intent": "detail", "targets": [1]},
+        {"query": "What is the weight of product 2?", "intent": "detail", "targets": [2]},
+        {"query": "smart thermostat with air quality sensor", "image": "data/images/000443.jpg", "intent": "search", "result_set": "topic_first"},
+        {"query": "How does it monitor air quality?", "intent": "detail", "targets": [1]},
+        {"query": "Show me more options like that", "intent": "search", "result_set": "alternatives"}
+      ]
+    },
+    {
+      "id": "image_only_followup",
+      "preferred_mode": "agentic",
+      "steps": [
+        {"query": "", "image": "data/images/000272.jpg", "intent": "search", "result_set": "single"},
+        {"query": "What material is this made of?", "intent": "detail", "targets": [1]},
+        {"query": "Show me more options like that", "intent": "search", "result_set": "alternatives"},
+        {"query": "What is the weight of product 2?", "intent": "detail", "targets": [2]}
+      ]
+    },
+    {
+      "id": "naive_airfryer",
+      "preferred_mode": "naive",
+      "steps": [
+        {"query": "10-in-1 air fryer toaster oven combo", "intent": "search", "result_set": "initial"},
+        {"query": "Show me details of product 1", "intent": "detail", "targets": [1]},
+        {"query": "What material is this made of?", "intent": "detail", "targets": [1]},
+        {"query": "How much capacity?", "intent": "detail", "targets": [1]},
+        {"query": "Show me details of product 2", "intent": "detail", "targets": [2]},
+        {"query": "What material is this made of?", "intent": "detail", "targets": [2]},
+        {"query": "How much capacity?", "intent": "detail", "targets": [2]},
+        {"query": "Show me details of product 1", "intent": "detail", "targets": [1]},
+        {"query": "Show me more options like that", "intent": "search", "result_set": "alternatives"},
+        {"query": "What is the weight of product 2?", "intent": "detail", "targets": [2]},
+        {"query": "What material is this made of?", "intent": "detail", "targets": [2]}
+      ]
+    },
+    {
+      "id": "agentic_thermostat",
+      "preferred_mode": "agentic",
+      "steps": [
+        {"query": "smart thermostat with air quality sensor", "intent": "search", "result_set": "initial"},
+        {"query": "Show me details of product 1", "intent": "detail", "targets": [1]},
+        {"query": "Show me details of this product", "intent": "detail", "targets": [1]},
+        {"query": "How does it monitor air quality?", "intent": "detail", "targets": [1]},
+        {"query": "Tell me about the second product", "intent": "detail", "targets": [2]},
+        {"query": "How does it monitor air quality?", "intent": "detail", "targets": [2]},
+        {"query": "Tell me about the first product", "intent": "detail", "targets": [1]},
+        {"query": "Show me more options like that", "intent": "search", "result_set": "alternatives"},
+        {"query": "Show me details of product 2", "intent": "detail", "targets": [2]},
+        {"query": "How does it monitor air quality?", "intent": "detail", "targets": [2]}
+      ]
+    },
+    {
+      "id": "vietnamese_switch_without_click",
+      "steps": [
+        {"query": "Tìm lều cắm trại", "intent": "search", "result_set": "initial"},
+        {"query": "Chi tiết cái 1", "intent": "detail", "targets": [1]},
+        {"query": "Chất liệu gì?", "intent": "detail", "targets": [1]},
+        {"query": "Cái 2 thì sao?", "intent": "detail", "targets": [2]},
+        {"query": "Cân nặng bao nhiêu?", "intent": "detail", "targets": [2]},
+        {"query": "Quay lại sản phẩm thứ nhất", "intent": "detail", "targets": [1]},
+        {"query": "Nó có chống nước không?", "intent": "detail", "targets": [1]}
+      ]
+    },
+    {
+      "id": "compare_then_focus",
+      "steps": [
+        {"query": "Recommend camping tents", "intent": "search", "result_set": "initial"},
+        {"query": "Compare product 2 and product 1", "intent": "detail", "targets": [2, 1]},
+        {"query": "Show me details of product 2", "intent": "detail", "targets": [2]},
+        {"query": "Is it waterproof?", "intent": "detail", "targets": [2]},
+        {"query": "Show me details of product 1", "intent": "detail", "targets": [1]}
+      ]
+    },
+    {
+      "id": "new_topic_replaces_choices",
+      "steps": [
+        {"query": "Recommend camping tents", "intent": "search", "result_set": "initial"},
+        {"query": "Show me details of product 1", "intent": "detail", "targets": [1]},
+        {"query": "Recommend a coffee maker", "intent": "search", "result_set": "topic"},
+        {"query": "Show me details of product 2", "intent": "detail", "targets": [2]},
+        {"query": "What material is this made of?", "intent": "detail", "targets": [2]}
+      ]
+    },
+    {
+      "id": "single_result_without_click",
+      "steps": [
+        {"query": "Find one air fryer", "intent": "search", "result_set": "single"},
+        {"query": "What material is this made of?", "intent": "detail", "targets": [1]},
+        {"query": "How much capacity?", "intent": "detail", "targets": [1]},
+        {"query": "Recommend another air fryer", "intent": "search", "result_set": "one_recommended"},
+        {"query": "How much capacity?", "intent": "detail", "targets": [2]},
+        {"query": "Show me details of product 1", "intent": "detail", "targets": [1]},
+        {"query": "Show me more options like that", "intent": "search", "result_set": "alternatives"},
+        {"query": "Show me details of product 2", "intent": "detail", "targets": [2]}
+      ]
+    },
+    {
+      "id": "clarify_then_choose",
+      "steps": [
+        {"query": "Recommend camping tents", "intent": "search", "result_set": "initial"},
+        {"query": "What material is this made of?", "intent": "clarify"},
+        {"query": "Show me details of product 2", "intent": "detail", "targets": [2]},
+        {"query": "Is it waterproof?", "intent": "detail", "targets": [2]},
+        {"query": "Show me details of product 1", "intent": "detail", "targets": [1]}
+      ]
+    }
+  ]
+}

@@ -319,7 +319,7 @@ async function ask() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || res.status);
     if (data.intent === 'search') {
-      selectedProductId = null;
+      selectedProductId = data.focused_product_id ?? (data.sources?.length === 1 ? data.sources[0].id : null);
       document.getElementById('detailCard').classList.remove('active');
       document.getElementById('productDetail').textContent = 'Bấm chọn một sản phẩm để hỏi chi tiết.';
     } else if (data.intent === 'detail' && data.sources?.length === 1) {
@@ -338,10 +338,14 @@ async function ask() {
       note.textContent = `Đã tự viết lại câu hỏi để search: "${data.final_query_used}"`;
       botBubble.appendChild(note);
     }
-    renderSources(data, agentic, !!image);
+    renderSources({ ...data, sources: data.product_options ?? data.sources }, agentic, !!image);
     renderCitedProducts(botBubble, citedSources(data.answer, data.sources || []));
-    if (data.intent === 'detail' && data.sources?.length === 1) {
-      await showProductDetail(data.sources[0], 1);
+    if ((data.intent === 'search' || data.intent === 'detail') && selectedProductId !== null) {
+      const focused = data.sources?.find(p => p.id === selectedProductId);
+      if (focused) {
+        const index = (data.product_options ?? data.sources).findIndex(p => p.id === focused.id);
+        await showProductDetail(focused, index >= 0 ? index + 1 : null);
+      }
     }
   } catch (err) {
     botBubble.classList.remove('typing');

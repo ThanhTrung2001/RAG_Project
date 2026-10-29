@@ -1,0 +1,621 @@
+{
+  "kind": "real retrieval and Ollama; no UI clicks; no mocks",
+  "checks": "intent, target IDs, retained choices, focus; NOT answer fact scoring",
+  "model": "llama3.1",
+  "scenarios": [
+    {
+      "id": "naive_airfryer",
+      "mode": "naive",
+      "turns": [
+        {
+          "query": "10-in-1 air fryer toaster oven combo",
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "I found a product that matches your request: [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, which is a 10-in-1 air fryer toaster oven combo.",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.032
+              }
+            ],
+            "reranker": null,
+            "search_query": "10-in-1 air fryer toaster oven combo",
+            "intent": "search"
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": null,
+          "seconds": 32.55
+        },
+        {
+          "query": "Show me details of product 1",
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            272
+          ],
+          "response": {
+            "answer": "Here are the details of product 1:\n\n**Product Name:** Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo\n\n**Brand:** NuWave [1]\n\n**Category:** Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens [1]\n\n**Description:** This premium non-toxic 1800-watt air fryer and toaster oven combo offers 10 functions in one powerful appliance: Air Fry, Roast, Bake, Reheat, Bagel, Pizza, Toast, Broil, Waffle, and Dehydrate. [n]\n\n**Special Features:**\n\n* 10 pre-programmed presets [n]\n* 2025 improved digital display with cool white display [n]\n* Pizza oven with on-the-fly customization [n]\n* High speed fan (100% faster) [n]\n* Multi-layer even cooking [n]\n* Compact 21 QT size [n]\n* 450°F max temperature [n]\n\n**Details:**\n\n* Product Dimensions: 13.5\"D x 17.6\"W x 9.6\"H [n]\n* Special Feature: 10 Cooking Functions [n]\n* Control Type: Touch [n]\n* Capacity: 21 Quarts [n]\n* Wattage: 1800 watts [n]\n* Material: Stainless Steel [n]\n* Item Weight: 16 Pounds [n]\n\nNote: The description is truncated, so there may be missing information.",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "brand": "NuWave",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "Overview Brand : Nuwave Color : Stainless Steel Product Dimensions : 13.5\"D x 17.6\"W x 9.6\"H Special Feature : 10 Cooking Functions Control Type : Touch Capacity 21 Quarts : Wattage 1800 watts : Capacity 21 Quarts : Wattage 1800 watts Material Stainless Steel : Item Weight 16 Pounds : Material Stainless Steel : Item Weight 16 Pounds About this item 10 PRE-PROGRAMMED PRESETS - This premium non-toxic 1800-watt air fryer and toaster oven combo offers 10 functions in one powerful appliance: Air Fry, Roast, Bake, Reheat, Bagel, Pizza, Toast, Broil, Waffle, and Dehydrate. 2025 IMPROVED DIGITAL DISPLAY - Enjoy a more intuitive, easy-to-read, and user-friendly cool white display for the best, seamless cooking experience. The display offers a wealth of information for the ultimate interactive experience. PIZZA OVEN WITH ON-THE-FLY CUSTOMIZATION - Adjust the convection fan speed and the ratio of top and bottom heaters from 0 to 100% to create different heating zones at any time. For the perfect thick pizza, set the bottom heaters to 70% power and the top heaters to 30% for a crispy crust and perfectly melted, cheesy toppings. HIGH SPEED FAN - Achieve irresistibly crisp, golden-brown results with the new 2025 fan and housing design of the Nuwave Bravo Pro Air Fryer Toast Oven Combo, which delivers speeds that are 100% faster, cooking food more quickly than ever. MULTI-LAYER EVEN COOKING - Save time and energy like never before. The new convection system maintains a temperature difference of only 0-1°F between layers, ensuring even and efficient multi-layer cooking. COMPACT 21 QT SIZE - The Nuwave Bravo Pro Air Fryer’s compact design is perfect for small kitchens, motorhomes, and RVs. Even with its small design, it has a large capacity, accommodating a 12-inch pizza, a 4-pound chicken, a 4-pound roast, or 16 ounces of fries, making it ideal for families. 450°F MAX TEMPERATURE - The Nuwave Bravo Air Fryer Toast Oven Combo features adjustable fan speeds ranging from 0 to 3 and a ",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.032
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                272
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 72.44
+        },
+        {
+          "query": "What material is this made of?",
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            272
+          ],
+          "response": {
+            "answer": "The Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo is made of Stainless Steel. [1]",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "brand": "NuWave",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "Overview Brand : Nuwave Color : Stainless Steel Product Dimensions : 13.5\"D x 17.6\"W x 9.6\"H Special Feature : 10 Cooking Functions Control Type : Touch Capacity 21 Quarts : Wattage 1800 watts : Capacity 21 Quarts : Wattage 1800 watts Material Stainless Steel : Item Weight 16 Pounds : Material Stainless Steel : Item Weight 16 Pounds About this item 10 PRE-PROGRAMMED PRESETS - This premium non-toxic 1800-watt air fryer and toaster oven combo offers 10 functions in one powerful appliance: Air Fry, Roast, Bake, Reheat, Bagel, Pizza, Toast, Broil, Waffle, and Dehydrate. 2025 IMPROVED DIGITAL DISPLAY - Enjoy a more intuitive, easy-to-read, and user-friendly cool white display for the best, seamless cooking experience. The display offers a wealth of information for the ultimate interactive experience. PIZZA OVEN WITH ON-THE-FLY CUSTOMIZATION - Adjust the convection fan speed and the ratio of top and bottom heaters from 0 to 100% to create different heating zones at any time. For the perfect thick pizza, set the bottom heaters to 70% power and the top heaters to 30% for a crispy crust and perfectly melted, cheesy toppings. HIGH SPEED FAN - Achieve irresistibly crisp, golden-brown results with the new 2025 fan and housing design of the Nuwave Bravo Pro Air Fryer Toast Oven Combo, which delivers speeds that are 100% faster, cooking food more quickly than ever. MULTI-LAYER EVEN COOKING - Save time and energy like never before. The new convection system maintains a temperature difference of only 0-1°F between layers, ensuring even and efficient multi-layer cooking. COMPACT 21 QT SIZE - The Nuwave Bravo Pro Air Fryer’s compact design is perfect for small kitchens, motorhomes, and RVs. Even with its small design, it has a large capacity, accommodating a 12-inch pizza, a 4-pound chicken, a 4-pound roast, or 16 ounces of fries, making it ideal for families. 450°F MAX TEMPERATURE - The Nuwave Bravo Air Fryer Toast Oven Combo features adjustable fan speeds ranging from 0 to 3 and a ",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.032
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                272
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 9.21
+        },
+        {
+          "query": "How much capacity?",
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            272
+          ],
+          "response": {
+            "answer": "The capacity of the Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo is 21 Quarts [1].",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "brand": "NuWave",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "Overview Brand : Nuwave Color : Stainless Steel Product Dimensions : 13.5\"D x 17.6\"W x 9.6\"H Special Feature : 10 Cooking Functions Control Type : Touch Capacity 21 Quarts : Wattage 1800 watts : Capacity 21 Quarts : Wattage 1800 watts Material Stainless Steel : Item Weight 16 Pounds : Material Stainless Steel : Item Weight 16 Pounds About this item 10 PRE-PROGRAMMED PRESETS - This premium non-toxic 1800-watt air fryer and toaster oven combo offers 10 functions in one powerful appliance: Air Fry, Roast, Bake, Reheat, Bagel, Pizza, Toast, Broil, Waffle, and Dehydrate. 2025 IMPROVED DIGITAL DISPLAY - Enjoy a more intuitive, easy-to-read, and user-friendly cool white display for the best, seamless cooking experience. The display offers a wealth of information for the ultimate interactive experience. PIZZA OVEN WITH ON-THE-FLY CUSTOMIZATION - Adjust the convection fan speed and the ratio of top and bottom heaters from 0 to 100% to create different heating zones at any time. For the perfect thick pizza, set the bottom heaters to 70% power and the top heaters to 30% for a crispy crust and perfectly melted, cheesy toppings. HIGH SPEED FAN - Achieve irresistibly crisp, golden-brown results with the new 2025 fan and housing design of the Nuwave Bravo Pro Air Fryer Toast Oven Combo, which delivers speeds that are 100% faster, cooking food more quickly than ever. MULTI-LAYER EVEN COOKING - Save time and energy like never before. The new convection system maintains a temperature difference of only 0-1°F between layers, ensuring even and efficient multi-layer cooking. COMPACT 21 QT SIZE - The Nuwave Bravo Pro Air Fryer’s compact design is perfect for small kitchens, motorhomes, and RVs. Even with its small design, it has a large capacity, accommodating a 12-inch pizza, a 4-pound chicken, a 4-pound roast, or 16 ounces of fries, making it ideal for families. 450°F MAX TEMPERATURE - The Nuwave Bravo Air Fryer Toast Oven Combo features adjustable fan speeds ranging from 0 to 3 and a ",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.032
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                272
+              ],
+              "reason": "llm"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 17.97
+        },
+        {
+          "query": "Show me details of product 2",
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            1336
+          ],
+          "response": {
+            "answer": "Unfortunately, the product_id for the Breville Smart Oven is 1336, but the customer's question is asking for details about product 2, which is not available in the provided catalog records. There is only one product mentioned in the records, which is the Breville Smart Oven with product_id 1336. \n\nHowever, I can provide you with the details of the Breville Smart Oven (product_id=1336) based on the catalog records.\n\nHere are the details of the product:\n\n* Brand: Breville [n]\n* Category: Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens [n]\n* Description: 1800-watt convection toaster oven with 0.8-cubic-foot nonstick interior Element IQ technology for smarter control over the heat; 9 pre-set functions. Blue back-lit LCD screen turns orange during pre-heating. 5 quartz heating elements; user-friendly control panel; LCD screen; 3 rack positions Auto-eject wire rack; removable crumb tray; pizza pan, baking pan, and broil rack included Measures 18-1/2 by 16-1/4 by 11-1/4 inches [n]\n* No warranty information is available in the catalog records. The catalog does not provide it.",
+            "sources": [
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "brand": "Breville",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "1800-watt convection toaster oven with 0.8-cubic-foot nonstick interior Element IQ technology for smarter control over the heat; 9 pre-set functions. Blue back-lit LCD screen turns orange during pre-heating. 5 quartz heating elements; user-friendly control panel; LCD screen; 3 rack positions Auto-eject wire rack; removable crumb tray; pizza pan, baking pan, and broil rack included Measures 18-1/2 by 16-1/4 by 11-1/4 inches; 1-year limited warranty",
+                "description_truncated": false
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.032
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                1336
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 1336,
+          "seconds": 67.7
+        },
+        {
+          "query": "What material is this made of?",
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            1336
+          ],
+          "response": {
+            "answer": "According to the catalog records, the Breville Smart Oven is made of the following materials:\n\n* 0.8-cubic-foot nonstick interior [n]\n* 5 quartz heating elements [n]\n\nUnfortunately, the catalog records do not provide information on the overall material composition of the oven, such as the material used for the outer casing or other components.",
+            "sources": [
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "brand": "Breville",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "1800-watt convection toaster oven with 0.8-cubic-foot nonstick interior Element IQ technology for smarter control over the heat; 9 pre-set functions. Blue back-lit LCD screen turns orange during pre-heating. 5 quartz heating elements; user-friendly control panel; LCD screen; 3 rack positions Auto-eject wire rack; removable crumb tray; pizza pan, baking pan, and broil rack included Measures 18-1/2 by 16-1/4 by 11-1/4 inches; 1-year limited warranty",
+                "description_truncated": false
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.032
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                1336
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 1336,
+          "seconds": 21.01
+        },
+        {
+          "query": "How much capacity?",
+          "expected_intent": "detail",
+          "status": "FAIL",
+          "errors": [
+            "target mismatch",
+            "focus mismatch"
+          ],
+          "expected_ids": [
+            1336
+          ],
+          "response": {
+            "answer": "The capacity of the Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo is 21 Quarts [1]. \n\nThe Breville Smart Oven's description does not provide the capacity.",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "brand": "NuWave",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "Overview Brand : Nuwave Color : Stainless Steel Product Dimensions : 13.5\"D x 17.6\"W x 9.6\"H Special Feature : 10 Cooking Functions Control Type : Touch Capacity 21 Quarts : Wattage 1800 watts : Capacity 21 Quarts : Wattage 1800 watts Material Stainless Steel : Item Weight 16 Pounds : Material Stainless Steel : Item Weight 16 Pounds About this item 10 PRE-PROGRAMMED PRESETS - This premium non-toxic 1800-watt air fryer and toaster oven combo offers 10 functions in one powerful appliance: Air Fry, Roast, Bake, Reheat, Bagel, Pizza, Toast, Broil, Waffle, and Dehydrate. 2025 IMPROVED DIGITAL DISPLAY - Enjoy a more intuitive, easy-to-read, and user-friendly cool white display for the best, seamless cooking experience. The display offers a wealth of information for the ultimate interactive experience. PIZZA OVEN WITH ON-THE-FLY CUSTOMIZATION - Adjust the convection fan speed and the ratio of top and bottom heaters from 0 to 100% to create different heating zones at any time. For the perfect thick pizza, set the bottom heaters to 70% power and the top heaters to 30% for a crispy crust and perfectly melted, cheesy toppings. HIGH SPEED FAN - Achieve irresistibly crisp, golden-brown results with the new 2025 fan and housing design of the Nuwave Bravo Pro Air Fryer Toast Oven Combo, which delivers speeds that are 100% faster, cooking food more quickly than ever. MULTI-LAYER EVEN COOKING - Save time and energy like never before. The new convection system maintains a temperature difference of only 0-1°F between layers, ensuring even and efficient multi-layer cooking. COMPACT 21 QT SIZE - The Nuwave Bravo Pro Air Fryer’s compact design is perfect for small kitchens, motorhomes, and RVs. Even with its small design, it has a large capacity, accommodating a 12-inch pizza, a 4-pound chicken, a 4-pound roast, or 16 ounces of fries, making it ideal for families. 450°F MAX TEMPERATURE - The Nuwave Bravo Air Fryer Toast Oven Combo features adjustable fan speeds ranging from 0 to 3 and a ",
+                "description_truncated": true
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "brand": "Breville",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "1800-watt convection toaster oven with 0.8-cubic-foot nonstick interior Element IQ technology for smarter control over the heat; 9 pre-set functions. Blue back-lit LCD screen turns orange during pre-heating. 5 quartz heating elements; user-friendly control panel; LCD screen; 3 rack positions Auto-eject wire rack; removable crumb tray; pizza pan, baking pan, and broil rack included Measures 18-1/2 by 16-1/4 by 11-1/4 inches; 1-year limited warranty",
+                "description_truncated": false
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.032
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                272,
+                1336
+              ],
+              "reason": "llm"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": null,
+          "seconds": 22.92
+        },
+        {
+          "query": "Show me details of product 1",
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            272
+          ],
+          "response": {
+            "answer": "Here are the details of product 1:\n\nThis product is the [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, which is a 10-in-1 appliance (n) with a temperature control range of 50-450°F (n). It has a 21Qt capacity (n) and is made of stainless steel (n). The product is PFAS-free (n).\n\nThe product comes with 10 pre-programmed presets (n), including functions such as Air Fry, Roast, Bake, Reheat, Bagel, Pizza, Toast, Broil, Waffle, and Dehydrate (n). It also features a 2025 improved digital display (n) and a high-speed fan (n) that can achieve speeds 100% faster than previous models (n).\n\nThe product is compact in size (n), making it ideal for small kitchens, motorhomes, and RVs (n). It has a maximum temperature of 450°F (n) and comes with adjustable fan speeds ranging from 0 to 3 (n). The product weighs 16 pounds (n) and has a wattage of 1800 watts (n).",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "brand": "NuWave",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "Overview Brand : Nuwave Color : Stainless Steel Product Dimensions : 13.5\"D x 17.6\"W x 9.6\"H Special Feature : 10 Cooking Functions Control Type : Touch Capacity 21 Quarts : Wattage 1800 watts : Capacity 21 Quarts : Wattage 1800 watts Material Stainless Steel : Item Weight 16 Pounds : Material Stainless Steel : Item Weight 16 Pounds About this item 10 PRE-PROGRAMMED PRESETS - This premium non-toxic 1800-watt air fryer and toaster oven combo offers 10 functions in one powerful appliance: Air Fry, Roast, Bake, Reheat, Bagel, Pizza, Toast, Broil, Waffle, and Dehydrate. 2025 IMPROVED DIGITAL DISPLAY - Enjoy a more intuitive, easy-to-read, and user-friendly cool white display for the best, seamless cooking experience. The display offers a wealth of information for the ultimate interactive experience. PIZZA OVEN WITH ON-THE-FLY CUSTOMIZATION - Adjust the convection fan speed and the ratio of top and bottom heaters from 0 to 100% to create different heating zones at any time. For the perfect thick pizza, set the bottom heaters to 70% power and the top heaters to 30% for a crispy crust and perfectly melted, cheesy toppings. HIGH SPEED FAN - Achieve irresistibly crisp, golden-brown results with the new 2025 fan and housing design of the Nuwave Bravo Pro Air Fryer Toast Oven Combo, which delivers speeds that are 100% faster, cooking food more quickly than ever. MULTI-LAYER EVEN COOKING - Save time and energy like never before. The new convection system maintains a temperature difference of only 0-1°F between layers, ensuring even and efficient multi-layer cooking. COMPACT 21 QT SIZE - The Nuwave Bravo Pro Air Fryer’s compact design is perfect for small kitchens, motorhomes, and RVs. Even with its small design, it has a large capacity, accommodating a 12-inch pizza, a 4-pound chicken, a 4-pound roast, or 16 ounces of fries, making it ideal for families. 450°F MAX TEMPERATURE - The Nuwave Bravo Air Fryer Toast Oven Combo features adjustable fan speeds ranging from 0 to 3 and a ",
+                "description_truncated": true
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.032
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                272
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 272,
+          "seconds": 58.67
+        },
+        {
+          "query": "Show me more options like that",
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "Based on your interest in the Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, here are a few more options:\n\n* [1] Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved,\n* [2] Breville Smart Oven",
+            "sources": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.0323
+              }
+            ],
+            "reranker": null,
+            "search_query": "air fryer toaster oven combo",
+            "intent": "search"
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": null,
+          "seconds": 33.06
+        },
+        {
+          "query": "What is the weight of product 2?",
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            1336
+          ],
+          "response": {
+            "answer": "Since you asked about the weight of product 2, but the catalog records only mention product 1 (Breville Smart Oven, product_id=1336), I'll assume you meant to ask about product 1. However, the catalog records don't provide information about the weight of the product.\n\n Catalog does not provide the weight of product 1.",
+            "sources": [
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "brand": "Breville",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "1800-watt convection toaster oven with 0.8-cubic-foot nonstick interior Element IQ technology for smarter control over the heat; 9 pre-set functions. Blue back-lit LCD screen turns orange during pre-heating. 5 quartz heating elements; user-friendly control panel; LCD screen; 3 rack positions Auto-eject wire rack; removable crumb tray; pizza pan, baking pan, and broil rack included Measures 18-1/2 by 16-1/4 by 11-1/4 inches; 1-year limited warranty",
+                "description_truncated": false
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.0323
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                1336
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 1336,
+          "seconds": 18.55
+        },
+        {
+          "query": "What material is this made of?",
+          "expected_intent": "detail",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [
+            1336
+          ],
+          "response": {
+            "answer": "The Breville Smart Oven is made of nonstick interior [1]. The heating elements are made of quartz [1].",
+            "sources": [
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "brand": "Breville",
+                "category": "Home & Garden > Kitchen & Dining > Kitchen Appliances > Toasters & Grills > Countertop & Toaster Ovens",
+                "description": "1800-watt convection toaster oven with 0.8-cubic-foot nonstick interior Element IQ technology for smarter control over the heat; 9 pre-set functions. Blue back-lit LCD screen turns orange during pre-heating. 5 quartz heating elements; user-friendly control panel; LCD screen; 3 rack positions Auto-eject wire rack; removable crumb tray; pizza pan, baking pan, and broil rack included Measures 18-1/2 by 16-1/4 by 11-1/4 inches; 1-year limited warranty",
+                "description_truncated": false
+              }
+            ],
+            "product_options": [
+              {
+                "id": 272,
+                "image_path": "data/images/000272.jpg",
+                "caption": "Nuwave Bravo Pro Convection Air Fryer Toaster Oven Combo, 2025 New and Improved, 10-in-1, 50°-450°F Temp Controls, Quick & Even Crisp Technology, 21Qt Capacity, Stainless Steel, PFAS Free",
+                "score": 0.0328
+              },
+              {
+                "id": 1336,
+                "image_path": "data/images/001336.jpg",
+                "caption": "Breville Smart Oven",
+                "score": 0.0323
+              }
+            ],
+            "reranker": null,
+            "search_query": null,
+            "intent": "detail",
+            "routing": {
+              "intent": "detail",
+              "product_ids": [
+                1336
+              ],
+              "reason": "rules"
+            }
+          },
+          "option_ids": [
+            272,
+            1336
+          ],
+          "focus": 1336,
+          "seconds": 8.27
+        }
+      ],
+      "status": "FAIL"
+    },
+    {
+      "id": "agentic_thermostat",
+      "mode": "agentic",
+      "turns": [
+        {
+          "query": "smart thermostat with air quality sensor",
+          "expected_intent": "search",
+          "status": "PASS",
+          "errors": [],
+          "expected_ids": [],
+          "response": {
+            "answer": "I found a product that meets your request: [1] ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor.",
+            "sources": [
+              {
+                "id": 443,
+                "image_path": "data/images/000443.jpg",
+                "caption": "ecobee Smart Thermostat Premium with Smart Sensor and Air Quality Monitor - Programmable Wifi Thermostat - Works with Siri, Alexa, Google Assistant",
+                "score": 0.0328
+              },
+              {
+                "id": 1229,
+                "image_path": "data/images/001229.jpg",
+                "caption": "Kelon 24 000 BTU Split Air Conditioner",
+                "score": 0.0308
+              }
+            ],
+            "search_query": "smart thermostat with air quality sensor",
+            "final_query_used": "smart thermostat with air quality sensor",
+            "judge_verdicts": [
+              "YES"
+            ],
+            "reranker": null,
+            "intent": "search"
+          },
+          "option_ids": [
+            443,
+            1229
+          ],
+          "focus": null,
+          "seconds": 14.41
+        },
+        {
+          "query": "Show me details of product 1",
+          "expected_intent": "detail",
+          "status": "ERROR",
+          "error": "ReadTimeout: HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=90)",
+          "seconds": 92.05
+        }
+      ],
+      "status": "FAIL"
+    }
+  ]
+}

@@ -10,6 +10,26 @@ def normalize(text):
                    if unicodedata.category(c) != "Mn")
 
 
+def resolve_product_references(query, sources):
+    """Replace search-list positions with titles before local citation renumbering."""
+    def title(match):
+        position = int(next(value for value in match.groups() if value))
+        return sources[position - 1]["caption"] if 1 <= position <= len(sources) else match.group()
+
+    query = re.sub(
+        r"\[(\d+)\]|\b(?:product|item|option|number|sản phẩm|san pham|cái|cai|số|so|thứ|thu)\s*(?:number|số|so|thứ|thu)?\s*#?(\d+)",
+        title, query, flags=re.IGNORECASE)
+    for pattern, position in [(r"(?:the )?first (?:one|product|item)|thứ nhất|thu nhat", 1),
+                              (r"(?:the )?second (?:one|product|item)|thứ hai|thu hai", 2),
+                              (r"(?:the )?third (?:one|product|item)|thứ ba|thu ba", 3)]:
+        if position <= len(sources):
+            # Callable replacement keeps backslashes in catalog titles literal.
+            query = re.sub(r"\b(?:" + pattern + r")\b",
+                           lambda _, p=position: sources[p - 1]["caption"], query,
+                           flags=re.IGNORECASE)
+    return query
+
+
 def route_product_query(query, sources, focused_id=None, llm_call=None):
     """Return search/detail/clarify. A detail route may only use known source IDs.
 
@@ -45,8 +65,9 @@ def route_product_query(query, sources, focused_id=None, llm_call=None):
     referential = bool(re.search(r"\b(it|its|this|that|these|those|cai nay|cai do|san pham nay|san pham do|no)\b", q))
     if named and detail:
         return decision("detail", named)
-    elliptical = bool(re.fullmatch(r"(?:what (?:is the )?)?(?:material|weight|capacity|warranty|dimensions|price)\??|(?:chat lieu|can nang|dung tich|bao hanh|kich thuoc|gia)(?: gi| bao nhieu| the nao)?\??", q.strip()))
-    if detail and (referential or (focused_id is not None and elliptical)):
+    elliptical = bool(re.fullmatch(r"(?:what (?:is the )?|how much )?(?:material|weight|capacity|warranty|dimensions|price)\??|(?:chat lieu|can nang|dung tich|bao hanh|kich thuoc|gia)(?: gi| bao nhieu| the nao)?\??", q.strip()))
+    functional_followup = bool(re.match(r"how (?:does|can) (?:it|this product|that product)\b", q.strip()))
+    if (detail or functional_followup) and (referential or (focused_id is not None and elliptical)):
         target = focused_id if focused_id is not None else (sources[0]["id"] if len(sources) == 1 else None)
         return decision("detail", [target]) if target is not None else decision("clarify", reason="ambiguous_product")
     if not sources:
